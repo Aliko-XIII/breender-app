@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2021",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",  // Compiled files will be output here
+    "rootDir": "./src"   // Source TypeScript files are expected here
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
+} 
