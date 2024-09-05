@@ -21,6 +21,7 @@
   "homepage": "https://github.com/Aliko-XIII/smart-breeder#readme",
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/pg": "^8.11.8",
     "@typescript-eslint/eslint-plugin": "^8.4.0",
     "@typescript-eslint/parser": "^8.4.0",
     "eslint": "^9.9.1",
@@ -29,6 +30,7 @@
   },
   "dependencies": {
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
   }
 }
