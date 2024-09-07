@@ -138,6 +138,11 @@ This table stores paths to animal's photos.
   - Description: A path to a photo.
   - Constraints: Not Null
 
+- **uploaded_at** (`timestamp`): 
+  - Description: Time and date when photo was uploaded.
+  - Default: NOW()
+  - Constraints: Not Null
+
 ## Table: animal_pedigrees
 ### Description
 This table stores paths to animal's pedigrees.
@@ -184,4 +189,9 @@ This table stores paths to animal's documents.
 
 - **document_url** (`character varying`): 
   - Description: A path to a digital copy of the document.
+  - Constraints: Not Null
+
+- **uploaded_at** (`timestamp`): 
+  - Description: Time and date when document was uploaded.
+  - Default: NOW()
   - Constraints: Not Null
