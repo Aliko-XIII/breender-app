@@ -777,205 +777,6 @@ Empty
 ```
 
 ***
-#### GET `api/v1/animals/{animalId}/photos`
-**Purpose:** Get animal photos by its ID. 
-
-**Request headers:**
-
-<table border=3>
-<tr>
-  <th style="width:20%;">Header name</th>
-  <th>Header value</th>
-  </tr>
-
-  <tr>
-  <td>Authorization</th>
-  <td>Access token generated for user.</td>
-  </tr>
-</table>
-
-**Request body:**
-
-Empty
-
-**Responses:**
-
-<table border=3>
-    <tr>
-  <th style="width:20%;">Status code</th>
-  <th>Response</th>
-  </tr>
-
-  <tr>
-  <td>200</th>
-  <td>Returns photo URLs for animal's photos.</td>
-  </tr>
-
-  <tr>
-  <td>404</th>
-  <td>There is no such animal found.</td>
-  </tr>
-</table>
-
-***Example***
-
-**Request**
-```sh
-    curl -X 'GET' \
-    'api/v1/animals/123e4567-e89b-12d3-a456-426614174000/photos' \
-    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
-```
-
-**Response body**
-```sh
-[
-  {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "animalId": "987e6543-e21b-32d1-b654-426614174000",
-    "photoURL": "/images/animals/123e4567-e89b-12d3-a456-426614174000.jpg",
-    "uploadedAt": "28.09.2023 14:51:17"
-  },
-  {
-    "id": "223e4567-e89b-12d3-a456-426614174111",
-    "animalId": "987e6543-e21b-32d1-b654-426614174000",
-    "photoURL": "/images/animals/223e4567-e89b-12d3-a456-426614174111.jpg",
-    "uploadedAt": "29.09.2023 10:35:12"
-  }
-]
-```
-
-***
-#### GET `api/v1/animals/{animalId}/documents`
-**Purpose:** Get animal documents by its ID. 
-
-**Request headers:**
-
-<table border=3>
-<tr>
-  <th style="width:20%;">Header name</th>
-  <th>Header value</th>
-  </tr>
-
-  <tr>
-  <td>Authorization</th>
-  <td>Access token generated for user.</td>
-  </tr>
-</table>
-
-**Request body:**
-
-Empty
-
-**Responses:**
-
-<table border=3>
-    <tr>
-  <th style="width:20%;">Status code</th>
-  <th>Response</th>
-  </tr>
-
-  <tr>
-  <td>200</th>
-  <td>Returns document URLs for animal's documents.</td>
-  </tr>
-
-  <tr>
-  <td>404</th>
-  <td>There is no such animal found.</td>
-  </tr>
-</table>
-
-***Example***
-
-**Request**
-```sh
-    curl -X 'GET' \
-    'api/v1/animals/123e4567-e89b-12d3-a456-426614174000/documents' \
-    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
-```
-
-**Response body**
-```sh
-[
-  {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "animalId": "987e6543-e21b-32d1-b654-426614174000",
-    "name": "Passport",
-    "documentURL": "/documents/animals/document1.pdf",
-    "uploadedAt": "28.09.2023 14:51:17"
-  },
-  {
-    "id": "223e4567-e89b-12d3-a456-426614174111",
-    "animalId": "987e6543-e21b-32d1-b654-426614174000",
-    "name": "Diploma",
-    "documentURL": "/documents/animals/document2.pdf",
-    "uploadedAt": "29.09.2023 10:35:12"
-  }
-]
-```
-
-***
-#### GET `api/v1/animals/{animalId}/pedigree`
-**Purpose:** Get animal pedigree by animal's ID. 
-
-**Request headers:**
-
-<table border=3>
-<tr>
-  <th style="width:20%;">Header name</th>
-  <th>Header value</th>
-  </tr>
-
-  <tr>
-  <td>Authorization</th>
-  <td>Access token generated for user.</td>
-  </tr>
-</table>
-
-**Request body:**
-
-Empty
-
-**Responses:**
-
-<table border=3>
-    <tr>
-  <th style="width:20%;">Status code</th>
-  <th>Response</th>
-  </tr>
-
-  <tr>
-  <td>200</th>
-  <td>Returns URL for animal's pedigree copy and GEDCOM file.</td>
-  </tr>
-
-  <tr>
-  <td>404</th>
-  <td>There is no such animal found.</td>
-  </tr>
-</table>
-
-***Example***
-
-**Request**
-```sh
-    curl -X 'GET' \
-    'api/v1/animals/123e4567-e89b-12d3-a456-426614174000/pedigree' \
-    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
-```
-
-**Response body**
-```sh
-  {
-    "id": "123e4567-e89b-12d3-a456-426614174000",
-    "animalId": "987e6543-e21b-32d1-b654-426614174000",
-    "name": "Passport",
-    "pedigreeURL": "/gedcoms/animals/123e4567-e89b-12d3-a456-426614174000.ged",
-    "copyURL": "/pedigrees/animals/123e4567-e89b-12d3-a456-426614174000_pedigree.pdf"
-  }
-```
-
-***
 #### POST `api/v1/animals` 
 
 **Purpose:** Create a new animal record and put it to the DB.
@@ -1190,5 +991,633 @@ Empty
 ```sh
     Empty
 ```
+
+### 4. Endpoint `api/v1/animals/{animalId}/photos`:
+
+***
+#### GET `api/v1/animals/{animalId}/photos`
+**Purpose:** Get animal photos by its ID. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>200</th>
+  <td>Returns photo URLs for animal's photos.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such animal found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'GET' \
+    'api/v1/animals/123e4567-e89b-12d3-a456-426614174000/photos' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "photoURL": "/images/animals/123e4567-e89b-12d3-a456-426614174000.jpg",
+    "uploadedAt": "28.09.2023 14:51:17"
+  },
+  {
+    "id": "223e4567-e89b-12d3-a456-426614174111",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "photoURL": "/images/animals/223e4567-e89b-12d3-a456-426614174111.jpg",
+    "uploadedAt": "29.09.2023 10:35:12"
+  }
+]
+```
+
+***
+#### GET `api/v1/animals/{animalId}/photos/{photoId}`
+**Purpose:** Get animal's photo by its ID. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>200</th>
+  <td>Returns one photo record object.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such animal or photo found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'GET' \
+    'api/v1/animals/987e6543-e21b-32d1-b654-426614174000/photos/123e4567-e89b-12d3-a456-426614174000' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+{
+  "id": "123e4567-e89b-12d3-a456-426614174000",
+  "animalId": "987e6543-e21b-32d1-b654-426614174000",
+  "photoURL": "/images/animals/123e4567-e89b-12d3-a456-426614174000.jpg",
+  "uploadedAt": "28.09.2023 14:51:17"
+}
+```
+
+
+***
+#### POST `api/v1/animals/{animalId}/photos`
+**Purpose:** Add new animal's photo. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>201</th>
+  <td>Returns uploaded photo's data.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such animal found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'POST' \
+    'api/v1/animals/987e6543-e21b-32d1-b654-426614174000/photos' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.
+    SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@path/to/your/picture.jpg" \
+    
+```
+
+**Response body**
+```sh
+{
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "photoURL": "/images/animals/123e4567-e89b-12d3-a456-426614174000.jpg",
+    "uploadedAt": "28.09.2023 14:51:17"
+}
+```
+
+***
+#### DELETE `api/v1/animals/{animalId}/photos/123e4567-e89b-12d3-a456-426614174000` 
+
+**Purpose:** Delete photo record from the DB.
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>204</th>
+  <td>Photo was deleted, nothing is returned.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>Photo or animal with specified ID was not found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'DELETE' \
+    'api/v1/animals/b3d4e5f6-7a8b-9c0d-1e2f-3g456h789i0j/photos/123e4567-e89b-12d3-a456-426614174000' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+    Empty
+```
+
+### 5. Endpoint `api/v1/animals/{animalId}/pedigree`:
+
+***
+#### GET `api/v1/animals/{animalId}/pedigree`
+**Purpose:** Get animal pedigree by animal's ID. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>200</th>
+  <td>Returns URL for animal's pedigree copy and GEDCOM file.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such animal found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'GET' \
+    'api/v1/animals/123e4567-e89b-12d3-a456-426614174000/pedigree' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "name": "Passport",
+    "pedigreeURL": "/gedcoms/animals/123e4567-e89b-12d3-a456-426614174000.ged",
+    "copyURL": "/pedigrees/animals/123e4567-e89b-12d3-a456-426614174000_pedigree.pdf"
+  }
+```
+
+***
+#### DELETE `api/v1/animals/{animalId}/pedigree` 
+
+**Purpose:** Delete pedigree from the DB.
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>204</th>
+  <td>Pedigree was deleted, nothing is returned.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>Pedigree or animal with specified ID was not found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'DELETE' \
+    'api/v1/animals/b3d4e5f6-7a8b-9c0d-1e2f-3g456h789i0j/pedigree' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+    Empty
+```
+
+### 6. Endpoint `api/v1/animals/{animalId}/documents`:
+
+***
+#### GET `api/v1/animals/{animalId}/documents`
+**Purpose:** Get animal documents by its ID. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>200</th>
+  <td>Returns document URLs for animal's documents.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such animal found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'GET' \
+    'api/v1/animals/987e6543-e21b-32d1-b654-426614174000/documents' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+[
+  {
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "name": "Passport",
+    "documentURL": "/documents/animals/document1.pdf",
+    "uploadedAt": "28.09.2023 14:51:17"
+  },
+  {
+    "id": "223e4567-e89b-12d3-a456-426614174111",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "name": "Diploma",
+    "documentURL": "/documents/animals/document2.pdf",
+    "uploadedAt": "29.09.2023 10:35:12"
+  }
+]
+```
+
+***
+#### GET `api/v1/animals/{animalId}/documents/{documentId}`
+**Purpose:** Get animal's photo by its ID. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>200</th>
+  <td>Returns one photo record object.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such animal or photo found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'GET' \
+    'api/v1/animals/987e6543-e21b-32d1-b654-426614174000/photos/223e4567-e89b-12d3-a456-426614174111' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+{
+    "id": "223e4567-e89b-12d3-a456-426614174111",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "name": "Diploma",
+    "documentURL": "/documents/animals/document2.pdf",
+    "uploadedAt": "29.09.2023 10:35:12"
+  }
+```
+
+
+***
+#### POST `api/v1/animals/{animalId}/documents`
+**Purpose:** Add new animal's document. 
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>201</th>
+  <td>Returns uploaded document's data.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>There is no such document found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'POST' \
+    'api/v1/animals/987e6543-e21b-32d1-b654-426614174000/documents' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.
+    SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+    -H "Content-Type: multipart/form-data" \
+    -F "file=@path/to/your/picture.jpg" \
+    -F "name=Diploma"\
+
+    
+```
+
+**Response body**
+```sh
+  {
+    "id": "223e4567-e89b-12d3-a456-426614174111",
+    "animalId": "987e6543-e21b-32d1-b654-426614174000",
+    "name": "Diploma",
+    "documentURL": "/documents/animals/document2.pdf",
+    "uploadedAt": "29.09.2023 10:35:12"
+  }
+```
+
+***
+#### DELETE `api/v1/animals/{animalId}/documents/{documentId}` 
+
+**Purpose:** Delete document record from the DB.
+
+**Request headers:**
+
+<table border=3>
+<tr>
+  <th style="width:20%;">Header name</th>
+  <th>Header value</th>
+  </tr>
+
+  <tr>
+  <td>Authorization</th>
+  <td>Access token generated for user.</td>
+  </tr>
+</table>
+
+**Request body:**
+
+Empty
+
+**Responses:**
+
+<table border=3>
+    <tr>
+  <th style="width:20%;">Status code</th>
+  <th>Response</th>
+  </tr>
+
+  <tr>
+  <td>204</th>
+  <td>Document was deleted, nothing is returned.</td>
+  </tr>
+
+  <tr>
+  <td>404</th>
+  <td>Document or animal with specified ID was not found.</td>
+  </tr>
+</table>
+
+***Example***
+
+**Request**
+```sh
+    curl -X 'DELETE' \
+    'api/v1/animals/b3d4e5f6-7a8b-9c0d-1e2f-3g456h789i0j/documents/123e4567-e89b-12d3-a456-426614174000' \
+    -H 'Authorization: eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyIjoxMjN9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c' \
+```
+
+**Response body**
+```sh
+    Empty
+```
+
 
 
