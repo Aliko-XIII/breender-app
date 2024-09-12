@@ -1,113 +1,201 @@
-import db from '../config/database';
-const query = db.query;
+import { query } from '../config/database';
+import crypto from 'crypto';
+import dotenv from 'dotenv';
+import { stringify } from 'querystring';
+
+dotenv.config();
+
+const secret: string = process.env.SECRET as string;
 
 /**
- * Class representing hosptial system's user.
+ * Interface with fields to filter users from DB
  */
-class User {
+export interface UserFilters {
+    /**
+     * part of user's name
+     */
+    name?: string;
+    /**
+     * part of user's phone number
+     */
+    phone?: string;
+    /**
+     * part of user's bio
+     */
+    bio?: string;
+}
 
+/**
+ * Interface with fields from user table in SQL DB.
+ */
+export interface UserRow {
+    user_id: string;
+    user_name: string;
+    phone: string;
+    user_bio?: string;
+    picture_url?: string;
+    hashed_password?: string;
+    salt?: string;
+}
+
+export interface IUser {
+    name: string,
+    phone: string,
+    bio: string,
+    picturePath: string,
+    id: string
+}
+
+/**
+ * Class representing system's user.
+ */
+export class User implements IUser {
+    /**
+     * The unique identifier for the user.
+     * @type {string}
+     */
     public id: string = '';
+
+    /**
+     * User's name.
+     * @type {string}
+     */
     public name: string;
-    public email: string;
+
+    /**
+     * User's phone number.
+     * @type {string}
+     */
+    public phone: string;
+
+    /**
+     * User's profile bio.
+     * @type {string}
+     */
+    public bio: string;
+
+    /**
+     * URL to user's profile picture.
+     * @type {string}
+     */
+    public picturePath: string;
 
     /**
      * Constructor for User class.
-     * @param {string} id - user's id (UUID)
-     * @param {string} name - user's name
-     * @param {string} email - user's email
+     * @param {string} id - User's id (UUID)
+     * @param {string} name - User's name
+     * @param {string} phone - User's phone
+     * @param {string} bio - User's profile description
+     * @param {string} picturePath - URL to user's profile picture
      */
-    constructor(name: string, email: string, id: string = '') {
+    constructor(name: string, phone: string, bio: string = '',
+        picturePath: string = '', id: string = '') {
         if (typeof name !== 'string' || name.length === 0)
-            throw new Error('First name is not valid.');
-        if (typeof id !== 'string') throw new Error('User id is not valid.');
+            throw new Error('Name is not valid.');
+        if (typeof phone !== 'string' || phone.length === 0)
+            throw new Error('Phone is not valid.');
+        if (typeof bio !== 'string')
+            throw new Error('Bio is not valid.');
+        if (typeof picturePath !== 'string')
+            throw new Error('Profile picture path is not valid.');
+        if (typeof id !== 'string')
+            throw new Error('User id is not valid.');
 
         this.name = name;
-        this.email = email;
+        this.phone = phone;
+        this.bio = bio;
+        this.picturePath = picturePath;
         this.id = id;
     }
 
-    // /**
-    //  * Converts rows of user data into User objects.
-    //  * 
-    //  * @param {Array} rows - The rows of user data.
-    //  * @returns {Promise<User[]>} - A promise that resolves to an array of User objects.
-    //  */
-    // static async getUsersFromData(rows: Array<Object>) {
-    //     return rows.map(row => {
-    //         const user = new User(row.first_name, row.last_name, row.phone, row.pass,
-    //             row.age, row.sex, row.user_id);
-    //         delete user.password;
-    //         return user;
-    //     });
-    // }
+    /**
+     * Converts rows of user data into User objects.
+     * 
+     * @param {Array<UserRow>} rows - The rows of user data.
+     * 
+     * @returns {Array<User>} - A promise that resolves to an array of User objects.
+     */
+    static parseUserRows(rows: Array<UserRow>): Array<User> {
+        return rows.map(row => new User(row.user_name, row.phone,
+            row.user_bio, row.picture_url, row.user_id));
+    }
 
-    // /**
-    //  * Retrieves all users from the database with optional filtering.
-    //  * 
-    //  * @param {Object} filters - The filters to apply.
-    //  * @param {string} [filters.firstName] - Part of users' first name.
-    //  * @param {string} [filters.lastName] - Part of users' last name.
-    //  * @param {number} [filters.minAge] - Bottom border for users' age.
-    //  * @param {number} [filters.maxAge] - Top border for users' age.
-    //  * @param {string} [filters.sex] - User's sex.
-    //  * @param {string} [filters.phone] - Part of users' phone number.
-    //  * @returns {Promise<User[]>} - A promise that resolves to an array of User objects.
-    //  */
-    // static async getUsers({ firstName, lastName, minAge, maxAge, sex, phone } = {}) {
-    //     let queryStr = 'SELECT user_id, first_name, last_name, age, sex, pass, phone FROM users';
-    //     const conditions = [];
-    //     if (firstName) conditions.push(`first_name ILIKE '%${firstName}%'`);
-    //     if (lastName) conditions.push(`last_name ILIKE '%${lastName}%'`);
-    //     if (minAge) conditions.push(`age >= ${minAge}`);
-    //     if (maxAge) conditions.push(`age <= ${maxAge}`);
-    //     if (sex) conditions.push(`sex = '${sex}'`);
-    //     if (phone) conditions.push(`phone ILIKE '%${phone}%'`);
+    /**
+     * Retrieves all users from the database with optional filtering.
+     * 
+     * @param {Object} [filters] - Optional filters to apply to the query.
+     * @param {string} [filters.name] - Filter by user's name (case-insensitive).
+     * @param {string} [filters.phone] - Filter by user's phone number (case-insensitive).
+     * @param {string} [filters.bio] - Filter by user's bio (case-insensitive).
+     * 
+     * @returns {Promise<User[]>} A promise that resolves to an array of `User` objects.
+     * 
+     * @throws {Error} Will throw an error if the database query fails.
+     */
+    static async getUsers({ name, phone, bio }: UserFilters = {}): Promise<Array<User>> {
+        let queryStr = `SELECT user_id, user_name, phone, 
+        user_bio, picture_url FROM users`;
 
-    //     if (conditions.length > 0) queryStr += ` WHERE ${conditions.join(' AND ')}`;
+        const conditions = [];
+        if (name) conditions.push(`user_name ILIKE '%${name}%'`);
+        if (phone) conditions.push(`phone ILIKE '%${phone}%'`);
+        if (bio) conditions.push(`user_bio ILIKE '%${bio}%'`);
 
-    //     const res = await query(queryStr);
-    //     return await this.getUsersFromData(res.rows);
-    // }
+        if (conditions.length > 0) queryStr += ` WHERE ${conditions.join(' AND ')}`;
 
-    // /**
-    //  * Retrieves multiple users by their IDs.
-    //  * 
-    //  * @param {string[]} ids - The user IDs.
-    //  * @returns {Promise<User[]>} - A promise that resolves to an array of User objects.
-    //  */
-    // static async getUsersByIds(ids) {
-    //     const idArr = ids.map(id => `'${id.toString()}'`).join(',');
-    //     const res = await query(`SELECT user_id, first_name, last_name, age, sex, pass, phone
-    //         FROM users WHERE user_id IN (${idArr});`);
-    //     return User.getUsersFromData(res.rows);
-    // }
+        const res = await query(queryStr);
+        return User.parseUserRows(res.rows);
+    }
 
-    // /**
-    //  * Retrieves a user by their ID.
-    //  * 
-    //  * @param {string} id - The user ID.
-    //  * @returns {Promise<User>} - A promise that resolves to a User object.
-    //  */
-    // static async getUserById(id) {
-    //     return (await User.getUsersByIds([id]))[0];
-    // }
+    /**
+     * Retrieves multiple users by their IDs.
+     * @param {string[]} ids - An array of user IDs. 
+     * 
+     * @returns {Promise<Array<User>>} A promise that resolves to an array of `User` objects.
+     * 
+     * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
+     */
+    static async getUsersByIds(ids: Array<string>): Promise<Array<User>> {
+        const idArr = ids.map(id => `'${id.toString()}'`).join(',');
+        const res = await query(`SELECT user_id, user_name, phone, user_bio, picture_url
+            FROM users WHERE user_id IN (${idArr});`);
+        return User.parseUserRows(res.rows);
+    }
 
-    // /**
-    //  * Retrieves a user by their phone number.
-    //  * 
-    //  * @param {string} phone - The user's phone number.
-    //  * @returns {Promise<User>} - A promise that resolves to a User object.
-    //  */
-    // static async getUserByPhone(phone) {
-    //     const res = await query(`SELECT user_id, first_name, last_name, age, sex, pass, phone
-    //         FROM users WHERE phone = '${phone}';`);
-    //     return (await this.getUsersFromData(res.rows))[0];
-    // }
+    /**
+     * Retrieves a user by their ID.
+     * 
+     * @param {string} id - The user ID.
+     * 
+     * @returns {Promise<User>} - A promise that resolves to a User object.
+     * 
+     * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
+     */
+    static async getUserById(id: string): Promise<User> {
+        return (await User.getUsersByIds([id]))[0];
+    }
 
-    // static async getPassword(id) {
-    //     const res = await query(`SELECT pass FROM users WHERE user_id = '${id}';`);
-    //     return res.rows[0].pass;
-    // }
+    /**
+     * Retrieves a user by their phone number.
+     * 
+     * @param {string} phone - The user's phone number.
+     * 
+     * @returns {Promise<User>} - A promise that resolves to a User object.
+     * 
+     * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
+     */
+    static async getUserByPhone(phone: string): Promise<User> {
+        const res = await query(`SELECT user_id, user_name, phone, user_bio, picture_url
+            FROM users WHERE phone = '${phone}';`);
+        return (User.parseUserRows(res.rows))[0];
+    }
+
+    static async checkPassword(id: string): Promise<boolean> {
+        const res = await query(`SELECT hashed_password, salt 
+            FROM users WHERE user_id = '${id}';`);
+        const hashedPassword = res.rows[0].hashed_password;
+        return res.rows[0].pass;
+    }
 
     // /**
     //  * Updates a user's information in the database.
@@ -143,30 +231,43 @@ class User {
     //     return updated;
     // }
 
-    // /**
-    //  * Inserts a new user into the database.
-    //  * 
-    //  * @returns {Promise<void>}
-    //  */
-    // async insertUser() {
-    //     const res = await query(`INSERT INTO users
-    //         (first_name, last_name, age, sex, pass, phone)
-    //     VALUES('${this.firstName}', '${this.lastName}', ${this.age},
-    //         '${this.sex}', '${this.password}', '${this.phone}') 
-    //         RETURNING user_id; `);
-    //     this.id = res.rows[0].user_id;
-    //     return { id: this.id };
-    // }
+    protected static generateSaltedHash(password: string): { hash: string, salt: string } {
+        if (typeof secret != 'string' || secret == 'undefined') throw new Error('Failed to load secret');
+        const salt = crypto.randomBytes(16).toString('hex');
+        const hash = crypto.createHmac('sha256', secret)
+            .update(password + salt).digest('hex');;
+        return { hash, salt };
+    }
 
-    // /**
-    //  * Deletes the user from the database.
-    //  * 
-    //  * @returns {Promise<void>}
-    //  */
-    // async deleteUser() {
-    //     await query(`DELETE FROM users WHERE user_id = '${this.id}' RETURNING *; `);
-    // }
+    /**
+     * Inserts a new user into the database.
+     * 
+     * @param {string} password - The user's password.
+     * 
+     * @returns {Promise<Object>}
+     * 
+     * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
+     */
+    async insertUser(password: string): Promise<{ id: string }> {
+        const { salt, hash } = User.generateSaltedHash(password);
+
+        const res = await query(`INSERT INTO users
+            (user_name, phone, user_bio, picture_url, hashed_password, salt)
+        VALUES('${this.name}', '${this.phone}', ${this.bio},
+            '${this.picturePath}', '${hash}', '${salt}') 
+            RETURNING user_id; `);
+        this.id = res.rows[0].user_id;
+        return { id: this.id };
+    }
+
+    /**
+     * Deletes the user from the database.
+     * 
+     * @returns {Promise<void>}
+     * 
+     * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
+     */
+    async deleteUser(): Promise<void> {
+        await query(`DELETE FROM users WHERE user_id = '${this.id}' RETURNING *; `);
+    }
 }
-
-module.exports = { User };
-
