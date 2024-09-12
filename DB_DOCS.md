@@ -30,11 +30,11 @@ This table stores user information including name, profile picture, contact info
   
 - **hashed_password** (`character varying`): 
   - Description: User's hashed password.
-  - Constraints: Not Null, Unique, Check (char_length(hashed_password) > 0)
+  - Constraints: Not Null, Check (char_length(hashed_password) > 0)
   
 - **salt** (`character varying`): 
   - Description: User's unique salt for password hashing.
-  - Constraints: Not Null, Unique, Check (char_length(salt) > 0)
+  - Constraints: Not Null, Check (char_length(salt) > 0)
 
 ## Table: refresh_tokens
 
