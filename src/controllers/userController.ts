@@ -1,4 +1,4 @@
-// import { User } from '../models/User';
+import { User } from '../models/User';
 
 // /**
 //  * Handles the request to get a user by their ID.
@@ -90,11 +90,13 @@
 //         res.status(500).json({ error: 'An error occurred while updating the user' });
 //     }
 // };
-// 
-// module.exports = {
-//     getUser,
-//     createUser,
-//     deleteUser,
-//     getAllUsers,
-//     updateUser
-// };
+
+const userController = {
+    // getUser,
+    // createUser,
+    // deleteUser,
+    // getAllUsers,
+    // updateUser
+}
+
+export default userController;
