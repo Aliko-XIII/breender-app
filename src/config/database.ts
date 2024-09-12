@@ -1,8 +1,8 @@
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import { Client } from 'pg';
+import { Client, QueryResult } from 'pg';
 
-const client = new Client({
+export const client = new Client({
     user: 'postgres',
     host: 'localhost',
     database: 'postgres',
@@ -14,7 +14,7 @@ client.connect()
     .then(() => console.log('Connected to the PostgreSQL'))
     .catch((err: Error) => console.error('Connection error', err.stack));
 
-function query(queryStr: string) {
+export function query(queryStr: string): Promise<QueryResult<any>> {
     try {
         return client.query(queryStr);
     } catch (err: any) {
@@ -23,4 +23,3 @@ function query(queryStr: string) {
     }
 }
 
-export default { client, query };
