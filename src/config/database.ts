@@ -5,7 +5,7 @@ import { Client, QueryResult } from 'pg';
 export const client = new Client({
     user: 'postgres',
     host: 'localhost',
-    database: 'postgres',
+    database: 'smart_breeder',
     password: 'postgres',
     port: 5432,
 });
