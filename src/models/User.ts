@@ -92,7 +92,10 @@ export class User implements IUser {
         picturePath: string = '', id: string = '') {
         if (typeof name !== 'string' || name.length === 0)
             throw new Error('Name is not valid.');
-        if (typeof phone !== 'string' || phone.length === 0)
+        if (typeof phone !== 'string')
+            throw new Error('Phone is not a string.');
+        phone = phone.replace(/\D/g, '');
+        if (phone.length < 10)
             throw new Error('Phone is not valid.');
         if (typeof bio !== 'string')
             throw new Error('Bio is not valid.');
@@ -190,54 +193,57 @@ export class User implements IUser {
         return (User.parseUserRows(res.rows))[0];
     }
 
-    static async checkPassword(id: string): Promise<boolean> {
+    static async checkAuth(phone: string, password: string): Promise<boolean> {
         const res = await query(`SELECT hashed_password, salt 
-            FROM users WHERE user_id = '${id}';`);
+            FROM users WHERE phone = '${phone}';`);
+        if (res.rowCount == 0) throw new Error('Phone is not valid.');
         const hashedPassword = res.rows[0].hashed_password;
-        return res.rows[0].pass;
+        const salt = res.rows[0].salt;
+        const saltedPassword = password + salt;
+
+        return hashedPassword == this.hashPassword(saltedPassword);
     }
 
-    // /**
-    //  * Updates a user's information in the database.
-    //  * 
-    //  * @param {string} id - The user ID.
-    //  * @param {Object} updates - The fields to update.
-    //  * @param {string} [updates.firstName] - The new first name.
-    //  * @param {string} [updates.lastName] - The new last name.
-    //  * @param {number} [updates.age] - The new age.
-    //  * @param {string} [updates.sex] - The new sex.
-    //  * @param {string} [updates.pass] - The new password.
-    //  * @param {string} [updates.phone] - The new phone number.
-    //  */
-    // static async updateUser(id, { firstName, lastName, age, sex, pass, phone }) {
-    //     if (!id) throw new Error('There is no id passed to update user record.');
-    //     const hasParams = Object.values({ firstName, lastName, age, sex, pass, phone })
-    //         .some(value => value !== undefined);
-    //     if (!hasParams) throw new Error('There are no params to update.');
-    //     let queryStr = `UPDATE users SET\n`;
-    //     const updates = [];
-    //     if (firstName) updates.push(`first_name = '${firstName}'`);
-    //     if (lastName) updates.push(`last_name = '${lastName}'`);
-    //     if (age) updates.push(`age = ${age}`);
-    //     if (sex) updates.push(`sex = '${sex}'`);
-    //     if (pass) updates.push(`pass = '${pass}'`);
-    //     if (phone) updates.push(`phone = '${phone}'`);
-    //     if (updates.length > 0) queryStr += ` ${updates.join(', ')} `;
+    /**
+     * Updates a user's information in the database.
+     * 
+     * @param {Object} updates - The fields to update.
+     * @param {string} [updates.name] - The new first name.
+     * @param {string} [updates.phone] - The new phone number.
+     * 
+     * @returns {User} - Updated user record.
+     */
+    async updateUser({ name, phone }: { name?: string; phone?: string; }): Promise<User> {
+        if (!this.id) throw new Error('There is no id passed to update user record.');
+        const hasParams = Object.values({ name, phone })
+            .some(value => value !== undefined);
+        if (!hasParams) throw new Error('There are no params to update.');
+        let queryStr = `UPDATE users SET\n`;
+        const updates = [];
+        if (name) updates.push(`user_name = '${name}'`);
+        if (phone) updates.push(`phone = '${phone}'`);
+        if (updates.length > 0) queryStr += ` ${updates.join(', ')} `;
 
-    //     queryStr += `WHERE user_id = '${id}' RETURNING *; `;
-    //     const res = await query(queryStr);
-    //     const updated = (await User.getUsersFromData(res.rows))[0];
-    //     delete updated.password;
-    //     return updated;
-    // }
+        queryStr += `WHERE user_id = '${this.id}' RETURNING *; `;
+        const res = await query(queryStr);
+        const updated = User.parseUserRows(res.rows)[0];
+        return updated;
+    }
+
+    protected static hashPassword(password: string): string {
+        if (typeof secret != 'string' || secret == 'undefined') throw new Error('Failed to load secret');
+        const hash = crypto.createHmac('sha256', secret)
+            .update(password).digest('hex');
+        return hash;
+    }
 
     protected static generateSaltedHash(password: string): { hash: string, salt: string } {
-        if (typeof secret != 'string' || secret == 'undefined') throw new Error('Failed to load secret');
         const salt = crypto.randomBytes(16).toString('hex');
-        const hash = crypto.createHmac('sha256', secret)
-            .update(password + salt).digest('hex');;
+        const saltedPassword = password + salt;
+        const hash = this.hashPassword(saltedPassword);
         return { hash, salt };
     }
+
 
     /**
      * Inserts a new user into the database.
@@ -253,7 +259,7 @@ export class User implements IUser {
 
         const res = await query(`INSERT INTO users
             (user_name, phone, user_bio, picture_url, hashed_password, salt)
-        VALUES('${this.name}', '${this.phone}', ${this.bio},
+            VALUES('${this.name}', '${this.phone}', '${this.bio}',
             '${this.picturePath}', '${hash}', '${salt}') 
             RETURNING user_id; `);
         this.id = res.rows[0].user_id;
@@ -263,11 +269,13 @@ export class User implements IUser {
     /**
      * Deletes the user from the database.
      * 
-     * @returns {Promise<void>}
+     * @returns {Promise<User>}
      * 
      * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
      */
-    async deleteUser(): Promise<void> {
-        await query(`DELETE FROM users WHERE user_id = '${this.id}' RETURNING *; `);
+    async deleteUser(): Promise<User> {
+        const res = await query(`DELETE FROM users WHERE user_id = '${this.id}' RETURNING *; `);
+        const deleted = User.parseUserRows(res.rows)[0];
+        return deleted;
     }
 }
