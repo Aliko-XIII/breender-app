@@ -1,11 +1,45 @@
 import { query } from '../config/database';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
-import { stringify } from 'querystring';
 
 dotenv.config();
 
 const secret: string = process.env.SECRET as string;
+
+export interface ProfileRow {
+    user_bio?: string;
+    picture_url?: string;
+}
+
+/**
+ * Class representing a user's profile.
+ */
+export class UserProfile {
+    /**
+     * User's profile bio.
+     * @type {string}
+     */
+    public bio: string;
+
+    /**
+     * URL to user's profile picture.
+     * @type {string}
+     */
+    public picturePath: string;
+
+    /**
+     * Constructor for UserProfile class.
+     * @param {string} bio - User's profile bio
+     * @param {string} picturePath - URL to user's profile picture
+     */
+    constructor(bio: string = '', picturePath: string = '') {
+        if (typeof bio !== 'string') throw new Error('Bio is not valid.');
+        if (typeof picturePath !== 'string') throw new Error('Profile picture path is not valid.');
+
+        this.bio = bio;
+        this.picturePath = picturePath;
+    }
+}
 
 /**
  * Interface with fields to filter users from DB
@@ -28,12 +62,10 @@ export interface UserFilters {
 /**
  * Interface with fields from user table in SQL DB.
  */
-export interface UserRow {
+export interface UserRow extends ProfileRow {
     user_id: string;
     user_name: string;
     phone: string;
-    user_bio?: string;
-    picture_url?: string;
     hashed_password?: string;
     salt?: string;
 }
@@ -41,9 +73,8 @@ export interface UserRow {
 export interface IUser {
     name: string,
     phone: string,
-    bio: string,
-    picturePath: string,
-    id: string
+    id: string,
+    profile: UserProfile
 }
 
 /**
@@ -69,27 +100,22 @@ export class User implements IUser {
     public phone: string;
 
     /**
-     * User's profile bio.
-     * @type {string}
+     * User's profile data.
+     * @type {UserProfile}
      */
-    public bio: string;
-
-    /**
-     * URL to user's profile picture.
-     * @type {string}
-     */
-    public picturePath: string;
+    public profile: UserProfile;
 
     /**
      * Constructor for User class.
      * @param {string} id - User's id (UUID)
      * @param {string} name - User's name
      * @param {string} phone - User's phone
-     * @param {string} bio - User's profile description
-     * @param {string} picturePath - URL to user's profile picture
+     * @param {{ bio; picturePath; }} profile - User's profile data
+     * @param {string} profile.bio - User's profile description
+     * @param {string} profile.picturePath - URL to user's profile picture
      */
-    constructor(name: string, phone: string, bio: string = '',
-        picturePath: string = '', id: string = '') {
+    constructor(name: string, phone: string,
+        profile: UserProfile = new UserProfile(), id: string = '') {
         if (typeof name !== 'string' || name.length === 0)
             throw new Error('Name is not valid.');
         if (typeof phone !== 'string')
@@ -97,17 +123,12 @@ export class User implements IUser {
         phone = phone.replace(/\D/g, '');
         if (phone.length < 10)
             throw new Error('Phone is not valid.');
-        if (typeof bio !== 'string')
-            throw new Error('Bio is not valid.');
-        if (typeof picturePath !== 'string')
-            throw new Error('Profile picture path is not valid.');
         if (typeof id !== 'string')
             throw new Error('User id is not valid.');
 
         this.name = name;
         this.phone = phone;
-        this.bio = bio;
-        this.picturePath = picturePath;
+        this.profile = profile;
         this.id = id;
     }
 
@@ -120,7 +141,7 @@ export class User implements IUser {
      */
     static parseUserRows(rows: Array<UserRow>): Array<User> {
         return rows.map(row => new User(row.user_name, row.phone,
-            row.user_bio, row.picture_url, row.user_id));
+            new UserProfile(row.user_bio, row.picture_url), row.user_id));
     }
 
     /**
@@ -136,13 +157,16 @@ export class User implements IUser {
      * @throws {Error} Will throw an error if the database query fails.
      */
     static async getUsers({ name, phone, bio }: UserFilters = {}): Promise<Array<User>> {
-        let queryStr = `SELECT user_id, user_name, phone, 
-        user_bio, picture_url FROM users`;
+        let queryStr = `SELECT 
+            u.user_id, u.user_name, u.phone, 
+            up.user_bio, up.picture_url
+            FROM users u
+            INNER JOIN user_profiles up 
+            ON u.user_id = up.user_id`;
 
         const conditions = [];
         if (name) conditions.push(`user_name ILIKE '%${name}%'`);
         if (phone) conditions.push(`phone ILIKE '%${phone}%'`);
-        if (bio) conditions.push(`user_bio ILIKE '%${bio}%'`);
 
         if (conditions.length > 0) queryStr += ` WHERE ${conditions.join(' AND ')}`;
 
@@ -160,8 +184,13 @@ export class User implements IUser {
      */
     static async getUsersByIds(ids: Array<string>): Promise<Array<User>> {
         const idArr = ids.map(id => `'${id.toString()}'`).join(',');
-        const res = await query(`SELECT user_id, user_name, phone, user_bio, picture_url
-            FROM users WHERE user_id IN (${idArr});`);
+        const res = await query(`SELECT 
+            u.user_id, u.user_name, u.phone, 
+            up.user_bio, up.picture_url
+            FROM users u
+            INNER JOIN user_profiles up 
+            ON u.user_id = up.user_id
+            WHERE u.user_id IN (${idArr});`);
         return User.parseUserRows(res.rows);
     }
 
@@ -188,8 +217,13 @@ export class User implements IUser {
      * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
      */
     static async getUserByPhone(phone: string): Promise<User> {
-        const res = await query(`SELECT user_id, user_name, phone, user_bio, picture_url
-            FROM users WHERE phone = '${phone}';`);
+        const res = await query(`SELECT 
+            u.user_id, u.user_name, u.phone, 
+            up.user_bio, up.picture_url
+            FROM users u
+            INNER JOIN user_profiles up 
+            ON u.user_id = up.user_id
+            WHERE u.phone = '${phone}';`);
         return (User.parseUserRows(res.rows))[0];
     }
 
@@ -231,7 +265,8 @@ export class User implements IUser {
     }
 
     protected static hashPassword(password: string): string {
-        if (typeof secret != 'string' || secret == 'undefined') throw new Error('Failed to load secret');
+        if (typeof secret != 'string' || secret == 'undefined')
+            throw new Error('Failed to load secret');
         const hash = crypto.createHmac('sha256', secret)
             .update(password).digest('hex');
         return hash;
@@ -250,26 +285,29 @@ export class User implements IUser {
      * 
      * @param {string} password - The user's password.
      * 
-     * @returns {Promise<Object>}
+     * @returns {Promise<{id: string}>} - Object with the user's id
      * 
      * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
      */
     async insertUser(password: string): Promise<{ id: string }> {
         const { salt, hash } = User.generateSaltedHash(password);
 
-        const res = await query(`INSERT INTO users
-            (user_name, phone, user_bio, picture_url, hashed_password, salt)
-            VALUES('${this.name}', '${this.phone}', '${this.bio}',
-            '${this.picturePath}', '${hash}', '${salt}') 
+        const resUser = await query(`INSERT INTO users
+            (user_name, phone, hashed_password, salt)
+            VALUES('${this.name}', '${this.phone}', '${hash}', '${salt}') 
             RETURNING user_id; `);
-        this.id = res.rows[0].user_id;
+        this.id = resUser.rows[0].user_id;
+        const resProfile = await query(`INSERT INTO user_profiles
+            (user_id, user_bio, picture_url)
+            VALUES('${this.id}', '${this.profile.bio}', '${this.profile.picturePath}') 
+            RETURNING user_id; `);
         return { id: this.id };
     }
 
     /**
      * Deletes the user from the database.
      * 
-     * @returns {Promise<User>}
+     * @returns {Promise<User>} - Deleted user.
      * 
      * @throws {Error} Will throw an error if the database query fails or if an invalid ID format is provided.
      */

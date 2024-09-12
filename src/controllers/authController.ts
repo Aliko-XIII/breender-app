@@ -10,10 +10,10 @@ const jwtService = JwtService.getInstance();
  */
 async function loginUser(req: Request, res: Response) {
     try {
-        const user = await User.getUserByPhone(req.body.phone);
-        const isPassValid = await User.checkPassword(req.body.password);
-        if (!isPassValid) return res.status(400).send('Phone or password is not correct');
+        const authValid = await User.checkAuth(req.body.phone, req.body.password);
+        if (!authValid) return res.status(400).send('Phone or password is not correct');
 
+        const user = await User.getUserByPhone(req.body.phone);
         const accessToken = jwtService.createAccessToken(user);
         const refreshToken = jwtService.createRefreshToken(user);
 

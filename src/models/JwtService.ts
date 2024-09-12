@@ -42,7 +42,8 @@ export class JwtService {
      * @returns {boolean} - true if the signature is valid, false otherwise
      */
     validateSignature(token: string): boolean {
-        if (typeof this.secret != 'string' || this.secret == 'undefined') throw new Error('Failed to load secret');
+        if (typeof this.secret != 'string' || this.secret == 'undefined')
+            throw new Error('Failed to load secret');
         const [headerEncoded, payloadEncoded, signature] = token.split('.');
 
         const testSignature = crypto.createHmac('sha256', this.secret)
@@ -70,13 +71,14 @@ export class JwtService {
             exp: currentTime + expInterval,
             name: user.name,
             phone: user.phone,
-            bio: user.bio,
-            picturePath: user.picturePath,
+            profile: user.profile,
             id: user.id
         }
 
-        const accessHeaderEncoded = Buffer.from(JSON.stringify(accessHeader)).toString('base64url');
-        const accessPayloadEncoded = Buffer.from(JSON.stringify(accessPayload)).toString('base64url');
+        const accessHeaderEncoded = Buffer.from(
+            JSON.stringify(accessHeader)).toString('base64url');
+        const accessPayloadEncoded = Buffer.from(
+            JSON.stringify(accessPayload)).toString('base64url');
         const signature = crypto.createHmac('sha256', this.secret)
             .update(accessHeaderEncoded + '.' + accessPayloadEncoded).digest('base64url');
 
