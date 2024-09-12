@@ -163,7 +163,7 @@ export class JwtService {
     async updateRefresh(userId: string, refreshToken: string): Promise<void> {
         const expires = this.getTokenPayload(refreshToken).exp;
         const res = await query(`INSERT INTO refresh_tokens (user_id, refresh_token, expires_at)
-            VALUES ('${userId}', '${refreshToken}', '${expires}')
+            VALUES ('${userId}', '${refreshToken}', ${expires})
             ON CONFLICT (user_id)
             DO UPDATE SET refresh_token = EXCLUDED.refresh_token, expires_at = EXCLUDED.expires_at;`);
     }
@@ -177,7 +177,7 @@ export class JwtService {
     async isRefreshValid(userId: string, refreshToken: string): Promise<boolean> {
         const res = await query(`SELECT user_id, refresh_token, expires_at FROM refresh_tokens
         WHERE user_id = '${userId}'
-        AND expires_at > NOW();`);
+        AND expires_at > EXTRACT(EPOCH FROM NOW());`);
         return res.rows.length !== 0 && refreshToken === res.rows[0].refresh_token;
     }
 

@@ -10,25 +10,24 @@ const jwtService = JwtService.getInstance();
  */
 async function loginUser(req: Request, res: Response) {
     try {
-        const user = await User.getUserByPhone(req.body['phone']);
-        const isPassValid = await User.checkPassword(req.body['password']);
-        if (!isPassValid)
-            return res.status(400).send('Phone or password is not correct');
+        const user = await User.getUserByPhone(req.body.phone);
+        const isPassValid = await User.checkPassword(req.body.password);
+        if (!isPassValid) return res.status(400).send('Phone or password is not correct');
 
-        const access_token = jwtService.createAccessToken(user);
-        const refresh_token = jwtService.createRefreshToken(user);
+        const accessToken = jwtService.createAccessToken(user);
+        const refreshToken = jwtService.createRefreshToken(user);
 
-        await jwtService.updateRefresh(user.id, refresh_token);
+        await jwtService.updateRefresh(user.id, refreshToken);
 
         res.status(200).send({
-            'access_token': access_token,
-            'refresh_token': refresh_token
+            'access_token': accessToken,
+            'refresh_token': refreshToken
         });
     } catch (err: unknown) {
         if (err instanceof Error) {
             res.status(500).send({ error: err.message });
         } else {
-            // handle other errors
+            res.status(500).send({ error: 'Unknown error occured.' });
         }
 
     }
@@ -52,7 +51,7 @@ async function refreshAccessToken(req: Request, res: Response) {
         if (err instanceof Error) {
             res.status(500).send({ error: err.message });
         } else {
-            // handle other errors
+            res.status(500).send({ error: 'Unknown error occured.' });
         }
 
     }
@@ -62,14 +61,17 @@ async function refreshAccessToken(req: Request, res: Response) {
  * Middleware to validate the authorization token
  */
 async function validateToken(req: Request, res: Response, next: NextFunction) {
-    const isValid = req.headers.authorization
-        && jwtService.validateSignature(req.headers.authorization)
-        && !jwtService.isTokenExpired(req.headers.authorization);
-
-    if (isValid) {
-        next();
-    } else {
-        res.status(500).send('Authorization is not valid!');
+    try {
+        const isValid = req.headers.authorization
+            && jwtService.validateSignature(req.headers.authorization)
+            && !jwtService.isTokenExpired(req.headers.authorization);
+        isValid ? next() : res.status(500).send('Authorization is not valid!');
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: 'Unknown error occured.' });
+        }
     }
 }
 
