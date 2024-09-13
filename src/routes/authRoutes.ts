@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.post('/login', authorizationController.loginUser);
 
-// router.post('/register', userController.createUser);
+router.post('/register', userController.createUser);
 
 router.post('/refresh', authorizationController.refreshAccessToken);
 

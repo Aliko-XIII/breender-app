@@ -3,6 +3,10 @@ import express from 'express';
 require('dotenv').config();
 import path from 'path';
 
+//Routes imports
+import userRoutes from './routes/userRoutes';
+import authRoutes from './routes/authRoutes';
+
 //App setup 
 const app = express();
 app.use(express.json());
@@ -18,6 +22,10 @@ app.use((req, res, next) => {
     }
     next();
   });
+
+
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
 
 
 //Server listening port

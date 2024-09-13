@@ -1,102 +1,117 @@
-import { User } from '../models/User';
+import { User, UserFilters, UserProfile } from '../models/User';
+import { Request, Response, NextFunction } from 'express';
 
-// /**
-//  * Handles the request to get a user by their ID.
-//  */
-// const getUser = async (req, res) => {
-//     try {
-//         const user = await User.getUserById(req.params.id);
-//         if (!user) return res.status(404).json({ error: 'There is no such user found.' });
-//         res.status(200).json(user);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+/**
+ * Handles the request to get a user by their ID.
+ */
+const getUser = async (req: Request, res: Response) => {
+    try {
+        const user = await User.getUserById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'There is no such user found.' });
+        res.status(200).json(user);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: 'Unknown error occured.' });
+        }
+    }
+};
 
-// /**
-//  * Handles the request to get all users with optional filtering.
-//  */
-// const getAllUsers = async (req, res) => {
-//     try {
-//         const { firstName, lastName, minAge, maxAge, sex, phone } = req.query;
-//         const filters = {
-//             firstName: firstName && firstName.length > 0 ? firstName : undefined,
-//             lastName: lastName && lastName.length > 0 ? lastName : undefined,
-//             minAge: minAge ? parseInt(minAge) : undefined,
-//             maxAge: maxAge ? parseInt(maxAge) : undefined,
-//             sex: sex == 'M' || sex == 'F' ? sex : undefined,
-//             phone: phone && phone.length > 0 ? phone : undefined,
-//         };
-//         const users = await User.getUsers(filters);
-//         res.status(200).json(users);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+/**
+ * Handles the request to get all users with optional filtering.
+ */
+const getAllUsers = async (req: Request, res: Response) => {
+    try {
+        const { name, phone } = req.query;
+        const filters: UserFilters = {
+            name: typeof name === 'string' && name.length > 0 ? name : undefined,
+            phone: typeof phone === 'string' && phone.length > 0 ? phone : undefined,
+        };
+        const users = await User.getUsers(filters);
+        res.status(200).json(users);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: 'Unknown error occured.' });
+        }
+    }
+};
 
-// /**
-//  * Handles the request to create a new user.
-//  */
-// const createUser = async (req, res) => {
-//     try {
-//         const { firstName, lastName, phone, password, age, sex } = req.body;
-//         const user = new User(firstName, lastName, phone, password, age, sex);
-//         if (!user) return res.status(400).json(
-//             { error: 'User object misses fields or their data is invalid.' });
+/**
+ * Handles the request to create a new user.
+ */
+const createUser = async (req: Request, res: Response) => {
+    try {
+        const { name, phone, password, bio } = req.body;
+        const profile = new UserProfile(bio);
+        const user = new User(name, phone, profile);
+        if (!user) return res.status(400).json(
+            { error: 'User object misses fields or their data is invalid.' });
 
-//         await user.insertUser();
-//         res.status(201).json(user);
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+        await user.insertUser(password);
+        res.status(201).json(user);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: 'Unknown error occured.' });
+        }
+    }
+};
 
-// /**
-//  * Handles the request to delete a user by their ID.
-//  */
-// const deleteUser = async (req, res) => {
-//     try {
-//         const user = await User.getUserById(req.params.id);
-//         if (user) {
-//             await user.deleteUser();
-//             res.sendStatus(204);
-//         } else {
-//             res.status(404).json({ error: 'User not found.' });
-//         }
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// };
+/**
+ * Handles the request to delete a user by their ID.
+ */
+const deleteUser = async (req: Request, res: Response) => {
+    try {
+        const user = await User.getUserById(req.params.id);
+        if (user) {
+            await user.deleteUser();
+            res.sendStatus(204);
+        } else {
+            res.status(404).json({ error: 'User not found.' });
+        }
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: 'Unknown error occured.' });
+        }
+    }
+};
 
-// /**
-//  * Handles the request to update a user by their ID.
-//  */
-// const updateUser = async (req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const { firstName, lastName, phone, password, age, sex } = req.body;
-//         if (!id) return res.status(400).json({ error: 'User ID is required' });
+/**
+ * Handles the request to update a user by their ID.
+ */
+const updateUser = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { name, phone } = req.body;
+        if (!id) return res.status(400).json({ error: 'User ID is required' });
 
-//         if (firstName && typeof firstName !== 'string') return res.status(400).json({ error: 'Invalid first name' });
-//         if (lastName && typeof lastName !== 'string') return res.status(400).json({ error: 'Invalid last name' });
-//         if (phone && typeof phone !== 'string') return res.status(400).json({ error: 'Invalid phone number' });
-//         if (password && typeof password !== 'string') return res.status(400).json({ error: 'Invalid password' });
-//         if (age && (typeof age !== 'number' || age <= 0)) return res.status(400).json({ error: 'Invalid age' });
-//         if (sex && !['F', 'M'].includes(sex)) return res.status(400).json({ error: 'Invalid sex' });
+        if (name && typeof name !== 'string') return res.status(400).json({ error: 'Invalid first name' });
+        if (phone && typeof phone !== 'string') return res.status(400).json({ error: 'Invalid phone number' });
 
-//         const updated = await User.updateUser(id, { firstName, lastName, phone, password, age, sex });
-//         res.status(200).json(updated);
-//     } catch (error) {
-//         res.status(500).json({ error: 'An error occurred while updating the user' });
-//     }
-// };
+        const user = await User.getUserById(id);
+        const updated = await user.updateUser({ name, phone });
+        res.status(200).json(updated);
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            res.status(500).send({ error: err.message });
+        } else {
+            res.status(500).send({ error: 'Unknown error occured.' });
+        }
+    }
+};
 
 const userController = {
-    // getUser,
-    // createUser,
-    // deleteUser,
-    // getAllUsers,
-    // updateUser
+    getUser,
+    createUser,
+    deleteUser,
+    getAllUsers,
+    updateUser
 }
 
 export default userController;
