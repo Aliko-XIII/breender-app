@@ -10,30 +10,77 @@ datasource db {
 enum Role {
   USER
   ADMIN
+
+  @@map("role")
 }
 
 model User {
-  id           String        @id @default(uuid())
+  id           String        @id @default(uuid()) @map("user_id")
   email        String        @unique
-  hashedPass   String
+  hashedPass   String        @map("hashed_pass")
   role         Role          @default(USER)
   userProfile  UserProfile?
   refreshToken RefreshToken?
+  Animals      Animal[]
+
+  @@map("users")
 }
 
 model UserProfile {
-  id         String  @id @default(uuid())
-  name       String
-  bio        String  @default("")
-  pictureUrl String?
-  userId     String  @unique
+  userId     String  @id @unique @map("user_id")
+  name       String  @map("user_name")
+  bio        String  @default("") @map("user_bio")
+  pictureUrl String? @map("picture_url")
   user       User    @relation(fields: [userId], references: [id])
+
+  @@map("user_profiles")
 }
 
 model RefreshToken {
   id           String   @id @default(uuid())
-  refreshToken String
-  expiresAt    DateTime
+  refreshToken String   @map("refresh_token")
+  expiresAt    DateTime @map("expires_at")
   userId       String   @unique
   user         User     @relation(fields: [userId], references: [id])
+
+  @@map("refresh_tokens")
+}
+
+enum Sex {
+  MALE
+  FEMALE
+
+  @@map("sex")
+}
+
+model Animal {
+  id        String @id @default(uuid()) @map("animal_id")
+  name      String @map("animal_name")
+  sex       Sex    @map("animal_sex")
+  breed     String @map("animal_breed")
+  bio       String @map("animal_bio")
+  birthDate String @map("date_of_birth")
+  ownerId   String @unique @map("owner_id")
+  user      User   @relation(fields: [ownerId], references: [id])
+
+  @@map("animals")
+}
+
+model AnimalPhoto {
+  id         String   @id @default(uuid()) @map("photo_id")
+  animalId   String   @map("animal_id")
+  photoUrl   String   @map("photo_url")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
+  @@map("animal_photos")
+}
+
+model AnimalDocument {
+  id           String   @id @default(uuid()) @map("document_id")
+  animalId     String   @map("animal_id")
+  documentName String?  @map("document_name")
+  documentUrl  String   @map("document_url")
+  uploadedAt   DateTime @default(now()) @map("uploaded_at")
+
+  @@map("animal_documents")
 }
