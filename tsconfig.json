@@ -7,8 +7,8 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",  // Compiled files will be output here
-    "rootDir": "./src"   // Source TypeScript files are expected here
+    "rootDir": "oldUserCode"   // Source TypeScript files are expected here
   },
-  "include": ["src/**/*.ts"],
+  "include": ["oldUserCode/**/*.ts"],
   "exclude": ["node_modules"]
 } 
