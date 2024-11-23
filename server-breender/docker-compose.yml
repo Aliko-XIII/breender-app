@@ -1,7 +1,9 @@
 services:
   db:
     image: postgres:13
-    container_name: postgres
+    env_file:
+      - .env
+    container_name: breender-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -13,7 +15,7 @@ services:
 
   app:
     build: .
-    container_name: breeder-app
+    container_name: breender-app
     environment:
       DB_USER: postgres
       DB_PASSWORD: postgres

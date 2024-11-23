@@ -9,6 +9,8 @@ datasource db {
 
 enum Role {
   USER
+  OWNER
+  VET
   ADMIN
 
   @@map("role")
@@ -21,7 +23,7 @@ model User {
   role         Role          @default(USER)
   userProfile  UserProfile?
   refreshToken RefreshToken?
-  Animals      Animal[]
+  animals      Animal[]
 
   @@map("users")
 }
@@ -41,7 +43,7 @@ model RefreshToken {
   refreshToken String   @map("refresh_token")
   expiresAt    DateTime @map("expires_at")
   userId       String   @unique
-  user         User     @relation(fields: [userId], references: [id])
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
@@ -54,14 +56,17 @@ enum Sex {
 }
 
 model Animal {
-  id        String @id @default(uuid()) @map("animal_id")
-  name      String @map("animal_name")
-  sex       Sex    @map("animal_sex")
-  breed     String @map("animal_breed")
-  bio       String @map("animal_bio")
-  birthDate String @map("date_of_birth")
-  ownerId   String @unique @map("owner_id")
-  user      User   @relation(fields: [ownerId], references: [id])
+  id              String           @id @default(uuid()) @map("animal_id")
+  name            String           @map("animal_name")
+  sex             Sex              @map("animal_sex")
+  breed           String           @map("animal_breed")
+  species         String           @map("animal_species")
+  bio             String?          @map("animal_bio")
+  birthDate       DateTime         @map("date_of_birth")
+  ownerId         String           @unique @map("owner_id")
+  user            User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  animalDocuments AnimalDocument[]
+  animalPhoto     AnimalPhoto[]
 
   @@map("animals")
 }
@@ -71,6 +76,7 @@ model AnimalPhoto {
   animalId   String   @map("animal_id")
   photoUrl   String   @map("photo_url")
   uploadedAt DateTime @default(now()) @map("uploaded_at")
+  animal     Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
 
   @@map("animal_photos")
 }
@@ -81,6 +87,7 @@ model AnimalDocument {
   documentName String?  @map("document_name")
   documentUrl  String   @map("document_url")
   uploadedAt   DateTime @default(now()) @map("uploaded_at")
+  animal       Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
 
   @@map("animal_documents")
 }
