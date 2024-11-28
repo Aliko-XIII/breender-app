@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerMiddleware } from './logger/logger.middleware';
+import { LogsDatabaseModule } from './logs-database/logs-database.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { LoggerMiddleware } from './logger/logger.middleware';
       isGlobal: true,
       envFilePath: '../.env',
     }),
+    LogsDatabaseModule,
   ],
   controllers: [AppController],
   providers: [AppService],
