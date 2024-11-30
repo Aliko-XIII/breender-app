@@ -6,6 +6,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { CreateUserDto } from 'src/users/dto/create-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +23,19 @@ export class AuthService {
         this.jwtSecret = this.configService.get<string>('JWT_SECRET');
         this.accessExp = this.configService.get<string>('ACCESS_EXP');
         this.refreshExp = this.configService.get<string>('REFRESH_EXP');
+    }
+
+    async register(
+        createUserDto: CreateUserDto,
+    ): Promise<{ message: string; data: { id: string } }> {
+        const { id } = await this.usersService.create(createUserDto);
+
+        return {
+            message: 'User registered successfully.',
+            data: {
+                id,
+            },
+        };
     }
 
     async login(loginUserDto: LoginUserDto) {
@@ -39,27 +54,32 @@ export class AuthService {
         };
     }
 
-    // async refresh(refreshTokenDto: RefreshTokenDto): Promise<{
-    //     message: string;
-    //     data: {
-    //       access_token: string;
-    //     };
-    //   }> {
-    //     const { refreshToken } = refreshTokenDto;
-    
-    //     const payload = await this.validateRefreshToken(refreshToken);
-    //     const userId = payload.userId;
-    
-    //     const accessToken = this.generateAccessToken(userId);
-    //     return {
-    //       message: 'Access token updated successfully.',
-    //       data: {
-    //         access_token: accessToken,
-    //       },
-    //     };
-    //   }
+    async refresh(refreshTokenDto: RefreshTokenDto): Promise<{
+        message: string;
+        data: {
+            access_token: string;
+        };
+    }> {
+        const { refreshToken } = refreshTokenDto;
 
-    async generateAccessToken(userId: string) {
+        const payload = await this.validateRefreshToken(refreshToken);
+        const userId = payload.id;
+
+        const accessToken = this.generateAccessToken(userId);
+        return {
+            message: 'Access token updated successfully.',
+            data: {
+                access_token: accessToken,
+            },
+        };
+    }
+
+    async logout(userId: string): Promise<{ message: string }> {
+        await this.databaseService.refreshToken.delete({ where: { userId } });
+        return { message: 'User logged out successfully, refresh token deleted.' };
+    }
+
+    generateAccessToken(userId: string) {
         return this.jwtService.sign(
             {
                 id: userId
@@ -94,6 +114,9 @@ export class AuthService {
             update: {
                 refreshToken,
                 expiresAt
+            },
+            select: {
+                refreshToken: true
             }
         };
 
@@ -105,13 +128,13 @@ export class AuthService {
     private async validateRefreshToken(
         refreshToken: string,
     ): Promise<ResponseUserDto> {
-        const decoded = this.jwtService.verify(refreshToken, {
+        const decoded = this.jwtService.verify<{ id: string }>(refreshToken, {
             secret: this.jwtSecret,
         });
         const authRecord = await this.databaseService.refreshToken.findUnique(
             {
                 where: {
-                    userId: decoded.userId
+                    userId: decoded.id
                 }
             });
 
@@ -120,7 +143,7 @@ export class AuthService {
         }
 
         const user: ResponseUserDto = {
-            id: decoded.userId,
+            id: decoded.id,
         }
 
         return user;
