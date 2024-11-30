@@ -8,10 +8,11 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { ResponseUserDto } from './dto/response-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService) { }
 
   /**
    * Generates a bcrypt hash of the provided password.
@@ -45,7 +46,7 @@ export class UsersService {
    * @throws {NotFoundException} - If no user is found with the given username.
    * @throws {BadRequestException} - If the provided password is invalid.
    */
-  public async checkAuth(email: string, password: string): Promise<boolean> {
+  public async checkAuth(email: string, password: string): Promise<ResponseUserDto> {
     const user = await this.databaseService.user.findUnique({
       where: { email: email },
     });
@@ -62,7 +63,11 @@ export class UsersService {
       throw new BadRequestException('Invalid password.');
     }
 
-    return true;
+    const responseUserDto: ResponseUserDto = {
+      id: user.id
+    };
+
+    return responseUserDto;
   }
 
   async create(createUserDto: CreateUserDto) {
