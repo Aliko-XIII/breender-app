@@ -1,0 +1,23 @@
+.welcome-block {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-inline: 20%;
+    text-align: left;
+
+    h1 span{
+        color: rgb(179, 245, 179);
+    }
+
+    ul {
+        padding: 0;
+        list-style: none;
+        margin-left: 0;
+    }
+
+    >:last-child{
+        text-decoration: underline;
+        text-underline-offset: 3px;
+    }
+}
