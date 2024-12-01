@@ -6,7 +6,7 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AnimalsService {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly databaseService: DatabaseService) { }
 
   async create(createAnimalDto: CreateAnimalDto) {
     const createdAnimal: Prisma.AnimalCreateInput = {
@@ -16,7 +16,7 @@ export class AnimalsService {
       species: createAnimalDto.species,
       bio: createAnimalDto.bio,
       birthDate: createAnimalDto.birthDate,
-      user: {
+      owner: {
         connect: { id: createAnimalDto.ownerId },
       },
     };
@@ -58,7 +58,7 @@ export class AnimalsService {
       updatedAnimal.birthDate = updateAnimalDto.birthDate;
     }
     if (updateAnimalDto.ownerId) {
-      updatedAnimal.user = { connect: { id: updateAnimalDto.ownerId } };
+      updatedAnimal.owner = { connect: { id: updateAnimalDto.ownerId } };
     }
 
     try {

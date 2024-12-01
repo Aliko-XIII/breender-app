@@ -8,6 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { LogsDatabaseModule } from './logs-database/logs-database.module';
+import { OwnerModule } from './owner/owner.module';
+import { VetModule } from './vet/vet.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { LogsDatabaseModule } from './logs-database/logs-database.module';
       envFilePath: '../.env',
     }),
     LogsDatabaseModule,
+    OwnerModule,
+    VetModule,
   ],
   controllers: [AppController],
   providers: [AppService],
