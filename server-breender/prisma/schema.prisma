@@ -8,7 +8,6 @@ datasource db {
 }
 
 enum Role {
-  USER
   OWNER
   VET
   ADMIN
@@ -16,16 +15,73 @@ enum Role {
   @@map("role")
 }
 
+enum Sex {
+  MALE
+  FEMALE
+
+  @@map("sex")
+}
+
 model User {
   id           String        @id @default(uuid()) @map("user_id")
   email        String        @unique
   hashedPass   String        @map("hashed_pass")
-  role         Role          @default(USER)
+  role         Role          @default(OWNER) // Determines the user's role
   userProfile  UserProfile?
   refreshToken RefreshToken?
-  animals      Animal[]
+
+  // Role-specific relationships
+  owner Owner? // Linked if the user is an OWNER
+  vet   Vet?   // Linked if the user is a VET
 
   @@map("users")
+}
+
+model Owner {
+  id      String   @id @default(uuid()) @map("owner_id")
+  userId  String   @unique @map("user_id") // Links to the User model
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animals Animal[] // Animals owned by this owner
+
+  @@map("owners")
+}
+
+model Vet {
+  id      String      @id @default(uuid()) @map("vet_id")
+  userId  String      @unique @map("user_id") // Links to the User model
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animals AnimalVet[] // Animals assigned to this vet
+
+  @@map("vets")
+}
+
+model Animal {
+  id              String           @id @default(uuid()) @map("animal_id")
+  name            String           @map("animal_name")
+  sex             Sex              @map("animal_sex")
+  breed           String           @map("animal_breed")
+  species         String           @map("animal_species")
+  bio             String?          @map("animal_bio")
+  birthDate       DateTime         @map("date_of_birth")
+  ownerId         String           @map("owner_id")
+  owner           Owner            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  animalDocuments AnimalDocument[]
+  animalPhotos    AnimalPhoto[]
+  vetAssignments  AnimalVet[]      // Tracks vets assigned to this animal
+
+  @@map("animals")
+}
+
+model AnimalVet {
+  id         String   @id @default(uuid()) @map("assignment_id")
+  animalId   String   @map("animal_id")
+  vetId      String   @map("vet_id")
+  status     String   @default("active") @map("status") // e.g., active, pending, revoked
+  assignedAt DateTime @default(now()) @map("assigned_at")
+  animal     Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  vet        Vet      @relation(fields: [vetId], references: [id], onDelete: Cascade)
+
+  @@map("animal_vets")
 }
 
 model UserProfile {
@@ -46,29 +102,6 @@ model RefreshToken {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
-}
-
-enum Sex {
-  MALE
-  FEMALE
-
-  @@map("sex")
-}
-
-model Animal {
-  id              String           @id @default(uuid()) @map("animal_id")
-  name            String           @map("animal_name")
-  sex             Sex              @map("animal_sex")
-  breed           String           @map("animal_breed")
-  species         String           @map("animal_species")
-  bio             String?          @map("animal_bio")
-  birthDate       DateTime         @map("date_of_birth")
-  ownerId         String           @unique @map("owner_id")
-  user            User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  animalDocuments AnimalDocument[]
-  animalPhoto     AnimalPhoto[]
-
-  @@map("animals")
 }
 
 model AnimalPhoto {
