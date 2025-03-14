@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
+import { RemoveHashedPassInterceptor } from './remove-hashed-pass/remove-hashed-pass.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,6 +13,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
+  app.useGlobalInterceptors(new RemoveHashedPassInterceptor());
   const configService = app.get(ConfigService);
   const apiVersion = configService.get<string>('API_VERSION', 'v1');
   app.setGlobalPrefix(`api/${apiVersion}`);

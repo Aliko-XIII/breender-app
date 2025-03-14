@@ -1,12 +1,7 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { Observable } from "rxjs";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -14,6 +9,7 @@ export class AuthGuard implements CanActivate {
     private readonly jwtService: JwtService,
     private configService: ConfigService,
   ) {}
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -27,11 +23,14 @@ export class AuthGuard implements CanActivate {
     const jwtSecret = this.configService.get<string>('JWT_SECRET');
 
     try {
-      const authToken = token.replace(/bearer/gim, '').trim();
-      const payload = this.jwtService.verify(authToken, {
+      const authToken = token.replace(/bearer/gi, '').trim();  // Corrected case for the regex
+      const payload = this.jwtService.verify<{ id: string }>(authToken, {
         secret: jwtSecret,
       });
-      request.userId = payload.userId;
+
+      // Add userId to the request object
+      request.authUserId = payload.id;
+
       return true;
     } catch {
       throw new UnauthorizedException('Invalid token');

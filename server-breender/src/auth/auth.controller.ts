@@ -25,8 +25,9 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @Post('logout/:id')
-  async logout(@Param('id') userId: string) {
+  @Post('logout')
+  async logout(@Req() request) {
+    const userId = request.authUserId;
     return this.authService.logout(userId);
   }
 }

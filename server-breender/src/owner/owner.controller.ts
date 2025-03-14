@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, UseGuards } from '@nestjs/common';
 import { OwnerService } from './owner.service';
 import { CreateOwnerDto } from './dto/create-owner.dto';
 import { UpdateOwnerDto } from './dto/update-owner.dto';
+import { Owner } from '@prisma/client';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('owner')
+@UseGuards(AuthGuard)
 export class OwnerController {
-  constructor(private readonly ownerService: OwnerService) {}
+  constructor(private readonly ownerService: OwnerService) { }
+
+  /**
+   * Endpoint to get an owner by userId.
+   * @param {string} userId - The userId of the owner to find.
+   * @returns {Promise<Owner>} - The owner associated with the given userId.
+   */
+  @Get('user/:userId')
+  async getOwnerByUserId(@Request() req, @Param('userId') userId: string): Promise<Owner> {
+    const authUserId = req.authUserId;
+    return this.ownerService.findByUserId(userId, authUserId);
+  }
 
   @Post()
-  create(@Body() createOwnerDto: CreateOwnerDto) {
-    return this.ownerService.create(createOwnerDto);
+  create(@Request() req, @Body() createOwnerDto: CreateOwnerDto) {
+    const authUserId = req.authUserId;
+    return this.ownerService.create(createOwnerDto, authUserId);
   }
 
   @Get()
-  findAll() {
-    return this.ownerService.findAll();
+  findAll(@Request() req) {
+    const authUserId = req.authUserId;
+    return this.ownerService.findAll(authUserId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ownerService.findOne(+id);
+  findOne(@Request() req, @Param('id') id: string) {
+    const authUserId = req.authUserId;
+    return this.ownerService.findOne(id, authUserId);
   }
 
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOwnerDto: UpdateOwnerDto) {
-    return this.ownerService.update(+id, updateOwnerDto);
+  update(@Request() req, @Param('id') id: string, @Body() updateOwnerDto: UpdateOwnerDto) {
+    const authUserId = req.authUserId;
+    return this.ownerService.update(id, updateOwnerDto, authUserId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ownerService.remove(+id);
+  remove(@Request() req, @Param('id') id: string) {
+    const authUserId = req.authUserId;
+    return this.ownerService.remove(id, authUserId);
   }
 }

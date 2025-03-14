@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { OwnerController } from './owner.controller';
-import { OwnerService } from './owner.service';
+import { OwnerController } from '../owner.controller';
+import { OwnerService } from '../owner.service';
 
 describe('OwnerController', () => {
   let controller: OwnerController;

@@ -1,4 +1,4 @@
-import { IsStrongPassword, IsEmail, MaxLength, IsEnum } from 'class-validator';
+import { IsStrongPassword, IsEmail, MaxLength, IsEnum, IsOptional } from 'class-validator';
 import { Role } from '@prisma/client';
 export class CreateUserDto {
   @IsEmail({}, { message: 'Invalid email format' })
@@ -19,5 +19,6 @@ export class CreateUserDto {
   pass: string;
 
   @IsEnum(Role)
+  @IsOptional()
   role?: Role
 }

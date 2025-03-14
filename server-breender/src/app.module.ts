@@ -10,6 +10,7 @@ import { LoggerMiddleware } from './logger/logger.middleware';
 import { LogsDatabaseModule } from './logs-database/logs-database.module';
 import { OwnerModule } from './owner/owner.module';
 import { VetModule } from './vet/vet.module';
+import { SqlInjectionMiddleware } from './sql-injection-check/sql-injection.middleware';
 
 @Module({
   imports: [
@@ -31,5 +32,6 @@ import { VetModule } from './vet/vet.module';
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(SqlInjectionMiddleware).forRoutes('*');
   }
 }

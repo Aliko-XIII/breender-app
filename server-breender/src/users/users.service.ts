@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,25 +13,14 @@ import { ResponseUserDto } from './dto/response-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) { }
+  constructor(private databaseService: DatabaseService) {}
 
-  /**
-   * Generates a bcrypt hash of the provided password.
-   * @param {string} password - The plain text password to hash.
-   * @returns {Promise<string>} - A promise that resolves to the hashed password using bcrypt.
-   */
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     return bcrypt.hash(password, salt);
   }
 
-  /**
-   * Compares a plain text password with a bcrypt-hashed password.
-   * @param {string} password - The plain text password to compare.
-   * @param {string} hashedPassword - The previously hashed password for comparison.
-   * @returns {Promise<boolean>} - A promise that resolves to true if passwords match, otherwise false.
-   */
   private async comparePasswords(
     password: string,
     hashedPassword: string,
@@ -38,14 +28,6 @@ export class UsersService {
     return bcrypt.compare(password, hashedPassword);
   }
 
-  /**
-   * Validates user credentials.
-   * @param {string} email - The email of the user attempting to authenticate.
-   * @param {string} password - The plain text password to validate against the stored hash.
-   * @returns {Promise<UserSafeDto>} - A promise that resolves to the updated user's safe DTO.
-   * @throws {NotFoundException} - If no user is found with the given username.
-   * @throws {BadRequestException} - If the provided password is invalid.
-   */
   public async checkAuth(email: string, password: string): Promise<ResponseUserDto> {
     const user = await this.databaseService.user.findUnique({
       where: { email: email },
@@ -84,20 +66,52 @@ export class UsersService {
     const registeredUser: Prisma.UserCreateInput = {
       email: createUserDto.email,
       hashedPass: hashedPass,
+      role: createUserDto.role ? createUserDto.role : 'OWNER',
     };
 
-    return await this.databaseService.user.create({ data: registeredUser });
+    const user = await this.databaseService.user.create({ data: registeredUser });
+
+    if (createUserDto.role === 'OWNER') {
+      await this.databaseService.owner.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    } else if (createUserDto.role === 'VET') {
+      await this.databaseService.vet.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    }
+
+    return user;
   }
 
-  async findAll() {
+  async findAll(authUserId: string) {
+    // You can add logic to filter or log actions based on authUserId
     return await this.databaseService.user.findMany({});
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, authUserId: string) {
+    // Optionally check if the user has permission based on authUserId
     return await this.databaseService.user.findUnique({ where: { id } });
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async update(id: string, updateUserDto: UpdateUserDto, authUserId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if the authorized user is the one being updated, or if the user is an admin
+    if (user.id !== authUserId && !(await this.isAdmin(authUserId))) {
+      throw new ForbiddenException('You are not authorized to update this user');
+    }
+
     const updatedUser: Prisma.UserUpdateInput = {};
     if (updateUserDto.email) {
       updatedUser.email = updateUserDto.email;
@@ -139,7 +153,27 @@ export class UsersService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, authUserId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if the authorized user is the one being updated, or if the user is an admin
+    if (user.id !== authUserId && !(await this.isAdmin(authUserId))) {
+      throw new ForbiddenException('You are not authorized to update this user');
+    }
     return await this.databaseService.user.delete({ where: { id } });
+  }
+
+  private async isAdmin(userId: string): Promise<boolean> {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+    });
+
+    return user?.role === 'ADMIN';
   }
 }
