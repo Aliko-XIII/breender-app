@@ -17,7 +17,10 @@ export class AnimalsService {
    * @param {string} authUserId - The ID of the authenticated user.
    * @returns The created animal document.
    */
-  async createDoc(animalId: string, createAnimalDocumentDto: CreateAnimalDocumentDto, authUserId: string) {
+  async createDoc(
+    animalId: string,
+    createAnimalDocumentDto: CreateAnimalDocumentDto,
+    authUserId: string) {
     // Validate the animal existence
     const animal = await this.databaseService.animal.findUnique({
       where: { id: animalId },
