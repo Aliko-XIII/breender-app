@@ -4,7 +4,7 @@ import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { CreateAnimalDocumentDto } from './dto/create-animal-doc.dto';
-import { UpdateAnimalDocumentDto } from './dto/update-animal-doc';
+import { UpdateAnimalDocumentDto } from './dto/update-animal-doc.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -17,7 +17,7 @@ export class AnimalsService {
    * @param {string} authUserId - The ID of the authenticated user.
    * @returns The created animal document.
    */
-  async createDoc(
+  async createAnimalDocument(
     animalId: string,
     createAnimalDocumentDto: CreateAnimalDocumentDto,
     authUserId: string) {
@@ -29,6 +29,7 @@ export class AnimalsService {
       throw new NotFoundException(`Animal with ID ${animalId} not found.`);
     }
 
+    // Check if the authenticated user is an owner of the animal
     const ownerAssignment = await this.databaseService.owner.findUnique({
       where: {
         userId: authUserId,
