@@ -11,6 +11,10 @@ import { LogsDatabaseModule } from './logs-database/logs-database.module';
 import { OwnerModule } from './owner/owner.module';
 import { VetModule } from './vet/vet.module';
 import { SqlInjectionMiddleware } from './sql-injection-check/sql-injection.middleware';
+import { DocumentsModule } from './documents/documents.module';
+import { PhotosModule } from './photos/photos.module';
+import { RecordsModule } from './records/records.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 @Module({
   imports: [
@@ -25,6 +29,10 @@ import { SqlInjectionMiddleware } from './sql-injection-check/sql-injection.midd
     LogsDatabaseModule,
     OwnerModule,
     VetModule,
+    DocumentsModule,
+    PhotosModule,
+    RecordsModule,
+    RemindersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
