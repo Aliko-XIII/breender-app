@@ -6,7 +6,6 @@ import { Login } from './components/Login/Login'
 import { Register } from './components/Register/Register'
 import { WelcomePage } from './components/WelcomePage/WelcomePage';
 function App() {
-
   const [cookies, setCookie] = useCookies(['access_token', 'refresh_token',]);
   const navigate = useNavigate();
   const location = useLocation();
