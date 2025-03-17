@@ -7,7 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request,
+  Request, 
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
@@ -42,36 +42,36 @@ export class AnimalsController {
     @Body() updateAnimalDocumentDto: UpdateAnimalDocumentDto,
   ) {
     const authUserId = req.authUserId;
-    return this.animalsService.updateDoc(animalId, documentId, updateAnimalDocumentDto, authUserId);
+    return this.animalsService.updateDocument(animalId, documentId, updateAnimalDocumentDto, authUserId);
   }
 
   @Post()
   create(@Request() req, @Body() createAnimalDto: CreateAnimalDto) {
     const authUserId = req.authUserId;
-    return this.animalsService.create(createAnimalDto, authUserId);
+    return this.animalsService.createAnimal(createAnimalDto, authUserId);
   }
 
   @Get()
   findAll(@Request() req) {
     const authUserId = req.authUserId;
-    return this.animalsService.findAll(authUserId);
+    return this.animalsService.findAllAnimals(authUserId);
   }
 
   @Get(':id')
   findOne(@Request() req, @Param('id') id: string) {
     const authUserId = req.authUserId;
-    return this.animalsService.findOne(id, authUserId);
+    return this.animalsService.findAnimalById(id, authUserId);
   }
 
   @Patch(':id')
   update(@Request() req, @Param('id') id: string, @Body() updateAnimalDto: UpdateAnimalDto) {
     const authUserId = req.authUserId;
-    return this.animalsService.update(id, updateAnimalDto, authUserId);
+    return this.animalsService.updateAnimal(id, updateAnimalDto, authUserId);
   }
 
   @Delete(':id')
   remove(@Request() req, @Param('id') id: string) {
     const authUserId = req.authUserId;
-    return this.animalsService.remove(id, authUserId);
+    return this.animalsService.removeAnimal(id, authUserId);
   }
 }

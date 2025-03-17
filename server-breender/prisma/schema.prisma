@@ -31,14 +31,14 @@ model User {
   refreshToken RefreshToken?
 
   // Role-specific relationships
-  owner    Owner? // Linked if the user is an OWNER
-  vet      Vet? // Linked if the user is a VET
-  Reminder Reminder[]
+  owner            Owner? // Linked if the user is an OWNER
+  vet              Vet? // Linked if the user is a VET
+  Reminder         Reminder[]
+  AnimalPermission AnimalPermission[]
+  ChatParticipant  ChatParticipant[]
+  Message          Message[]
 
   @@map("users")
-  AnimalPermission AnimalPermission[]
-  ChatParticipant ChatParticipant[]
-  Message Message[]
 }
 
 model Owner {
@@ -60,25 +60,24 @@ model Vet {
 }
 
 model Animal {
-  id              String           @id @default(uuid()) @map("animal_id")
-  name            String           @map("animal_name")
-  sex             Sex              @map("animal_sex")
-  breed           String           @map("animal_breed")
-  species         String           @map("animal_species")
-  bio             String?          @map("animal_bio")
-  birthDate       DateTime         @map("date_of_birth")
-  latitude        Float            @map("latitude")
-  longitude       Float            @map("longitude")
-  ownerId         String           @map("owner_id")
-  owners          AnimalOwner[]
-  vetAssignments  AnimalVet[]
-  animalDocuments AnimalDocument[]
-  animalPhotos    AnimalPhoto[]
-  animalRecords   AnimalRecord[]
-  Reminder        Reminder[]
+  id               String             @id @default(uuid()) @map("animal_id")
+  name             String             @map("animal_name")
+  sex              Sex                @map("animal_sex")
+  breed            String             @map("animal_breed")
+  species          String             @map("animal_species")
+  bio              String?            @map("animal_bio")
+  birthDate        DateTime           @map("date_of_birth")
+  latitude         Float?             @map("latitude")
+  longitude        Float?             @map("longitude")
+  owners           AnimalOwner[]
+  vetAssignments   AnimalVet[]
+  animalDocuments  AnimalDocument[]
+  animalPhotos     AnimalPhoto[]
+  animalRecords    AnimalRecord[]
+  Reminder         Reminder[]
+  AnimalPermission AnimalPermission[]
 
   @@map("animals")
-  AnimalPermission AnimalPermission[]
 }
 
 model AnimalOwner {
@@ -119,11 +118,11 @@ enum PermissionType {
 }
 
 model AnimalPermission {
-  id        String        @id @default(uuid())
-  animalId  String        @map("animal_id")
-  userId    String        @map("user_id")
+  id         String         @id @default(uuid())
+  animalId   String         @map("animal_id")
+  userId     String         @map("user_id")
   permission PermissionType @map("permission_type")
-  grantedAt DateTime      @default(now()) @map("granted_at")
+  grantedAt  DateTime       @default(now()) @map("granted_at")
 
   animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -270,35 +269,35 @@ model Reminder {
 }
 
 model Chat {
-  id            String           @id @default(uuid()) @map("chat_id")
-  createdAt     DateTime         @default(now()) @map("created_at")
-  updatedAt     DateTime         @updatedAt @map("updated_at")
-  participants  ChatParticipant[]
-  messages      Message[]
+  id           String            @id @default(uuid()) @map("chat_id")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  participants ChatParticipant[]
+  messages     Message[]
 
   @@map("chats")
 }
 
 model ChatParticipant {
-  id       String @id @default(uuid()) @map("participant_id")
-  chatId   String @map("chat_id")
-  userId   String @map("user_id")
+  id       String   @id @default(uuid()) @map("participant_id")
+  chatId   String   @map("chat_id")
+  userId   String   @map("user_id")
   joinedAt DateTime @default(now()) @map("joined_at")
 
   chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("chat_participants")
   @@unique([chatId, userId])
+  @@map("chat_participants")
 }
 
 model Message {
-  id        String   @id @default(uuid()) @map("message_id")
-  chatId    String   @map("chat_id")
-  senderId  String   @map("sender_id")
-  content   String   @map("content")
-  sentAt    DateTime @default(now()) @map("sent_at")
-  editedAt  DateTime? @map("edited_at")
+  id       String    @id @default(uuid()) @map("message_id")
+  chatId   String    @map("chat_id")
+  senderId String    @map("sender_id")
+  content  String    @map("content")
+  sentAt   DateTime  @default(now()) @map("sent_at")
+  editedAt DateTime? @map("edited_at")
 
   chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
   sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)

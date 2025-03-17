@@ -2,7 +2,7 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { DatabaseService } from 'src/database/database.service';
-import { Prisma } from '@prisma/client';
+import { AssignmentStatus, Prisma } from '@prisma/client';
 import { CreateAnimalDocumentDto } from './dto/create-animal-doc.dto';
 import { UpdateAnimalDocumentDto } from './dto/update-animal-doc.dto';
 
@@ -44,7 +44,7 @@ export class AnimalsService {
       where: {
         animalId,
         vetId: authUserId,
-        status: 'active', // You can adjust this status if needed
+        status: AssignmentStatus.ACTIVE, // You can adjust this status if needed
       },
     });
 
@@ -71,7 +71,7 @@ export class AnimalsService {
    * @param {string} authUserId - The ID of the authenticated user.
    * @returns The updated animal document.
    */
-  async updateDoc(
+  async updateDocument(
     animalId: string,
     documentId: string,
     updateAnimalDocumentDto: UpdateAnimalDocumentDto,
@@ -98,7 +98,7 @@ export class AnimalsService {
       where: {
         animalId,
         vetId: authUserId,
-        status: 'active', // You can adjust this status if needed
+        status: AssignmentStatus.ACTIVE, // You can adjust this status if needed
       },
     });
 
@@ -126,7 +126,7 @@ export class AnimalsService {
     });
   }
 
-  async create(createAnimalDto: CreateAnimalDto, authUserId: string) {
+  async createAnimal(createAnimalDto: CreateAnimalDto, authUserId: string) {
 
     const user = await this.databaseService.user.findUnique({
       where: { id: authUserId },
@@ -148,7 +148,7 @@ export class AnimalsService {
       species: createAnimalDto.species,
       bio: createAnimalDto.bio,
       birthDate: createAnimalDto.birthDate,
-      owner: {
+      owners: {
         connect: { id: createAnimalDto.ownerId },
       },
     };
@@ -160,26 +160,27 @@ export class AnimalsService {
     }
   }
 
-  async findAll(authUserId: string) {
+  async findAllAnimals(authUserId: string) {
     return await this.databaseService.animal.findMany();
   }
 
-  async findOne(id: string, authUserId: string) {
+  async findAnimalById(id: string, authUserId: string) {
     return await this.databaseService.animal.findUnique({ where: { id } });
   }
 
-  async update(id: string, updateAnimalDto: UpdateAnimalDto, authUserId: string) {
+  async updateAnimal(id: string, updateAnimalDto: UpdateAnimalDto, authUserId: string) {
 
     const animal = await this.databaseService.animal.findUnique({
       where: { id },
-      include: { owner: true },
+      include: { owners: true },
     });
 
     if (!animal) {
       throw new NotFoundException(`Animal with ID ${id} not found.`);
     }
+    const ownerIds = animal.owners.map((owner) => owner.id);
 
-    if (animal.ownerId !== authUserId && !(await this.isAdmin(authUserId))) {
+    if (!ownerIds.includes(authUserId) && !(await this.isAdmin(authUserId))) {
       throw new ForbiddenException("You do not have permission to update this animal.");
     }
 
@@ -204,7 +205,7 @@ export class AnimalsService {
       updatedAnimal.birthDate = updateAnimalDto.birthDate;
     }
     if (updateAnimalDto.ownerId) {
-      updatedAnimal.owner = { connect: { id: updateAnimalDto.ownerId } };
+      updatedAnimal.owners = { connect: { id: updateAnimalDto.ownerId } };
     }
 
     try {
@@ -218,18 +219,19 @@ export class AnimalsService {
     }
   }
 
-  async remove(id: string, authUserId: string) {
+  async removeAnimal(id: string, authUserId: string) {
 
     const animal = await this.databaseService.animal.findUnique({
       where: { id },
-      include: { owner: true },
+      include: { owners: true },
     });
 
     if (!animal) {
       throw new NotFoundException(`Animal with ID ${id} not found.`);
     }
+    const ownerIds = animal.owners.map((owner) => owner.id);
 
-    if (animal.ownerId !== authUserId && !(await this.isAdmin(authUserId))) {
+    if (!ownerIds.includes(authUserId) && !(await this.isAdmin(authUserId))) {
       throw new ForbiddenException("You do not have permission to update this animal.");
     }
 

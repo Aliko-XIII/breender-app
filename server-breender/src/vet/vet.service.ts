@@ -136,17 +136,20 @@ export class VetService {
   async assignVetToAnimal(animalId: string, vetId: string, authUserId: string) {
     const animal = await this.databaseService.animal.findUnique({
       where: { id: animalId },
+      include: {
+        owners: true
+      }
     });
     if (!animal) {
       throw new NotFoundException(`Animal with ID ${animalId} not found.`);
     }
-  
+
     // Check if the authenticated user is the owner or admin
-    const ownerId = animal.ownerId;
+    const ownerIds = animal.owners.map((owner) => owner.id);
     const user = await this.databaseService.user.findUnique({
       where: { id: authUserId },
     });
-    if (!user || (user.id !== ownerId && user.role !== 'ADMIN')) {
+    if (!user || (!ownerIds.includes(user.id) && user.role !== 'ADMIN')) {
       throw new UnauthorizedException(
         `User with ID ${authUserId} is not authorized to assign a vet to this animal.`,
       );
