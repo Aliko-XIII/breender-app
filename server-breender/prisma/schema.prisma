@@ -37,6 +37,8 @@ model User {
 
   @@map("users")
   AnimalPermission AnimalPermission[]
+  ChatParticipant ChatParticipant[]
+  Message Message[]
 }
 
 model Owner {
@@ -265,4 +267,41 @@ model Reminder {
   animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
 
   @@map("reminders")
+}
+
+model Chat {
+  id            String           @id @default(uuid()) @map("chat_id")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+  participants  ChatParticipant[]
+  messages      Message[]
+
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id       String @id @default(uuid()) @map("participant_id")
+  chatId   String @map("chat_id")
+  userId   String @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("chat_participants")
+  @@unique([chatId, userId])
+}
+
+model Message {
+  id        String   @id @default(uuid()) @map("message_id")
+  chatId    String   @map("chat_id")
+  senderId  String   @map("sender_id")
+  content   String   @map("content")
+  sentAt    DateTime @default(now()) @map("sent_at")
+  editedAt  DateTime? @map("edited_at")
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
