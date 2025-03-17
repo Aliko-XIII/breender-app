@@ -5,6 +5,7 @@ import { useCookies } from 'react-cookie';
 import { Login } from './components/Login/Login'
 import { Register } from './components/Register/Register'
 import { WelcomePage } from './components/WelcomePage/WelcomePage';
+import { UserProfile } from "./components/Profile/Profile";
 function App() {
   const [cookies, setCookie] = useCookies(['access_token', 'refresh_token',]);
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ function App() {
       location.pathname === '/';
 
     if (!isAuthenticated && !isAuthRoute) {
-      navigate('/');
+      // navigate('/');
     }
   }, [cookies, location.pathname, navigate]);
 
@@ -29,6 +30,7 @@ function App() {
         <Route path='/' element={<WelcomePage />} />
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Register />} />
+        <Route path='/profile' element={<UserProfile userId="test_id" />} />
       </Routes>
     </>
   )
