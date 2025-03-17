@@ -1,5 +1,4 @@
 // import { useState } from 'react'
-import './App.scss'
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from 'react';
 import { useCookies } from 'react-cookie';

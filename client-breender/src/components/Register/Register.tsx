@@ -1,5 +1,3 @@
-import './Register.scss';
-
 export const Register = () => {
     return <div className="register-block">
         <h1 className="register-header">

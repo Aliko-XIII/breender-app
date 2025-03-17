@@ -1,5 +1,3 @@
-import './WelcomePage.scss';
-
 export const WelcomePage = () => {
     return (
       <div className='welcome-block'>
