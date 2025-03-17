@@ -1,4 +1,12 @@
+import { useNavigate } from "react-router-dom";
+
 export const WelcomePage = () => {
+  const navigate = useNavigate();
+
+  const handleGetStarted = () => {
+    navigate('/signup');
+  };
+
   return (
     <div className="container mt-5">
       <div className="card shadow-lg border-0">
@@ -28,7 +36,9 @@ export const WelcomePage = () => {
           <p className="text-muted">
             Start building better connections and ensuring the best care for your animals today!
           </p>
-          <button className="btn btn-primary btn-lg">Get Started</button>
+          <button className="btn btn-primary btn-lg" onClick={handleGetStarted}>
+            Get Started
+          </button>
         </div>
       </div>
     </div>
