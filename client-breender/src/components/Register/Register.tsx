@@ -1,5 +1,3 @@
-console.log("Register component rendered");
-
 export const Register = () => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
