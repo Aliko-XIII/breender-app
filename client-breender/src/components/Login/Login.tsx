@@ -1,4 +1,4 @@
-export const Login = () => {
+export const Login = ({ loginUser }) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log("Form submittion initiated");
@@ -7,6 +7,7 @@ export const Login = () => {
             alert("Please fill in all fields");
             return;
         }
+        loginUser(signupData.get("email") as string, signupData.get("pass") as string);
         console.log("Form submitted successfully");
     };
 

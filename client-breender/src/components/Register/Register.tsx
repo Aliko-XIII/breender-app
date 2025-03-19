@@ -1,4 +1,4 @@
-export const Register = () => {
+export const Register = ({ registerUser }) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log("Form submittion initiated");
@@ -11,6 +11,7 @@ export const Register = () => {
             alert("Passwords do not match");
             return;
         }
+        registerUser(signupData.get("email") as string, signupData.get("pass") as string);
         console.log("Form submitted successfully");
     };
 

@@ -58,7 +58,7 @@ export class UsersService {
     });
 
     if (existingUser) {
-      throw new Error('Email is already in use');
+      throw new BadRequestException('Email is already in use');
     }
 
     const hashedPass = await this.hashPassword(createUserDto.pass);

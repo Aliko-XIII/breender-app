@@ -7,7 +7,8 @@ import { Register } from './components/Register/Register'
 import { WelcomePage } from './components/WelcomePage/WelcomePage';
 import { UserProfile } from "./components/Profile/Profile";
 import { AnimalProfile } from "./components/AnimalProfile/AnimalProfile";
-function App() {
+import { loginUser } from "./api";
+function App({ api }) {
   const [cookies, setCookie] = useCookies(['access_token', 'refresh_token',]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,8 +30,8 @@ function App() {
     <>
       <Routes>
         <Route path='/' element={<WelcomePage />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/signup' element={<Register />} />
+        <Route path='/login' element={<Login loginUser={loginUser} />} />
+        <Route path='/signup' element={<Register registerUser={api.registerUser} />} />
         <Route path='/user-profile' element={<UserProfile userId="test_id" />} />
         <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
       </Routes>
