@@ -1,5 +1,5 @@
 export interface ApiResponse {
     status: number;
-    data: object;
+    data: { [key: string]: any };
     message?: string;
 }

@@ -1,13 +1,10 @@
-import { ApiResponse } from "../../types";
-
 interface LoginProps {
-    loginUser: (email: string, password: string) => Promise<ApiResponse>;
+    loginUser: (email: string, password: string) => void;
 }
 
 export const Login: React.FC<LoginProps> = ({ loginUser }) => {
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("Form submittion initiated");
         const signupData = new FormData(e.currentTarget);
         if (!signupData.get("email") || !signupData.get("pass")) {
             alert("Please fill in all fields");
@@ -15,12 +12,7 @@ export const Login: React.FC<LoginProps> = ({ loginUser }) => {
         }
         loginUser(
             signupData.get("email") as string,
-            signupData.get("pass") as string)
-            .then(response => {
-                console.log(response);
-            });
-
-        console.log("Form submitted successfully");
+            signupData.get("pass") as string);
     };
 
     return (
