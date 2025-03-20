@@ -1,12 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { ApiResponse } from "../../types";
-
-interface UserProfileProps {
-    userId: string;
-    accessToken: string;
-    getUser: (userId: string) => Promise<ApiResponse>;
-    // getUserProfile: (userId: string) => Promise<ApiResponse>;
-}
 
 interface UserProfileData {
     name: string;
@@ -17,7 +9,7 @@ interface UserProfileData {
     role: "OWNER" | "VET" | "ADMIN";
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ userId, getUser, accessToken }) => {
+export const UserProfile = () => {
     const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
     useEffect(() => {
@@ -25,7 +17,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, getUser, acces
             try {
                 // const response = await fetch(`/api/users/${userId}/profile`);
                 // const data: UserProfileData = await response.json();
-                console.log('User', getUser(userId, accessToken));
 
                 const data: UserProfileData = {
                     name: "John Doe",
@@ -42,7 +33,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, getUser, acces
         };
 
         fetchUserProfile();
-    }, [userId]);
+    }, []);
 
     if (!userProfile) {
         return <div>Loading...</div>;

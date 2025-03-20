@@ -1,40 +1,38 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiResponse } from '../../types/index';
+import { useAuth } from '../../context/AuthContext';
 
-interface RegisterProps {
-    registerUser: (email: string, password: string) => Promise<ApiResponse>;
-}
-
-export const Register: React.FC<RegisterProps> = ({ registerUser }) => {
+export const Register: React.FC = () => {
+    const { register } = useAuth();
     const navigate = useNavigate();
-    const navigateToLogin = () => {
-        navigate('/login');
-    };
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log("Form submittion initiated");
+        console.log("Form submission initiated");
+
         const signupData = new FormData(e.currentTarget);
-        if (!signupData.get("email") || !signupData.get("pass") || !signupData.get("pass-repeat")) {
+        const email = signupData.get("email") as string;
+        const password = signupData.get("pass") as string;
+        const passwordRepeat = signupData.get("pass-repeat") as string;
+
+        if (!email || !password || !passwordRepeat) {
             alert("Please fill in all fields");
             return;
         }
-        if (signupData.get("pass") !== signupData.get("pass-repeat")) {
+
+        if (password !== passwordRepeat) {
             alert("Passwords do not match");
             return;
         }
-        registerUser(
-            signupData.get("email") as string,
-            signupData.get("pass") as string)
-            .then(response => {
-                console.log(response);
-                if (response.status === 200 || response.status === 201) {
-                    navigateToLogin();
-                }
-                else {
-                    alert("Sign up failed");
-                }
-            });
+
+        try {
+            await register(email, password);
+            navigate('/login');
+        } catch (error) {
+            alert("Sign up failed");
+            console.error("Registration error:", error);
+        }
+
         console.log("Form submitted successfully");
     };
 
@@ -45,15 +43,33 @@ export const Register: React.FC<RegisterProps> = ({ registerUser }) => {
                 <form onSubmit={handleSubmit} method="post">
                     <div className="mb-3">
                         <label htmlFor="email" className="form-label">Email:</label>
-                        <input type="email" name="email" id="email" className="form-control" required />
+                        <input
+                            type="email"
+                            name="email"
+                            id="email"
+                            className="form-control"
+                            required
+                        />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="pass" className="form-label">Password:</label>
-                        <input type="password" name="pass" id="pass" className="form-control" required />
+                        <input
+                            type="password"
+                            name="pass"
+                            id="pass"
+                            className="form-control"
+                            required
+                        />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="pass-repeat" className="form-label">Repeat Password:</label>
-                        <input type="password" name="pass-repeat" id="pass-repeat" className="form-control" required />
+                        <input
+                            type="password"
+                            name="pass-repeat"
+                            id="pass-repeat"
+                            className="form-control"
+                            required
+                        />
                     </div>
                     <button type="submit" className="btn btn-primary w-100 mb-3">Sign Up</button>
                 </form>

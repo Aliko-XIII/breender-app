@@ -1,18 +1,27 @@
-interface LoginProps {
-    loginUser: (email: string, password: string) => void;
-}
+import React from 'react';
+import { useAuth } from '../../context/AuthContext';
 
-export const Login: React.FC<LoginProps> = ({ loginUser }) => {
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+export const Login: React.FC = () => {
+    const { login } = useAuth();
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const signupData = new FormData(e.currentTarget);
-        if (!signupData.get("email") || !signupData.get("pass")) {
+
+        const email = signupData.get("email") as string;
+        const password = signupData.get("pass") as string;
+
+        if (!email || !password) {
             alert("Please fill in all fields");
             return;
         }
-        loginUser(
-            signupData.get("email") as string,
-            signupData.get("pass") as string);
+
+        try {
+            await login(email, password);
+        } catch (error) {
+            alert("Login failed");
+            console.error("Login error:", error);
+        }
     };
 
     return (
@@ -22,11 +31,23 @@ export const Login: React.FC<LoginProps> = ({ loginUser }) => {
                 <form onSubmit={handleSubmit} method="post">
                     <div className="mb-3">
                         <label htmlFor="email" className="form-label">Email:</label>
-                        <input type="email" name="email" id="email" className="form-control" required />
+                        <input
+                            type="email"
+                            name="email"
+                            id="email"
+                            className="form-control"
+                            required
+                        />
                     </div>
                     <div className="mb-3">
                         <label htmlFor="pass" className="form-label">Password:</label>
-                        <input type="password" name="pass" id="pass" className="form-control" required />
+                        <input
+                            type="password"
+                            name="pass"
+                            id="pass"
+                            className="form-control"
+                            required
+                        />
                     </div>
                     <button type="submit" className="btn btn-primary btn-lg w-100 mb-3">Login</button>
                 </form>
