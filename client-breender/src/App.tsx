@@ -7,8 +7,14 @@ import { Register } from './components/Register/Register'
 import { WelcomePage } from './components/WelcomePage/WelcomePage';
 import { UserProfile } from "./components/Profile/Profile";
 import { AnimalProfile } from "./components/AnimalProfile/AnimalProfile";
-import { loginUser } from "./api";
-function App({ api }) {
+import { ApiResponse } from "./types";
+
+interface Api {
+  registerUser: (email: string, password: string) => Promise<ApiResponse>;
+  loginUser: (email: string, password: string) => Promise<ApiResponse>;
+}
+
+function App({ api }: { api: Api }) {
   const [cookies, setCookie] = useCookies(['access_token', 'refresh_token',]);
   const navigate = useNavigate();
   const location = useLocation();
@@ -30,7 +36,7 @@ function App({ api }) {
     <>
       <Routes>
         <Route path='/' element={<WelcomePage />} />
-        <Route path='/login' element={<Login loginUser={loginUser} />} />
+        <Route path='/login' element={<Login loginUser={api.loginUser} />} />
         <Route path='/signup' element={<Register registerUser={api.registerUser} />} />
         <Route path='/user-profile' element={<UserProfile userId="test_id" />} />
         <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
