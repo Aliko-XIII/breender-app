@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { ApiResponse } from "../../types";
 
 interface UserProfileProps {
     userId: string;
+    accessToken: string;
+    getUser: (userId: string) => Promise<ApiResponse>;
+    // getUserProfile: (userId: string) => Promise<ApiResponse>;
 }
 
 interface UserProfileData {
@@ -13,7 +17,7 @@ interface UserProfileData {
     role: "OWNER" | "VET" | "ADMIN";
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
+export const UserProfile: React.FC<UserProfileProps> = ({ userId, getUser, accessToken }) => {
     const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
 
     useEffect(() => {
@@ -21,6 +25,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
             try {
                 // const response = await fetch(`/api/users/${userId}/profile`);
                 // const data: UserProfileData = await response.json();
+                console.log('User', getUser(userId, accessToken));
+
                 const data: UserProfileData = {
                     name: "John Doe",
                     bio: "Animal lover and breeder.",
