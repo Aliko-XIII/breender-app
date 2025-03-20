@@ -1,4 +1,16 @@
-export const Register = ({ registerUser }) => {
+import { useNavigate } from 'react-router-dom';
+import { ApiResponse } from '../../types/index';
+
+interface RegisterProps {
+    registerUser: (email: string, password: string) => Promise<ApiResponse>;
+}
+
+export const Register: React.FC<RegisterProps> = ({ registerUser }) => {
+    const navigate = useNavigate();
+    const navigateToLogin = () => {
+        navigate('/login');
+    };
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log("Form submittion initiated");
@@ -11,7 +23,18 @@ export const Register = ({ registerUser }) => {
             alert("Passwords do not match");
             return;
         }
-        registerUser(signupData.get("email") as string, signupData.get("pass") as string);
+        registerUser(
+            signupData.get("email") as string,
+            signupData.get("pass") as string)
+            .then(response => {
+                console.log(response);
+                if (response.status === 200 || response.status === 201) {
+                    navigateToLogin();
+                }
+                else {
+                    alert("Sign up failed");
+                }
+            });
         console.log("Form submitted successfully");
     };
 
