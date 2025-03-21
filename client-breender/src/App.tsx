@@ -6,6 +6,7 @@ import { UserProfile } from "./components/UserProfile/UserProfile";
 import { AnimalProfile } from "./components/AnimalProfile/AnimalProfile";
 import { AuthProvider } from './context/AuthContext';
 import { ApiResponse } from "./types";
+import { TopPanel } from "./components/TopPanel/TopPanel";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -16,6 +17,7 @@ interface Api {
 function App({ api }: { api: Api }) {
   return (
     <AuthProvider api={api}>
+      <TopPanel />
       <Routes>
         <Route path='/' element={<WelcomePage />} />
         <Route path='/login' element={<Login />} />
