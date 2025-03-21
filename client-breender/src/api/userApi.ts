@@ -1,9 +1,9 @@
 import axios from 'axios';
 
-export const getUser = async (userId:string, accessToken: string) => {
+export const getUser = async (userId: string, accessToken: string, includeProfile = false) => {
     try {
         const response = await axios.get(
-            `http://localhost:3000/api/v1/users/${userId}`,
+            `http://localhost:3000/api/v1/users/${userId}?include_profile=${includeProfile}`,
             { headers: { Authorization: `Bearer ${accessToken}` } }
         );
         return { status: response.status, data: response.data };

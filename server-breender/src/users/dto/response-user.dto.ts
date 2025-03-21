@@ -1,7 +1,9 @@
-import { IsUUID, IsNotEmpty } from 'class-validator';
+import { Role } from "@prisma/client";
+import { ResponseUserProfieDto } from "./response-user-profile.dto";
 
 export class ResponseUserDto {
-  @IsUUID()
-  @IsNotEmpty()
   id: string;
+  email: string;
+  role: Role;
+  profile?: ResponseUserProfieDto;
 }

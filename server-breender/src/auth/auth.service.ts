@@ -8,6 +8,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { TokenPayloadDto } from './dto/token-payload.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +29,7 @@ export class AuthService {
     async register(
         createUserDto: CreateUserDto,
     ): Promise<{ message: string; data: { id: string } }> {
-        const { id } = await this.usersService.create(createUserDto);
+        const { id } = await this.usersService.createUser(createUserDto);
 
         return {
             message: 'User registered successfully.',
@@ -40,10 +41,10 @@ export class AuthService {
 
     async login(loginUserDto: LoginUserDto) {
         const { email, pass } = loginUserDto;
-        const responseUserDto: ResponseUserDto = await this.usersService.checkAuth(email, pass);
+        const responseUserDto: TokenPayloadDto = await this.usersService.checkAuth(email, pass);
 
-        const accessToken = this.generateAccessToken(responseUserDto.id);
-        const refreshToken = await this.generateAndSaveRefreshToken(responseUserDto.id);
+        const accessToken = this.generateAccessToken(responseUserDto.id, email);
+        const refreshToken = await this.generateAndSaveRefreshToken(responseUserDto.id, email);
 
         return {
             message: 'User logged in successfully.',
@@ -65,7 +66,7 @@ export class AuthService {
         const payload = await this.validateRefreshToken(refreshToken);
         const userId = payload.id;
 
-        const accessToken = this.generateAccessToken(userId);
+        const accessToken = this.generateAccessToken(userId, payload.email);
         return {
             message: 'Access token updated successfully.',
             data: {
@@ -79,10 +80,11 @@ export class AuthService {
         return { message: 'User logged out successfully, refresh token deleted.' };
     }
 
-    generateAccessToken(userId: string) {
+    generateAccessToken(userId: string, email: string) {
         return this.jwtService.sign(
             {
-                id: userId
+                id: userId,
+                email
             },
             {
                 secret: this.jwtSecret,
@@ -91,9 +93,9 @@ export class AuthService {
         );
     }
 
-    async generateAndSaveRefreshToken(userId: string) {
+    async generateAndSaveRefreshToken(userId: string, email: string) {
         const refreshToken = this.jwtService.sign(
-            { id: userId },
+            { id: userId, email },
             {
                 secret: this.jwtSecret,
                 expiresIn: this.refreshExp
@@ -127,8 +129,8 @@ export class AuthService {
 
     private async validateRefreshToken(
         refreshToken: string,
-    ): Promise<ResponseUserDto> {
-        const decoded = this.jwtService.verify<{ id: string }>(refreshToken, {
+    ): Promise<TokenPayloadDto> {
+        const decoded = this.jwtService.verify<TokenPayloadDto>(refreshToken, {
             secret: this.jwtSecret,
         });
         const authRecord = await this.databaseService.refreshToken.findUnique(
@@ -142,8 +144,9 @@ export class AuthService {
             throw new BadRequestException('Invalid refresh token');
         }
 
-        const user: ResponseUserDto = {
+        const user: TokenPayloadDto = {
             id: decoded.id,
+            email: decoded.email,
         }
 
         return user;

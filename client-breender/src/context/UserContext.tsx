@@ -3,9 +3,9 @@ import { useCookies } from 'react-cookie';
 
 interface UserContextType {
   userId: string | null;
-  setUserId: (id: string) => void;
+  setUserId: (id: string | null) => void;
   userEmail: string | null;
-  setUserEmail: (email: string) => void;
+  setUserEmail: (email: string | null) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -21,9 +21,15 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (cookies.access_token) {
-      const decodedToken = JSON.parse(atob(cookies.access_token.split('.')[1]));
-      setUserId(decodedToken.id);
-      setUserEmail(decodedToken.email);
+      try {
+        const decodedToken = JSON.parse(atob(cookies.access_token.split('.')[1]));
+        setUserId(decodedToken.id || null);
+        setUserEmail(decodedToken.email || null);
+      } catch (error) {
+        console.error('Failed to decode token:', error);
+        setUserId(null);
+        setUserEmail(null);
+      }
     }
   }, [cookies.access_token]);
 

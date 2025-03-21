@@ -7,13 +7,14 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from 'src/database/database.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, User, UserProfile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { ResponseUserDto } from './dto/response-user.dto';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService) { }
 
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
@@ -28,7 +29,7 @@ export class UsersService {
     return bcrypt.compare(password, hashedPassword);
   }
 
-  public async checkAuth(email: string, password: string): Promise<ResponseUserDto> {
+  public async checkAuth(email: string, password: string): Promise<TokenPayloadDto> {
     const user = await this.databaseService.user.findUnique({
       where: { email: email },
     });
@@ -45,14 +46,10 @@ export class UsersService {
       throw new BadRequestException('Invalid password.');
     }
 
-    const responseUserDto: ResponseUserDto = {
-      id: user.id
-    };
-
-    return responseUserDto;
+    return { id: user.id, email: user.email };
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto) {
     const existingUser = await this.databaseService.user.findUnique({
       where: { email: createUserDto.email },
     });
@@ -88,17 +85,39 @@ export class UsersService {
     return user;
   }
 
-  async findAll(authUserId: string) {
+  async getAllUsers(authUserId: string) {
     // You can add logic to filter or log actions based on authUserId
     return await this.databaseService.user.findMany({});
   }
 
-  async findOne(id: string, authUserId: string) {
-    // Optionally check if the user has permission based on authUserId
-    return await this.databaseService.user.findUnique({ where: { id } });
+  private toResponseUserDto(user: User & { userProfile?: UserProfile }): ResponseUserDto {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      profile: user.userProfile
+        ? {
+          name: user.userProfile.name,
+          bio: user.userProfile.bio,
+          pictureUrl: user.userProfile.pictureUrl,
+        }
+        : undefined
+    };
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, authUserId: string) {
+  async getUserById(
+    id: string,
+    authUserId: string,
+    includeProfile: boolean = false) {
+    const user = await this.databaseService.user.findUnique(
+      {
+        where: { id },
+        include: includeProfile ? { userProfile: true } : undefined
+      },);
+    return this.toResponseUserDto(user);
+  }
+
+  async updateUser(id: string, authUserId: string, updateUserDto: UpdateUserDto) {
     const user = await this.databaseService.user.findUnique({
       where: { id },
     });
@@ -153,7 +172,7 @@ export class UsersService {
     }
   }
 
-  async remove(id: string, authUserId: string) {
+  async removeUserById(id: string, authUserId: string) {
     const user = await this.databaseService.user.findUnique({
       where: { id },
     });

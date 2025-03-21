@@ -7,6 +7,8 @@ import { AnimalProfile } from "./components/AnimalProfile/AnimalProfile";
 import { AuthProvider } from './context/AuthContext';
 import { ApiResponse } from "./types";
 import { TopPanel } from "./components/TopPanel/TopPanel";
+import { UserProvider } from "./context/UserContext";
+import { UserSetup } from "./components/UserSetup/UserSetup";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -17,14 +19,17 @@ interface Api {
 function App({ api }: { api: Api }) {
   return (
     <AuthProvider api={api}>
-      <TopPanel />
-      <Routes>
-        <Route path='/' element={<WelcomePage />} />
-        <Route path='/login' element={<Login />} />
-        <Route path='/signup' element={<Register />} />
-        <Route path='/user-profile' element={<UserProfile />} />
-        <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
-      </Routes>
+      <UserProvider>
+        <TopPanel />
+        <Routes>
+          <Route path='/' element={<WelcomePage />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/signup' element={<Register />} />
+          <Route path='/user-profile' element={<UserProfile />} />
+          <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
+          <Route path='/setup-profile' element={<UserSetup />} />
+        </Routes>
+      </UserProvider>
     </AuthProvider>
   );
 }
