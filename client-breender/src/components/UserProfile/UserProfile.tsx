@@ -14,11 +14,11 @@ interface UserProfileData {
 
 interface UserProfileProps {
     getUser: (userId: string, includeProfile: boolean) => Promise<ApiResponse>;
+    updateUser: (userId: string, data: Partial<UserProfileData>) => Promise<ApiResponse>;
 }
 
-export const UserProfile: React.FC<UserProfileProps> = ({ getUser }) => {
+export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser }) => {
     const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
-
     const { userId, isLoading } = useUser();
     const navigate = useNavigate();
 
@@ -34,17 +34,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser }) => {
 
                 const response = await getUser(userId, true);
                 if (!response.data.profile) navigate("/setup-profile");
-                console.log(response);
-
-                const data: UserProfileData = {
-                    name: "John Doe",
-                    bio: "Animal lover and breeder.",
-                    pictureUrl: "https://static.vecteezy.com/system/resources/previews/004/511/281/original/default-avatar-photo-placeholder-profile-picture-vector.jpg",
-                    phone: "+1234567890",
-                    email: "test@mail.com",
-                    role: "OWNER",
-                };
-                setUserProfile(data);
+                setUserProfile({
+                    name: response.data.profile.name,
+                    bio: response.data.profile.bio,
+                    pictureUrl: response.data.profile.pictureUrl,
+                    phone: response.data.profile.phone,
+                    email: response.data.email,
+                    role: response.data.role,
+                });
             } catch (error) {
                 console.error("Error fetching user profile:", error);
             }
@@ -53,11 +50,25 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser }) => {
         fetchUserProfile();
     }, [userId, navigate, getUser, isLoading]);
 
-    if (isLoading) {
-        return <div>Loading user data...</div>;
-    }
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if (userProfile) {
+            setUserProfile({ ...userProfile, [e.target.name]: e.target.value });
+        }
+    };
 
-    if (!userProfile) {
+    const handleSave = async () => {
+        if (userId && userProfile) {
+            try {
+                await updateUser(userId, userProfile);
+                alert("Profile updated successfully!");
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                alert("Failed to update profile.");
+            }
+        }
+    };
+
+    if (isLoading || !userProfile) {
         return <div>Loading profile...</div>;
     }
 
@@ -66,43 +77,37 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser }) => {
             <div className="card shadow-lg p-4" style={{ maxWidth: "500px", width: "100%" }}>
                 <h1 className="text-center mb-4">User Profile</h1>
 
-                <div className="text-center mb-3">
-                    {userProfile.pictureUrl ? (
-                        <img
-                            src={userProfile.pictureUrl}
-                            alt="Profile"
-                            className="rounded-circle"
-                            style={{ width: "150px", height: "150px", objectFit: "cover" }}
-                        />
-                    ) : (
-                        <div className="rounded-circle" style={{ width: "150px", height: "150px", backgroundColor: "#ddd" }} />
-                    )}
+                <div className="mb-3">
+                    <label>Name:</label>
+                    <input type="text" name="name" value={userProfile.name} onChange={handleChange} className="form-control" />
                 </div>
 
                 <div className="mb-3">
-                    <strong>Name:</strong>
-                    <p>{userProfile.name}</p>
-                </div>
-
-                <div className="mb-3">
-                    <strong>Email:</strong>
+                    <label>Email:</label>
                     <p>{userProfile.email}</p>
                 </div>
 
                 <div className="mb-3">
-                    <strong>Role:</strong>
+                    <label>Role:</label>
                     <p>{userProfile.role}</p>
                 </div>
 
                 <div className="mb-3">
-                    <strong>Phone:</strong>
-                    <p>{userProfile.phone ? userProfile.phone : "Not provided"}</p>
+                    <label>Phone:</label>
+                    <input type="text" name="phone" value={userProfile.phone || ""} onChange={handleChange} className="form-control" />
                 </div>
 
                 <div className="mb-3">
-                    <strong>Bio:</strong>
-                    <p>{userProfile.bio}</p>
+                    <label>Bio:</label>
+                    <textarea name="bio" value={userProfile.bio} onChange={handleChange} className="form-control" />
                 </div>
+
+                <div className="mb-3">
+                    <label>Picture URL:</label>
+                    <input type="text" name="pictureUrl" value={userProfile.pictureUrl || ""} onChange={handleChange} className="form-control" />
+                </div>
+
+                <button onClick={handleSave} className="btn btn-primary w-100">Save</button>
             </div>
         </div>
     );
