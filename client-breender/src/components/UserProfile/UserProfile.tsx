@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { ApiResponse } from "../../types";
+import { useUser } from "../../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 interface UserProfileData {
     name: string;
@@ -9,14 +12,29 @@ interface UserProfileData {
     role: "OWNER" | "VET" | "ADMIN";
 }
 
-export const UserProfile = () => {
+interface UserProfileProps {
+    getUser: (userId: string, includeProfile: boolean) => Promise<ApiResponse>;
+}
+
+export const UserProfile: React.FC<UserProfileProps> = ({ getUser }) => {
     const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+
+    const { userId, isLoading } = useUser();
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                // const response = await fetch(`/api/users/${userId}/profile`);
-                // const data: UserProfileData = await response.json();
+                if (isLoading) return;
+
+                if (!userId) {
+                    navigate("/login");
+                    return;
+                }
+
+                const response = await getUser(userId, true);
+                if (!response.data.profile) navigate("/setup-profile");
+                console.log(response);
 
                 const data: UserProfileData = {
                     name: "John Doe",
@@ -33,10 +51,14 @@ export const UserProfile = () => {
         };
 
         fetchUserProfile();
-    }, []);
+    }, [userId, navigate, getUser, isLoading]);
+
+    if (isLoading) {
+        return <div>Loading user data...</div>;
+    }
 
     if (!userProfile) {
-        return <div>Loading...</div>;
+        return <div>Loading profile...</div>;
     }
 
     return (

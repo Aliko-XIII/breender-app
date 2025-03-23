@@ -29,7 +29,7 @@ export class UsersController {
   getUserById(
     @Param('id') id: string,
     @Request() req,
-    @Query('include_profile') includeProfile: boolean = false,
+    @Query('include_profile') includeProfile: boolean,
   ) {
     const authUserId = req.authUserId;
     return this.usersService.getUserById(id, authUserId, includeProfile);

@@ -114,6 +114,7 @@ export class UsersService {
         where: { id },
         include: includeProfile ? { userProfile: true } : undefined
       },);
+    console.log(user);
     return this.toResponseUserDto(user);
   }
 
