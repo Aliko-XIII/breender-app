@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { Button, Form, Container, Card } from "react-bootstrap";
+import { useUser } from "../../context/UserContext";
 
 interface UserSetupData {
     name: string;
     bio: string;
-    pictureUrl: string;
-    phone: string;
+    pictureUrl?: string;
 }
 
-export const UserSetup = () => {
+export const UserSetup = ({ updateUser }) => {
+    const { userId, isLoading } = useUser();
+
     const [userData, setUserData] = useState<UserSetupData>({
         name: "",
         bio: "",
-        pictureUrl: "",
-        phone: "",
+        pictureUrl: undefined,
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -26,10 +27,10 @@ export const UserSetup = () => {
 
     const handleSave = async () => {
         try {
-            // Збереження профілю (запит на сервер)
+            if (isLoading) return;
             console.log("Saving profile data:", userData);
+            await updateUser(userId, userData);
             alert("Profile setup completed!");
-            // Перенаправлення на іншу сторінку після успішного збереження
         } catch (error) {
             console.error("Error saving profile data:", error);
             alert("Failed to save profile");
@@ -73,17 +74,6 @@ export const UserSetup = () => {
                         value={userData.pictureUrl}
                         onChange={handleInputChange}
                         placeholder="Enter a profile picture URL"
-                    />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                    <Form.Label>Phone</Form.Label>
-                    <Form.Control
-                        type="text"
-                        name="phone"
-                        value={userData.phone}
-                        onChange={handleInputChange}
-                        placeholder="Enter your phone number"
                     />
                 </Form.Group>
 

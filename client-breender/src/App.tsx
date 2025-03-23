@@ -7,13 +7,23 @@ import { AnimalProfile } from "./components/AnimalProfile/AnimalProfile";
 import { AuthProvider } from './context/AuthContext';
 import { ApiResponse } from "./types";
 import { TopPanel } from "./components/TopPanel/TopPanel";
-import { UserProvider, useUser } from "./context/UserContext";
+import { UserProvider } from "./context/UserContext";
 import { UserSetup } from "./components/UserSetup/UserSetup";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
   loginUser: (email: string, password: string) => Promise<ApiResponse>;
   getUser: (userId: string, includeProfile: boolean) => Promise<ApiResponse>;
+  updateUser: (
+    userId: string,
+    updateData: {
+      email?: string,
+      pass?: string,
+      name?: string,
+      bio?: string,
+      pictureUrl?: string,
+    }
+  ) => Promise<ApiResponse>;
 }
 
 function App({ api }: { api: Api }) {
@@ -27,7 +37,7 @@ function App({ api }: { api: Api }) {
           <Route path='/signup' element={<Register />} />
           <Route path='/user-profile' element={<UserProfile getUser={api.getUser} />} />
           <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
-          <Route path='/setup-profile' element={<UserSetup />} />
+          <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>
       </UserProvider>
     </AuthProvider>

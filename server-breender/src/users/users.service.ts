@@ -163,13 +163,19 @@ export class UsersService {
     }
 
     try {
-      await this.databaseService.userProfile.update({
-        data: updatedProfile,
+      await this.databaseService.userProfile.upsert({
+        create: {
+          user: { connect: { id } },
+          name: updateUserDto.name || '',
+          bio: updateUserDto.bio || '',
+          pictureUrl: updateUserDto.pictureUrl || null,
+        },
+        update: updatedProfile,
         where: { userId: id },
       });
     } catch (error) {
-      console.error(`Failed to update profile for user with ID ${id}:`, error);
-      throw new Error(`Could not update profile for user.`);
+      console.error(`Failed to upsert profile for user with ID ${id}:`, error);
+      throw new Error(`Could not upsert profile for user.`);
     }
   }
 
