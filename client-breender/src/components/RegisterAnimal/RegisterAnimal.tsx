@@ -1,0 +1,88 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ApiResponse } from "../../types";
+
+interface NewAnimalData {
+    name: string;
+    sex: "MALE" | "FEMALE";
+    breed: string;
+    species: string;
+    bio?: string;
+    birthDate: string;
+}
+
+interface RegisterAnimalProps {
+    createAnimal: (animalData: NewAnimalData) => Promise<ApiResponse>;
+}
+
+export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) => {
+    const [formData, setFormData] = useState<NewAnimalData>({
+        name: "",
+        sex: "MALE",
+        breed: "",
+        species: "",
+        bio: "",
+        birthDate: ""
+    });
+    const navigate = useNavigate();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await createAnimal({ ...formData});
+            alert("Animal created successfully!");
+            navigate("/animals");
+        } catch (error) {
+            console.error("Failed to create animal:", error);
+            alert("Error creating animal.");
+        }
+    };
+
+    return (
+        <div className="container mt-5">
+            <div className="card shadow-lg p-4" style={{ maxWidth: "500px", width: "100%" }}>
+                <h1 className="text-center mb-4">Register New Animal</h1>
+                <form onSubmit={handleSubmit}>
+                    <div className="mb-3">
+                        <label>Name:</label>
+                        <input type="text" name="name" value={formData.name} onChange={handleChange} className="form-control" required />
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Sex:</label>
+                        <select name="sex" value={formData.sex} onChange={handleChange} className="form-control">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Breed:</label>
+                        <input type="text" name="breed" value={formData.breed} onChange={handleChange} className="form-control" required />
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Species:</label>
+                        <input type="text" name="species" value={formData.species} onChange={handleChange} className="form-control" required />
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Bio:</label>
+                        <textarea name="bio" value={formData.bio} onChange={handleChange} className="form-control" placeholder="Optional" />
+                    </div>
+
+                    <div className="mb-3">
+                        <label>Birth Date:</label>
+                        <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} className="form-control" required />
+                    </div>
+
+                    <button type="submit" className="btn btn-success w-100">Create Animal</button>
+                </form>
+            </div>
+        </div>
+    );
+};

@@ -127,7 +127,6 @@ export class AnimalsService {
   }
 
   async createAnimal(createAnimalDto: CreateAnimalDto, authUserId: string) {
-
     const user = await this.databaseService.user.findUnique({
       where: { id: authUserId },
     });
@@ -149,7 +148,7 @@ export class AnimalsService {
       bio: createAnimalDto.bio,
       birthDate: createAnimalDto.birthDate,
       owners: {
-        connect: { id: createAnimalDto.ownerId },
+        connect: { id: authUserId },
       },
     };
     try {
@@ -203,9 +202,6 @@ export class AnimalsService {
     }
     if (updateAnimalDto.birthDate) {
       updatedAnimal.birthDate = updateAnimalDto.birthDate;
-    }
-    if (updateAnimalDto.ownerId) {
-      updatedAnimal.owners = { connect: { id: updateAnimalDto.ownerId } };
     }
 
     try {

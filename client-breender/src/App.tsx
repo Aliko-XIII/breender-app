@@ -10,6 +10,7 @@ import { TopPanel } from "./components/TopPanel/TopPanel";
 import { UserProvider } from "./context/UserContext";
 import { UserSetup } from "./components/UserSetup/UserSetup";
 import { AnimalList } from "./components/AnimalList/AnimalList";
+import { RegisterAnimal } from "./components/RegisterAnimal/RegisterAnimal";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -26,6 +27,16 @@ interface Api {
     }
   ) => Promise<ApiResponse>;
   getUserAnimals: (userId: string) => Promise<ApiResponse>;
+  createAnimal: (
+    animalData: {
+      name: string,
+      sex: "MALE" | "FEMALE",
+      breed: string,
+      species: string,
+      bio?: string,
+      birthDate: string,
+    }
+  ) => Promise<ApiResponse>;
 }
 
 function App({ api }: { api: Api }) {
@@ -39,7 +50,7 @@ function App({ api }: { api: Api }) {
           <Route path='/signup' element={<Register />} />
           <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
           <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
-          <Route path='/animals/new' element={<RegisterAnimal />} />
+          <Route path='/animals/new' element={<RegisterAnimal createAnimal={api.createAnimal} />} />
           <Route path='/animals/:id' element={<AnimalProfile animalId={useParams().id as string} />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>

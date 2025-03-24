@@ -34,7 +34,4 @@ export class CreateAnimalDto {
 
   @IsDateString()
   birthDate: Date;
-
-  @IsUUID()
-  ownerId: string;
 }
