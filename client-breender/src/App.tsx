@@ -39,6 +39,7 @@ function App({ api }: { api: Api }) {
           <Route path='/signup' element={<Register />} />
           <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
           <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
+          <Route path='/animals/new' element={<RegisterAnimal />} />
           <Route path='/animals/:id' element={<AnimalProfile animalId={useParams().id as string} />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>
