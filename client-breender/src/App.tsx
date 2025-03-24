@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams } from "react-router-dom";
 import { Login } from './components/Login/Login';
 import { Register } from './components/Register/Register';
 import { WelcomePage } from './components/WelcomePage/WelcomePage';
@@ -9,6 +9,7 @@ import { ApiResponse } from "./types";
 import { TopPanel } from "./components/TopPanel/TopPanel";
 import { UserProvider } from "./context/UserContext";
 import { UserSetup } from "./components/UserSetup/UserSetup";
+import { AnimalList } from "./components/AnimalList/AnimalList";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -24,6 +25,7 @@ interface Api {
       pictureUrl?: string,
     }
   ) => Promise<ApiResponse>;
+  getUserAnimals: (userId: string) => Promise<ApiResponse>;
 }
 
 function App({ api }: { api: Api }) {
@@ -35,8 +37,9 @@ function App({ api }: { api: Api }) {
           <Route path='/' element={<WelcomePage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Register />} />
-          <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser}/>} />
-          <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
+          <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
+          <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
+          <Route path='/animals/:id' element={<AnimalProfile animalId={useParams().id as string} />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>
       </UserProvider>

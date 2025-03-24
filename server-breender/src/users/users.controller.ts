@@ -35,6 +35,11 @@ export class UsersController {
     return this.usersService.getUserById(id, authUserId, includeProfile);
   }
 
+  @Get(':id/animals')
+  getUserAnimals(@Param('id') id: string) {
+    return this.usersService.getAnimalsByUserId(id);
+  }
+
   @Patch(':id')
   updateUser(
     @Param('id') id: string,

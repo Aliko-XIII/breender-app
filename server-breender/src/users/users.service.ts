@@ -7,7 +7,7 @@ import {
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from 'src/database/database.service';
-import { Prisma, User, UserProfile } from '@prisma/client';
+import { Animal, Prisma, User, UserProfile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
@@ -117,6 +117,23 @@ export class UsersService {
       },);
     console.log(user);
     return this.toResponseUserDto(user);
+  }
+
+  async getAnimalsByUserId(userId: string): Promise<Animal[]> {
+    const user = await this.databaseService.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role === 'OWNER') {
+      return await this.databaseService.animal.findMany({
+        where: { owners: { some: { ownerId: userId } } },
+      });
+    } else if (user.role === 'VET') {
+      return await this.databaseService.animal.findMany({
+        where: { vetAssignments: { some: { vetId: userId } } },
+      });
+    }
+    return [];
   }
 
   async updateUser(id: string, authUserId: string, updateUserDto: UpdateUserDto) {
