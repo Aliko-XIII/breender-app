@@ -24,6 +24,7 @@ export const updateUser = async (
         name?: string,
         bio?: string,
         pictureUrl?: string,
+        phone?: string,
     }
 ) => {
     try {

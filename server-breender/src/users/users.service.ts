@@ -100,6 +100,7 @@ export class UsersService {
           name: user.userProfile.name,
           bio: user.userProfile.bio,
           pictureUrl: user.userProfile.pictureUrl,
+          phone: user.userProfile.phone
         }
         : undefined
     };
@@ -161,6 +162,9 @@ export class UsersService {
     if (updateUserDto.pictureUrl) {
       updatedProfile.pictureUrl = updateUserDto.pictureUrl;
     }
+    if (updateUserDto.phone) {
+      updatedProfile.phone = updateUserDto.phone;
+    }
 
     try {
       await this.databaseService.userProfile.upsert({
@@ -169,6 +173,7 @@ export class UsersService {
           name: updateUserDto.name || '',
           bio: updateUserDto.bio || '',
           pictureUrl: updateUserDto.pictureUrl || null,
+          phone: updateUserDto.phone || null,
         },
         update: updatedProfile,
         where: { userId: id },

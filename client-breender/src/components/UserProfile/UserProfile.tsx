@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 
 interface UserProfileData {
     name: string;
-    bio: string;
-    pictureUrl: string | null;
-    phone: string | null;
+    bio?: string;
+    pictureUrl?: string;
+    phone?: string;
     email: string;
     role: "OWNER" | "VET" | "ADMIN";
 }
@@ -77,6 +77,15 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
             <div className="card shadow-lg p-4" style={{ maxWidth: "500px", width: "100%" }}>
                 <h1 className="text-center mb-4">User Profile</h1>
 
+                <div className="text-center mb-3">
+                    <img
+                        src={userProfile.pictureUrl || "/avatar-placeholder.png"}
+                        alt="User Avatar"
+                        className="rounded-circle"
+                        style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                    />
+                </div>
+
                 <div className="mb-3">
                     <label>Name:</label>
                     <input type="text" name="name" value={userProfile.name} onChange={handleChange} className="form-control" />
@@ -94,17 +103,17 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
 
                 <div className="mb-3">
                     <label>Phone:</label>
-                    <input type="text" name="phone" value={userProfile.phone || ""} onChange={handleChange} className="form-control" />
+                    <input type="text" name="phone" value={userProfile.phone || ""} onChange={handleChange} className="form-control" placeholder="Not set" />
                 </div>
 
                 <div className="mb-3">
                     <label>Bio:</label>
-                    <textarea name="bio" value={userProfile.bio} onChange={handleChange} className="form-control" />
+                    <textarea name="bio" value={userProfile.bio} onChange={handleChange} className="form-control" placeholder="Not set" />
                 </div>
 
                 <div className="mb-3">
                     <label>Picture URL:</label>
-                    <input type="text" name="pictureUrl" value={userProfile.pictureUrl || ""} onChange={handleChange} className="form-control" />
+                    <input type="text" name="pictureUrl" value={userProfile.pictureUrl || ""} onChange={handleChange} className="form-control" placeholder="Not set" />
                 </div>
 
                 <button onClick={handleSave} className="btn btn-primary w-100">Save</button>

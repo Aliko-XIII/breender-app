@@ -35,7 +35,7 @@ function App({ api }: { api: Api }) {
           <Route path='/' element={<WelcomePage />} />
           <Route path='/login' element={<Login />} />
           <Route path='/signup' element={<Register />} />
-          <Route path='/user-profile' element={<UserProfile getUser={api.getUser} />} />
+          <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser}/>} />
           <Route path='/animal-profile' element={<AnimalProfile animalId="test_id" />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>

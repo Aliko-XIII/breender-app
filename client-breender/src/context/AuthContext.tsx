@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<{ api: any; children: React.ReactNode }> = (
             location.pathname === '/';
 
         if (!isAuthenticated && !isAuthRoute) {
-            navigate('/');
+            navigate('/login');
         }
     }, [cookies, location.pathname, navigate]);
 

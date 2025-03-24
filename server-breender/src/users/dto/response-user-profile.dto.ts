@@ -1,6 +1,6 @@
 export class ResponseUserProfieDto {
     name: string;
     bio: string;
-    phoneNumber?: string;
+    phone?: string;
     pictureUrl?: string;
 }

@@ -41,4 +41,8 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
   @MinLength(2, { message: 'Picture URL is not valid' })
   pictureUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
 }
