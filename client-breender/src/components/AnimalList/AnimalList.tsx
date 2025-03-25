@@ -24,14 +24,12 @@ export const AnimalList: React.FC<AnimalListProps> = ({ getUserAnimals }) => {
                     return;
                 }
                 const userAnimals = await getUserAnimals(userId);
-                console.log(userAnimals);
-                if (userAnimals.data) return;
-                // setAnimals(userAnimals.data.map((animal: any) => ({
-                //     id: animal.id,
-                //     name: animal.name,
-                //     species: animal.species,
-                //     photoUrl: animal.photoUrl,
-                // })));
+                setAnimals(userAnimals.data.map((animal: any) => ({
+                    id: animal.id,
+                    name: animal.name,
+                    species: animal.species,
+                    photoUrl: animal.photoUrl,
+                })));
             } catch (error) {
                 console.error("Failed to fetch animals:", error);
             } finally {
