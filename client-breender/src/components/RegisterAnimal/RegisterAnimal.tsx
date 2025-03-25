@@ -55,8 +55,8 @@ export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) 
                     <div className="mb-3">
                         <label>Sex:</label>
                         <select name="sex" value={formData.sex} onChange={handleChange} className="form-control">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
+                            <option value="MALE">MALE</option>
+                            <option value="FEMALE">FEMALE</option>
                         </select>
                     </div>
 

@@ -140,15 +140,27 @@ export class AnimalsService {
       throw new ForbiddenException("You do not have permission to create an animal.");
     }
 
+    let owner = await this.databaseService.owner.findUnique({
+      where: { userId: authUserId },
+    });
+    
+    if (!owner) {
+      owner = await this.databaseService.owner.create({
+        data: { userId: authUserId },
+      });
+    }
+
     const createdAnimal: Prisma.AnimalCreateInput = {
       name: createAnimalDto.name,
       sex: createAnimalDto.sex,
       breed: createAnimalDto.breed,
       species: createAnimalDto.species,
       bio: createAnimalDto.bio,
-      birthDate: createAnimalDto.birthDate,
+      birthDate: new Date(createAnimalDto.birthDate).toISOString(),
       owners: {
-        connect: { id: authUserId },
+        create: {
+          owner: { connect: { id: owner.id } },
+        },
       },
     };
     try {
