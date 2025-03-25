@@ -176,7 +176,11 @@ export class AnimalsService {
   }
 
   async findAnimalById(id: string, authUserId: string) {
-    return await this.databaseService.animal.findUnique({ where: { id } });
+    const animal = await this.databaseService.animal.findUnique({ where: { id } });
+    if (!animal) {
+      throw new NotFoundException(`Animal with ID ${id} not found.`);
+    }
+    return animal;
   }
 
   async updateAnimal(id: string, updateAnimalDto: UpdateAnimalDto, authUserId: string) {

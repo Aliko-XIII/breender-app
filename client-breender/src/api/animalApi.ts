@@ -14,6 +14,20 @@ export const getUserAnimals = async (
     }
 };
 
+export const getAnimal = async (
+    animalId: string,
+) => {
+    try {
+        const response = await axiosInstance.get(
+            `animals/${animalId}`,
+        );
+        return { status: response.status, data: response.data };
+    } catch (error: any) {
+        console.error(error);
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};
+
 export const createAnimal = async (
     animalData: {
         name: string,

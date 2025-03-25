@@ -37,6 +37,7 @@ interface Api {
       birthDate: string,
     }
   ) => Promise<ApiResponse>;
+  getAnimal: (animalId: string) => Promise<ApiResponse>;
 }
 
 function App({ api }: { api: Api }) {
@@ -51,7 +52,7 @@ function App({ api }: { api: Api }) {
           <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
           <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
           <Route path='/animals/new' element={<RegisterAnimal createAnimal={api.createAnimal} />} />
-          <Route path='/animals/:id' element={<AnimalProfile animalId={useParams().id as string} />} />
+          <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>
       </UserProvider>
