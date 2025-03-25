@@ -125,12 +125,17 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
     if (user.role === 'OWNER') {
+      const owner = await this.databaseService.owner.findUnique({ where: { userId } });
+      console.log(owner);
+      if (!owner) { return []; }
       return await this.databaseService.animal.findMany({
-        where: { owners: { some: { ownerId: userId } } },
+        where: { owners: { some: { ownerId: owner.id } } },
       });
     } else if (user.role === 'VET') {
+      const vet = await this.databaseService.vet.findUnique({ where: { userId } });
+      if (!vet) { return []; }
       return await this.databaseService.animal.findMany({
-        where: { vetAssignments: { some: { vetId: userId } } },
+        where: { vetAssignments: { some: { vetId: vet.id } } },
       });
     }
     return [];
