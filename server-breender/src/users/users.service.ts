@@ -74,12 +74,6 @@ export class UsersService {
           userId: user.id,
         },
       });
-    } else if (createUserDto.role === 'VET') {
-      await this.databaseService.vet.create({
-        data: {
-          userId: user.id,
-        },
-      });
     }
 
     return user;
@@ -130,12 +124,6 @@ export class UsersService {
       if (!owner) { return []; }
       return await this.databaseService.animal.findMany({
         where: { owners: { some: { ownerId: owner.id } } },
-      });
-    } else if (user.role === 'VET') {
-      const vet = await this.databaseService.vet.findUnique({ where: { userId } });
-      if (!vet) { return []; }
-      return await this.databaseService.animal.findMany({
-        where: { vetAssignments: { some: { vetId: vet.id } } },
       });
     }
     return [];

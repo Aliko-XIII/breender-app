@@ -39,16 +39,7 @@ export class AnimalsService {
       },
     });
 
-    // Check if the authenticated user is a vet and is assigned to the animal
-    const vetAssignment = await this.databaseService.animalVet.findFirst({
-      where: {
-        animalId,
-        vetId: authUserId,
-        status: AssignmentStatus.ACTIVE, // You can adjust this status if needed
-      },
-    });
-
-    if (!vetAssignment && !ownerAssignment) {
+    if (!ownerAssignment) {
       throw new ForbiddenException("You are not assigned to this animal.");
     }
 
@@ -93,16 +84,7 @@ export class AnimalsService {
       },
     });
 
-    // Check if the authenticated user is a vet and is assigned to the animal
-    const vetAssignment = await this.databaseService.animalVet.findFirst({
-      where: {
-        animalId,
-        vetId: authUserId,
-        status: AssignmentStatus.ACTIVE, // You can adjust this status if needed
-      },
-    });
-
-    if (!vetAssignment && !ownerAssignment) {
+    if (!ownerAssignment) {
       throw new ForbiddenException("You are not assigned to this animal.");
     }
 

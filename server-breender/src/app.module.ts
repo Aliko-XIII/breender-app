@@ -9,7 +9,6 @@ import { ConfigModule } from '@nestjs/config';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { LogsDatabaseModule } from './logs-database/logs-database.module';
 import { OwnerModule } from './owner/owner.module';
-import { VetModule } from './vet/vet.module';
 import { SqlInjectionMiddleware } from './sql-injection-check/sql-injection.middleware';
 import { DocumentsModule } from './documents/documents.module';
 import { PhotosModule } from './photos/photos.module';
@@ -28,7 +27,6 @@ import { RemindersModule } from './reminders/reminders.module';
     }),
     LogsDatabaseModule,
     OwnerModule,
-    VetModule,
     DocumentsModule,
     PhotosModule,
     RecordsModule,

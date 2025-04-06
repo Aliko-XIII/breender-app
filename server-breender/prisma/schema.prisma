@@ -9,7 +9,6 @@ datasource db {
 
 enum Role {
   OWNER
-  VET
   ADMIN
 
   @@map("role")
@@ -32,7 +31,6 @@ model User {
 
   // Role-specific relationships
   owner            Owner? // Linked if the user is an OWNER
-  vet              Vet? // Linked if the user is a VET
   Reminder         Reminder[]
   AnimalPermission AnimalPermission[]
   ChatParticipant  ChatParticipant[]
@@ -50,15 +48,6 @@ model Owner {
   @@map("owners")
 }
 
-model Vet {
-  id      String      @id @default(uuid()) @map("vet_id")
-  userId  String      @unique @map("user_id") // Links to the User model
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  animals AnimalVet[] // Animals assigned to this vet
-
-  @@map("vets")
-}
-
 model Animal {
   id               String             @id @default(uuid()) @map("animal_id")
   name             String             @map("animal_name")
@@ -70,7 +59,6 @@ model Animal {
   latitude         Float?             @map("latitude")
   longitude        Float?             @map("longitude")
   owners           AnimalOwner[]
-  vetAssignments   AnimalVet[]
   animalDocuments  AnimalDocument[]
   animalPhotos     AnimalPhoto[]
   animalRecords    AnimalRecord[]
@@ -97,18 +85,6 @@ enum AssignmentStatus {
   REVOKED
 
   @@map("status")
-}
-
-model AnimalVet {
-  id         String           @id @default(uuid()) @map("assignment_id")
-  animalId   String           @map("animal_id")
-  vetId      String           @map("vet_id")
-  status     AssignmentStatus @default(PENDING) @map("status") // e.g., active, pending, revoked
-  assignedAt DateTime         @default(now()) @map("assigned_at")
-  animal     Animal           @relation(fields: [animalId], references: [id], onDelete: Cascade)
-  vet        Vet              @relation(fields: [vetId], references: [id], onDelete: Cascade)
-
-  @@map("animal_vets")
 }
 
 enum PermissionType {

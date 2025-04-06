@@ -16,7 +16,6 @@ interface AnimalProfileData {
   latitude?: number;
   longitude?: number;
   owners: string[];
-  vetAssignments: string[];
 }
 
 export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
@@ -38,8 +37,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
           birthDate: response.data.birthDate,
           latitude: response.data.latitude,
           longitude: response.data.longitude,
-          owners: response.data.owners? response.data.owners.map((owner: any) => owner.name) : [],
-          vetAssignments: response.data.vetAssignments? response.data.vetAssignments.map((vet: any) => vet.name) : [],
+          owners: response.data.owners? response.data.owners.map((owner: any) => owner.owner.user.userProfile.name) : [],
         }
         setAnimalData(data);
       } catch (error) {
@@ -96,17 +94,6 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
               animalData.owners.map((owner, index) => <li key={index}>{owner}</li>)
             ) : (
               <li>No owners assigned</li>
-            )}
-          </ul>
-        </div>
-
-        <div className="mb-3">
-          <strong>Vet Assignments:</strong>
-          <ul>
-            {animalData.vetAssignments.length > 0 ? (
-              animalData.vetAssignments.map((vet, index) => <li key={index}>{vet}</li>)
-            ) : (
-              <li>No vet assignments</li>
             )}
           </ul>
         </div>

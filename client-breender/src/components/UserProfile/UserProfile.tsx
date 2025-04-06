@@ -9,7 +9,7 @@ interface UserProfileData {
     pictureUrl?: string;
     phone?: string;
     email: string;
-    role: "OWNER" | "VET" | "ADMIN";
+    role: "OWNER" | "ADMIN";
 }
 
 interface UserProfileProps {
