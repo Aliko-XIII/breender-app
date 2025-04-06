@@ -143,7 +143,7 @@ export class AnimalsService {
     let owner = await this.databaseService.owner.findUnique({
       where: { userId: authUserId },
     });
-    
+
     if (!owner) {
       owner = await this.databaseService.owner.create({
         data: { userId: authUserId },
@@ -176,7 +176,23 @@ export class AnimalsService {
   }
 
   async findAnimalById(id: string, authUserId: string) {
-    const animal = await this.databaseService.animal.findUnique({ where: { id } });
+    const animal = await this.databaseService.animal.findUnique(
+      {
+        where: { id },
+        include: {
+          owners: {
+            include: {
+              owner: {
+                include: {
+                  user: {
+                    include: { userProfile: true }
+                  }
+                }
+              }
+            },
+          },
+        },
+      });
     if (!animal) {
       throw new NotFoundException(`Animal with ID ${id} not found.`);
     }
