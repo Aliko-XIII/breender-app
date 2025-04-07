@@ -37,7 +37,9 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
           birthDate: response.data.birthDate,
           latitude: response.data.latitude,
           longitude: response.data.longitude,
-          owners: response.data.owners? response.data.owners.map((owner: any) => owner.owner.user.userProfile.name) : [],
+          owners: response.data.owners ? response.data.owners.map(
+            (owner: { owner: { user: { userProfile: { name: string } } } }) =>
+              owner.owner.user.userProfile.name) : [],
         }
         setAnimalData(data);
       } catch (error) {
@@ -46,7 +48,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
     };
 
     fetchAnimalProfile();
-  }, [animalId]);
+  }, [animalId, getAnimal]);
 
   if (!animalData) {
     return <div>Loading...</div>;
