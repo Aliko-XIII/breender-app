@@ -1,4 +1,144 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common'; // Added NotFoundException
+import { DatabaseService } from 'src/database/database.service'; // Assuming same path
+// Assuming DTOs exist in a ./dto subfolder relative to this service
+import { CreatePhotoDto } from './dto/createPhoto.dto';
+import { UpdatePhotoDto } from './dto/updatePhoto.dto';
+// Prisma might be needed if you directly use its types
+// import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class PhotosService {}
+export class PhotosService {
+    constructor(private readonly databaseService: DatabaseService) {}
+
+    /**
+     * Creates a new photo record associated with a specific user.
+     * May also link to an animal if animalId is provided in the DTO.
+     * @param createPhotoDto - Data for the new photo (e.g., URL, description).
+     * @param userId - The ID of the user uploading/creating the photo record.
+     */
+    async createPhoto(
+        createPhotoDto: CreatePhotoDto,
+        userId: string,
+        // You might need additional parameters depending on how photos are handled (e.g., file buffer, animalId)
+    ) {
+        // Placeholder for actual implementation using databaseService
+        // Example:
+        // return this.databaseService.photo.create({
+        //     data: {
+        //         ...createPhotoDto, // Contains URL, potentially description, animalId etc.
+        //         userId: userId,
+        //     }
+        // });
+        console.log('Creating photo record:', createPhotoDto, 'for user:', userId);
+        throw new Error('Method createPhoto not implemented.');
+    }
+
+    /**
+     * Finds all photo records associated with a specific user.
+     * Requires authorization check via authUserId.
+     * @param userId - The ID of the user whose photos are being requested.
+     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
+     */
+    async findAllPhotosByUserId(
+        userId: string,
+        authUserId: string,
+    ) {
+        // Placeholder for actual implementation
+        // Add authorization logic: check if authUserId is allowed to see userId's photos
+        // Example:
+        // if (userId !== authUserId && !/* some other condition like friends/public */ ) { /* Throw ForbiddenException */ }
+        // return this.databaseService.photo.findMany({ where: { userId } });
+        console.log('Finding all photos for user:', userId, 'by auth user:', authUserId);
+        throw new Error('Method findAllPhotosByUserId not implemented.');
+    }
+
+    /**
+     * Finds all photo records associated with a specific animal.
+     * Requires authorization check via authUserId.
+     * @param animalId - The ID of the animal whose photos are being requested.
+     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
+     */
+    async findAllPhotosByAnimalId(
+        animalId: string,
+        authUserId: string,
+    ) {
+        // Placeholder for actual implementation
+        // Add authorization logic: check if authUserId is allowed to see photos for this animal
+        // Example:
+        // const animal = await this.databaseService.animal.findUnique({ where: { id: animalId } });
+        // if (!animal || animal.ownerId !== authUserId) { /* Throw NotFoundException or ForbiddenException */ }
+        // return this.databaseService.photo.findMany({ where: { animalId } });
+        console.log('Finding all photos for animal:', animalId, 'by auth user:', authUserId);
+        throw new Error('Method findAllPhotosByAnimalId not implemented.');
+    }
+
+    /**
+     * Finds a single photo record by its unique ID.
+     * Requires authorization check via authUserId.
+     * @param id - The ID of the photo record to find.
+     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
+     */
+    async findPhotoById(id: string, authUserId: string) {
+        // Placeholder for actual implementation
+        // Add authorization logic: check if authUserId is allowed to see this photo
+        // Example:
+        // const photo = await this.databaseService.photo.findUnique({ where: { id } });
+        // if (!photo) { throw new NotFoundException(`Photo with ID ${id} not found`); }
+        // Need to verify ownership based on photo.userId or related animal's owner
+        // if (photo.userId !== authUserId /* && check animal ownership if applicable */) { /* Throw ForbiddenException */ }
+        // return photo;
+        console.log('Finding photo by ID:', id, 'by auth user:', authUserId);
+        throw new Error('Method findPhotoById not implemented.');
+    }
+
+    /**
+     * Updates an existing photo record's metadata (e.g., description).
+     * Requires authorization check via authUserId.
+     * Note: Updating the actual photo file usually involves deletion and re-upload.
+     * @param id - The ID of the photo record to update.
+     * @param updatePhotoDto - The metadata to update the photo record with.
+     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
+     */
+    async updatePhoto(
+        id: string,
+        updatePhotoDto: UpdatePhotoDto,
+        authUserId: string) {
+        // Placeholder for actual implementation
+        // 1. Find the photo record by ID.
+        // 2. Check if the record exists.
+        // 3. Perform authorization check (does authUserId own this photo record?).
+        // 4. Update the photo record metadata using databaseService.
+        // Example:
+        // const existingPhoto = await this.findPhotoById(id, authUserId); // Reuse findById for check
+        // return this.databaseService.photo.update({
+        //     where: { id },
+        //     data: updatePhotoDto, // Update description, tags etc.
+        // });
+        console.log('Updating photo metadata ID:', id, 'with data:', updatePhotoDto, 'by auth user:', authUserId);
+        throw new Error('Method updatePhoto not implemented.');
+    }
+
+    /**
+     * Removes/deletes a photo record and potentially the associated file from storage.
+     * Requires authorization check via authUserId.
+     * @param id - The ID of the photo record to remove.
+     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
+     */
+    async removePhoto(
+        id: string,
+        authUserId: string) {
+        // Placeholder for actual implementation
+        // 1. Find the photo record by ID.
+        // 2. Check if the record exists.
+        // 3. Perform authorization check (does authUserId own this photo record?).
+        // 4. Delete the photo record from the database.
+        // 5. **Important:** Delete the actual photo file from your storage (e.g., S3, local disk).
+        // Example:
+        // const photo = await this.findPhotoById(id, authUserId); // Reuse findById for check
+        // const deletedRecord = await this.databaseService.photo.delete({ where: { id } });
+        // await deleteFileFromStorage(photo.url); // You'll need a helper for this
+        // return deletedRecord;
+         console.log('Removing photo record ID:', id, 'by auth user:', authUserId);
+        throw new Error('Method removePhoto not implemented.');
+    }
+}
