@@ -1,10 +1,9 @@
-import React from 'react';
 import { Navbar, Container, Nav } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 
 export const TopPanel = () => {
-  const { userId, isLoading } = useUser();
+  const { userId } = useUser();
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
@@ -13,12 +12,16 @@ export const TopPanel = () => {
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="me-auto">
-            {userId && <Nav.Link as={Link} to="/home">Home</Nav.Link>}
-            {userId && <Nav.Link as={Link} to="/user-profile">Profile</Nav.Link>}
-            {userId && <Nav.Link as={Link} to="/animals">Animals</Nav.Link>}
+            {/* Before auth */}
             {!userId && <Nav.Link as={Link} to="/">Welcome</Nav.Link>}
             {!userId && <Nav.Link as={Link} to="/login">Login</Nav.Link>}
             {!userId && <Nav.Link as={Link} to="/signup">Register</Nav.Link>}
+
+            {/* After auth */}
+            {userId && <Nav.Link as={Link} to="/home">Home</Nav.Link>}
+            {userId && <Nav.Link as={Link} to="/user-profile">Profile</Nav.Link>}
+            {userId && <Nav.Link as={Link} to="/animals">Animals</Nav.Link>}
+
           </Nav>
         </Navbar.Collapse>
       </Container>
