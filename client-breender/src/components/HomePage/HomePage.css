@@ -1,0 +1,29 @@
+.home-page .profile-summary-card .card-body {
+    gap: 15px; /* Adds space between avatar and text */
+}
+
+.home-page .placeholder-card {
+    border: 2px dashed #ccc; /* Highlights placeholders */
+    background-color: #f8f9fa; /* Light background for placeholders */
+    display: flex; /* Allows content to fill height */
+    flex-direction: column; /* Stacks elements vertically inside */
+}
+
+.home-page .placeholder-card .card-body {
+    flex-grow: 1; /* Allows card body to stretch */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
+    text-align: center;
+}
+
+.home-page .placeholder-card i {
+    color: #6c757d; /* Grey color for placeholder text */
+}
+
+/* Style for the default avatar placeholder */
+img[src$='/avatar-placeholder.png'] {
+    border: 1px solid #dee2e6; /* Thin border for avatar placeholder */
+    background-color: #e9ecef; /* Light grey background */
+}
