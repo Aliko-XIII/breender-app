@@ -15,7 +15,7 @@ export class RecordsService {
         createRecordDto: CreateRecordDto,
         authUserId: string,
     ) {
-        const { animalId, description, recordType } = createRecordDto;
+        const { animalId, description, recordType, details } = createRecordDto;
         const animal = await this.databaseService.animal.findUnique({
             where: { id: animalId },
         });
@@ -37,7 +37,7 @@ export class RecordsService {
             throw new ForbiddenException("You are not assigned to this animal.");
         }
 
-        await this.validateRecordDetails(createRecordDto);
+        await this.validateDetailsByType(details, recordType);
 
         // Create and store the animal document
         return this.databaseService.animalRecord.create({
@@ -112,12 +112,60 @@ export class RecordsService {
     }
 
     async updateRecord(
-        id: string,
-        UpdateRecordDto: UpdateRecordDto,
-        authUserId: any
+        recordId: string,
+        updateRecordDto: UpdateRecordDto,
+        authUserId: string,
     ) {
-        const record = await this.databaseService.animalRecord.findUnique({ where: { id } });
-        if (!record) throw new NotFoundException(`Record with ID ${id} not found`);
+        const existingRecord = await this.databaseService.animalRecord.findUnique({
+            where: { id: recordId },
+            include: {
+                animal: {
+                    include: {
+                        owners: { where: { owner: { userId: authUserId } } }
+                    }
+                }
+            },
+        });
+
+        if (!existingRecord) {
+            throw new NotFoundException(`Record with ID ${recordId} not found.`);
+        }
+
+        if (!existingRecord.animal?.owners || existingRecord.animal.owners.length === 0) {
+            throw new ForbiddenException(`You are not authorized to update this record.`);
+        }
+
+        const dataToUpdate: Prisma.AnimalRecordUpdateInput = {};
+
+        if (updateRecordDto.description !== undefined) {
+            dataToUpdate.description = updateRecordDto.description;
+        }
+
+        if (updateRecordDto.details !== undefined) {
+            const currentDetails = existingRecord.details || {};
+            const incomingDetails = updateRecordDto.details;
+            const mergedDetails = {
+                ...(currentDetails as object),
+                ...(incomingDetails as object),
+            };
+            await this.validateDetailsByType(mergedDetails, existingRecord.recordType);
+            dataToUpdate.details = mergedDetails as any;
+        }
+
+        if (Object.keys(dataToUpdate).length === 0) {
+            console.log(`No fields to update for record ${recordId}.`);
+            return existingRecord;
+        }
+
+        return this.databaseService.animalRecord.update({
+            where: { id: recordId },
+            data: dataToUpdate,
+            include: {
+                animal: {
+                    select: { id: true, name: true }
+                }
+            }
+        });
     }
 
     async removeRecord(
@@ -129,130 +177,53 @@ export class RecordsService {
         await this.databaseService.animalRecord.delete({ where: { id } });
     }
 
-    async validateRecordDetails(dto: CreateRecordDto) {
-        // Use 'any' or a union type of all possible DTOs if preferred
+    private async validateDetailsByType(details: object, recordType: AnimalRecordType): Promise<void> {
         let detailsDto: any;
-
-        // Ensure details exist before trying to validate
-        if (!dto.details) {
-            throw new BadRequestException(`Details are required for record type ${dto.recordType}`);
-        }
-
-        switch (dto.recordType) {
-            // Vet Records
-            case AnimalRecordType.CHECKUP:
-                detailsDto = plainToInstance(CheckupDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.SURGERY:
-                detailsDto = plainToInstance(SurgeryDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.DIAGNOSIS:
-                detailsDto = plainToInstance(DiagnosisDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.PRESCRIPTION:
-                detailsDto = plainToInstance(PrescriptionDetailsDto, dto.details);
-                break;
-
-            // Procedures
-            case AnimalRecordType.MEDICATION:
-                detailsDto = plainToInstance(MedicationDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.VACCINATION:
-                detailsDto = plainToInstance(VaccinationDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.DEWORMING:
-                detailsDto = plainToInstance(DewormingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.DEFLEAING:
-                detailsDto = plainToInstance(DefleaingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.BATHING:
-                detailsDto = plainToInstance(BathingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.GROOMING:
-                detailsDto = plainToInstance(GroomingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.NAILS:
-                detailsDto = plainToInstance(NailsDetailsDto, dto.details);
-                break;
-
-            // Health
-            case AnimalRecordType.INJURY:
-                detailsDto = plainToInstance(InjuryDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.TEMPERATURE:
-                detailsDto = plainToInstance(TemperatureDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.ILLNESS:
-                detailsDto = plainToInstance(IllnessDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.BEHAVIOR:
-                detailsDto = plainToInstance(BehaviorDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.SLEEPING:
-                detailsDto = plainToInstance(SleepingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.FECES:
-                detailsDto = plainToInstance(FecesDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.URINE:
-                detailsDto = plainToInstance(UrineDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.VOMIT:
-                detailsDto = plainToInstance(VomitDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.WEIGHT:
-                detailsDto = plainToInstance(WeightDetailsDto, dto.details);
-                break;
-
-            // Nutrition
-            case AnimalRecordType.FOOD:
-                detailsDto = plainToInstance(FoodDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.WATER:
-                detailsDto = plainToInstance(WaterDetailsDto, dto.details);
-                break;
-
-            // Breeding
-            case AnimalRecordType.HEAT:
-                detailsDto = plainToInstance(HeatDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.MATING:
-                detailsDto = plainToInstance(MatingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.PREGNANCY:
-                detailsDto = plainToInstance(PregnancyDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.BIRTH:
-                detailsDto = plainToInstance(BirthDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.ESTROUS:
-                detailsDto = plainToInstance(EstrousDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.SELLING:
-                detailsDto = plainToInstance(SellingDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.BUYING:
-                detailsDto = plainToInstance(BuyingDetailsDto, dto.details);
-                break;
-
-            // Additional
-            case AnimalRecordType.NOTES:
-                detailsDto = plainToInstance(NotesDetailsDto, dto.details);
-                break;
-            case AnimalRecordType.OTHER:
-                detailsDto = plainToInstance(OtherDetailsDto, dto.details);
-                break;
-
+        switch (recordType) {
+            case AnimalRecordType.CHECKUP: detailsDto = plainToInstance(CheckupDetailsDto, details); break;
+            case AnimalRecordType.SURGERY: detailsDto = plainToInstance(SurgeryDetailsDto, details); break;
+            case AnimalRecordType.DIAGNOSIS: detailsDto = plainToInstance(DiagnosisDetailsDto, details); break;
+            case AnimalRecordType.PRESCRIPTION: detailsDto = plainToInstance(PrescriptionDetailsDto, details); break;
+            case AnimalRecordType.MEDICATION: detailsDto = plainToInstance(MedicationDetailsDto, details); break;
+            case AnimalRecordType.VACCINATION: detailsDto = plainToInstance(VaccinationDetailsDto, details); break;
+            case AnimalRecordType.DEWORMING: detailsDto = plainToInstance(DewormingDetailsDto, details); break;
+            case AnimalRecordType.DEFLEAING: detailsDto = plainToInstance(DefleaingDetailsDto, details); break;
+            case AnimalRecordType.BATHING: detailsDto = plainToInstance(BathingDetailsDto, details); break;
+            case AnimalRecordType.GROOMING: detailsDto = plainToInstance(GroomingDetailsDto, details); break;
+            case AnimalRecordType.NAILS: detailsDto = plainToInstance(NailsDetailsDto, details); break;
+            case AnimalRecordType.INJURY: detailsDto = plainToInstance(InjuryDetailsDto, details); break;
+            case AnimalRecordType.TEMPERATURE: detailsDto = plainToInstance(TemperatureDetailsDto, details); break;
+            case AnimalRecordType.ILLNESS: detailsDto = plainToInstance(IllnessDetailsDto, details); break;
+            case AnimalRecordType.BEHAVIOR: detailsDto = plainToInstance(BehaviorDetailsDto, details); break;
+            case AnimalRecordType.SLEEPING: detailsDto = plainToInstance(SleepingDetailsDto, details); break;
+            case AnimalRecordType.FECES: detailsDto = plainToInstance(FecesDetailsDto, details); break;
+            case AnimalRecordType.URINE: detailsDto = plainToInstance(UrineDetailsDto, details); break;
+            case AnimalRecordType.VOMIT: detailsDto = plainToInstance(VomitDetailsDto, details); break;
+            case AnimalRecordType.WEIGHT: detailsDto = plainToInstance(WeightDetailsDto, details); break;
+            case AnimalRecordType.FOOD: detailsDto = plainToInstance(FoodDetailsDto, details); break;
+            case AnimalRecordType.WATER: detailsDto = plainToInstance(WaterDetailsDto, details); break;
+            case AnimalRecordType.HEAT: detailsDto = plainToInstance(HeatDetailsDto, details); break;
+            case AnimalRecordType.MATING: detailsDto = plainToInstance(MatingDetailsDto, details); break;
+            case AnimalRecordType.PREGNANCY: detailsDto = plainToInstance(PregnancyDetailsDto, details); break;
+            case AnimalRecordType.BIRTH: detailsDto = plainToInstance(BirthDetailsDto, details); break;
+            case AnimalRecordType.ESTROUS: detailsDto = plainToInstance(EstrousDetailsDto, details); break;
+            case AnimalRecordType.SELLING: detailsDto = plainToInstance(SellingDetailsDto, details); break;
+            case AnimalRecordType.BUYING: detailsDto = plainToInstance(BuyingDetailsDto, details); break;
+            case AnimalRecordType.NOTES: detailsDto = plainToInstance(NotesDetailsDto, details); break;
+            case AnimalRecordType.OTHER: detailsDto = plainToInstance(OtherDetailsDto, details); break;
             default:
-                throw new BadRequestException(`Unsupported record type: ${dto.recordType}`);
+                // Handle case where recordType might somehow be invalid (though unlikely if data is consistent)
+                console.warn(`No specific validation DTO found for record type: ${recordType}. Skipping details validation.`);
+                return; // Or throw an error if strict validation is always required
+            // throw new BadRequestException(`Cannot validate details for unknown record type: ${recordType}`);
         }
 
+        // Perform validation
         try {
             await validateOrReject(detailsDto);
         } catch (errors) {
-            console.error('Validation failed for details:', errors);
-            throw new BadRequestException(errors);
+            console.error(`Validation failed for details of type ${recordType}:`, errors);
+            throw new BadRequestException(errors); // Propagate validation errors
         }
     }
 
