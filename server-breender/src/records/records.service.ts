@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { AnimalRecordType, Prisma } from '@prisma/client';
 import { CreateRecordDto } from './dto/createRecord.dto';
@@ -13,81 +13,131 @@ export class RecordsService {
 
     async createRecord(
         createRecordDto: CreateRecordDto,
-        userId: string,
+        authUserId: string,
     ) {
-        // const animal = await this.databaseService.animal.findUnique({
-        //     where: { id: animalId },
-        // });
-        // if (!animal) {
-        //     throw new NotFoundException(`Animal with ID ${animalId} not found.`);
-        // }
+        const { animalId, description, recordType } = createRecordDto;
+        const animal = await this.databaseService.animal.findUnique({
+            where: { id: animalId },
+        });
+        if (!animal) {
+            throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+        }
 
-        // // Check if the authenticated user is an owner of the animal
-        // const ownerAssignment = await this.databaseService.owner.findUnique({
-        //     where: {
-        //         userId: authUserId,
-        //     },
-        //     include: {
-        //         animals: true, // Include the animals owned by this owner
-        //     },
-        // });
+        // Check if the authenticated user is an owner of the animal
+        const ownerAssignment = await this.databaseService.owner.findUnique({
+            where: {
+                userId: authUserId,
+            },
+            include: {
+                animals: true,
+            },
+        });
 
-        // if (!ownerAssignment) {
-        //     throw new ForbiddenException("You are not assigned to this animal.");
-        // }
+        if (!ownerAssignment) {
+            throw new ForbiddenException("You are not assigned to this animal.");
+        }
 
-        // // Create and store the animal document
-        // return this.databaseService.animalDocument.create({
-        //     data: {
-        //         animalId,
-        //         documentName: createAnimalDocumentDto.documentName,
-        //         documentUrl: createAnimalDocumentDto.documentUrl,
-        //         uploadedAt: createAnimalDocumentDto.uploadedAt || new Date(),
-        //     },
-        // });
+        await this.validateRecordDetails(createRecordDto);
 
+        // Create and store the animal document
+        return this.databaseService.animalRecord.create({
+            data: {
+                animalId, recordType, description,
+            },
+        });
     }
 
     async findAllRecordsByUserId(
         userId: string,
         authUserId: string,
     ) {
+        if (userId !== authUserId) {
+            throw new ForbiddenException("You can only access your own records.");
+        }
 
+        const records = await this.databaseService.animalRecord.findMany({
+            where:
+                { animal: { owners: { some: { owner: { userId: userId } } } } },
+            include: {
+                animal: {
+                    select: {
+                        id: true,
+                        name: true,
+                        species: true,
+                        breed: true,
+                    }
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+        return records;
     }
 
     async findAllRecordsByAnimalId(
         animalId: string,
         authUserId: string,
     ) {
+        const animal = await this.databaseService.animal.findUnique({
+            where: { id: animalId },
+        });
+        if (!animal) {
+            throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+        }
 
+        const ownerAssignment = await this.databaseService.owner.findUnique({
+            where: {
+                userId: authUserId,
+            },
+            include: {
+                animals: true,
+            },
+        });
+
+        if (!ownerAssignment) {
+            throw new ForbiddenException("You are not assigned to this animal.");
+        }
+        const records = await this.databaseService.animalRecord.findMany({
+            where: { animalId },
+            orderBy: {
+                createdAt: 'desc',
+            },
+        });
+        return records;
     }
 
     async findRecordById(id: string, authUserId: any) {
-        throw new Error('Method not implemented.');
+        return await this.databaseService.animalRecord.findUnique({ where: { id } });
     }
 
     async updateRecord(
         id: string,
         UpdateRecordDto: UpdateRecordDto,
-        authUserId: any) {
-        throw new Error('Method not implemented.');
+        authUserId: any
+    ) {
+        const record = await this.databaseService.animalRecord.findUnique({ where: { id } });
+        if (!record) throw new NotFoundException(`Record with ID ${id} not found`);
     }
 
     async removeRecord(
         id: string,
-        authUserId: any) {
-        throw new Error('Method not implemented.');
+        authUserId: any
+    ) {
+        const record = await this.databaseService.animalRecord.findUnique({ where: { id } });
+        if (!record) throw new NotFoundException(`Record with ID ${id} not found`);
+        await this.databaseService.animalRecord.delete({ where: { id } });
     }
 
     async validateRecordDetails(dto: CreateRecordDto) {
         // Use 'any' or a union type of all possible DTOs if preferred
         let detailsDto: any;
-    
+
         // Ensure details exist before trying to validate
         if (!dto.details) {
             throw new BadRequestException(`Details are required for record type ${dto.recordType}`);
         }
-    
+
         switch (dto.recordType) {
             // Vet Records
             case AnimalRecordType.CHECKUP:
@@ -102,7 +152,7 @@ export class RecordsService {
             case AnimalRecordType.PRESCRIPTION:
                 detailsDto = plainToInstance(PrescriptionDetailsDto, dto.details);
                 break;
-    
+
             // Procedures
             case AnimalRecordType.MEDICATION:
                 detailsDto = plainToInstance(MedicationDetailsDto, dto.details);
@@ -125,7 +175,7 @@ export class RecordsService {
             case AnimalRecordType.NAILS:
                 detailsDto = plainToInstance(NailsDetailsDto, dto.details);
                 break;
-    
+
             // Health
             case AnimalRecordType.INJURY:
                 detailsDto = plainToInstance(InjuryDetailsDto, dto.details);
@@ -154,7 +204,7 @@ export class RecordsService {
             case AnimalRecordType.WEIGHT:
                 detailsDto = plainToInstance(WeightDetailsDto, dto.details);
                 break;
-    
+
             // Nutrition
             case AnimalRecordType.FOOD:
                 detailsDto = plainToInstance(FoodDetailsDto, dto.details);
@@ -162,7 +212,7 @@ export class RecordsService {
             case AnimalRecordType.WATER:
                 detailsDto = plainToInstance(WaterDetailsDto, dto.details);
                 break;
-    
+
             // Breeding
             case AnimalRecordType.HEAT:
                 detailsDto = plainToInstance(HeatDetailsDto, dto.details);
@@ -185,7 +235,7 @@ export class RecordsService {
             case AnimalRecordType.BUYING:
                 detailsDto = plainToInstance(BuyingDetailsDto, dto.details);
                 break;
-    
+
             // Additional
             case AnimalRecordType.NOTES:
                 detailsDto = plainToInstance(NotesDetailsDto, dto.details);
@@ -193,11 +243,11 @@ export class RecordsService {
             case AnimalRecordType.OTHER:
                 detailsDto = plainToInstance(OtherDetailsDto, dto.details);
                 break;
-    
+
             default:
                 throw new BadRequestException(`Unsupported record type: ${dto.recordType}`);
         }
-    
+
         try {
             await validateOrReject(detailsDto);
         } catch (errors) {
