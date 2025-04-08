@@ -39,14 +39,14 @@ model User {
 }
 
 model Owner {
-  id      String        @id @default(uuid()) @map("owner_id")
-  userId  String        @unique @map("user_id")
-  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  animals AnimalOwner[]
-
-  @@map("owners")
+  id                   String             @id @default(uuid()) @map("owner_id")
+  userId               String             @unique @map("user_id")
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animals              AnimalOwner[]
   sentPartnerships     OwnerPartnership[] @relation("Requester")
   receivedPartnerships OwnerPartnership[] @relation("Recipient")
+
+  @@map("owners")
 }
 
 enum PartnershipStatus {
@@ -56,15 +56,15 @@ enum PartnershipStatus {
 }
 
 model OwnerPartnership {
-  id              String             @id @default(uuid())
-  requesterId     String             @map("requester_id")
-  recipientId     String             @map("recipient_id")
-  status          PartnershipStatus  @default(PENDING)
-  requestedAt     DateTime           @default(now()) @map("requested_at")
-  respondedAt     DateTime?          @map("responded_at")
+  id          String            @id @default(uuid())
+  requesterId String            @map("requester_id")
+  recipientId String            @map("recipient_id")
+  status      PartnershipStatus @default(PENDING)
+  requestedAt DateTime          @default(now()) @map("requested_at")
+  respondedAt DateTime?         @map("responded_at")
 
-  requester       Owner              @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
-  recipient       Owner              @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  requester Owner @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
+  recipient Owner @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
 
   @@unique([requesterId, recipientId])
   @@map("owner_partnerships")
@@ -81,12 +81,12 @@ model Animal {
   latitude  Float?   @map("latitude")
   longitude Float?   @map("longitude")
 
-  owners                AnimalOwner[]
-  animalDocuments       AnimalDocument[]
-  animalPhotos          AnimalPhoto[]
-  animalRecords         AnimalRecord[]
-  reminders             Reminder[]
-  animalPermissions     AnimalPermission[]
+  owners            AnimalOwner[]
+  animalDocuments   AnimalDocument[]
+  animalPhotos      AnimalPhoto[]
+  animalRecords     AnimalRecord[]
+  reminders         Reminder[]
+  animalPermissions AnimalPermission[]
 
   @@map("animals")
 }
@@ -135,7 +135,7 @@ model UserProfile {
   bio        String  @default("") @map("user_bio")
   pictureUrl String? @map("picture_url")
   phone      String? @map("phone_number")
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }
@@ -221,13 +221,13 @@ enum AnimalRecordType {
 }
 
 model AnimalRecord {
-  id                    String                 @id @default(uuid()) @map("record_id")
-  animalId              String                 @map("animal_id")
-  recordType            AnimalRecordType       @map("record_type")
-  description           String?                @map("description")
-  createdAt             DateTime               @default(now()) @map("created_at")
-  details               Json?                  @map("details")
-  
+  id          String           @id @default(uuid()) @map("record_id")
+  animalId    String           @map("animal_id")
+  recordType  AnimalRecordType @map("record_type")
+  description String?          @map("description")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  details     Json?            @map("details")
+
   animal                Animal                 @relation(fields: [animalId], references: [id], onDelete: Cascade)
   animalRecordPhotos    AnimalRecordPhoto[]
   animalRecordDocuments AnimalRecordDocument[]
@@ -286,12 +286,13 @@ enum ReminderType {
 }
 
 model Reminder {
-  id        String   @id @default(uuid()) @map("reminder_id")
-  userId    String   @map("user_id")
-  animalId  String   @map("animal_id")
-  message   String   @map("message")
-  remindAt  DateTime @map("remind_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String       @id @default(uuid()) @map("reminder_id")
+  userId       String       @map("user_id")
+  animalId     String       @map("animal_id")
+  reminderType ReminderType @map("reminder_type")
+  message      String       @map("message")
+  remindAt     DateTime     @map("remind_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
