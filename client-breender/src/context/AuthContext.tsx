@@ -66,14 +66,7 @@ export const AuthProvider: React.FC<{ api: any; children: React.ReactNode }> = (
     };
 
     const register = async (email: string, password: string) => {
-        // Your register logic here, for example:
-        const response: ApiResponse = await fetch('/api/register', {
-            method: 'POST',
-            body: JSON.stringify({ email, password }),
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then(res => res.json());
+        const response: ApiResponse = await api.registerUser(email, password);
 
         if (response.status === 200 || response.status === 201) {
             navigate('/login');
