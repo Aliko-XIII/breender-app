@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiResponse } from '../../types'; // Adjust path as needed
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 // Import the updated UserMention component
 import { UserMention } from '../UserMention/UserMention'; // Adjust path!
 // Import useUser to ensure context is available
@@ -159,11 +159,24 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
   // --- JSX Output ---
   return (
     <div className="container mt-5">
+  
+      {/* --- Action Panel --- */}
+      <div className="d-flex justify-content-end mb-3">
+        <Link to={`/animals/${animalId}`} className="btn btn-outline-primary me-2">
+          View Profile
+        </Link>
+        <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary">
+          Create Record
+        </Link>
+        <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary">
+          Create Reminder
+        </Link>
+      </div>
+  
+      {/* --- Animal Profile Card --- */}
       <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
-        {/* Animal's Name */}
         <h1 className="text-center mb-4">{animalData.name}'s Profile</h1>
-
-        {/* Animal Details Section */}
+  
         <div className="mb-3">
           <strong>Species:</strong> <span className="ms-2">{animalData.species}</span>
         </div>
@@ -184,17 +197,15 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
           <strong>Location:</strong>
           <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
         </div>
-
-        {/* Owners Section - Using UserMention */}
+  
+        {/* --- Owners Section --- */}
         <div className="mb-3">
-          <strong className="d-block mb-2">Owners:</strong> {/* Make label block */}
+          <strong className="d-block mb-2">Owners:</strong>
           {animalData.owners.length > 0 ? (
-            // Render UserMention components directly; CSS module handles spacing
             <div>
               {animalData.owners.map((owner) => (
-                // Pass all required props to UserMention
                 <UserMention
-                  key={owner.id} // Essential for list rendering
+                  key={owner.id}
                   userId={owner.id}
                   userName={owner.name}
                   userEmail={owner.email}
@@ -203,10 +214,11 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
               ))}
             </div>
           ) : (
-            <p className="ms-1">No owners assigned.</p> // Indent slightly
+            <p className="ms-1">No owners assigned.</p>
           )}
         </div>
       </div>
     </div>
   );
+  
 };

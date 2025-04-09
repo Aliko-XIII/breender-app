@@ -12,6 +12,9 @@ import { UserSetup } from "./components/UserSetup/UserSetup";
 import { AnimalList } from "./components/AnimalList/AnimalList";
 import { RegisterAnimal } from "./components/RegisterAnimal/RegisterAnimal";
 import { HomePage } from "./components/HomePage/HomePage";
+import { CreateRecordForm } from "./components/CreateRecordForm/CreateRecordForm";
+import { ScrollToTopButton } from "./components/ScrollToTopButton/ScrollToTopButton";
+import { CreateReminderForm } from "./components/CreateReminderForm/CreateReminderForm";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -56,8 +59,12 @@ function App({ api }: { api: Api }) {
           <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
           <Route path='/animals/new' element={<RegisterAnimal createAnimal={api.createAnimal} />} />
           <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} />} />
+          <Route path='/animals/:id/create-record' element={
+            <CreateRecordForm onSave={(data) => console.log("Saving:", data)} />} />
+          <Route path='/animals/:id/create-reminder' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>
+        <ScrollToTopButton />
       </UserProvider>
     </AuthProvider>
   );
