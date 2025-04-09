@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common'; // Added NotFoundException
+import { Injectable } from '@nestjs/common'; // Added NotFoundException
 import { DatabaseService } from 'src/database/database.service'; // Assuming same path
 // Assuming DTOs exist in a ./dto subfolder relative to this service
-import { CreatePhotoDto } from './dto/createPhoto.dto';
-import { UpdatePhotoDto } from './dto/updatePhoto.dto';
+import { UploadPhotoDto } from './dto/createPhoto.dto';
 // Prisma might be needed if you directly use its types
 // import { Prisma } from '@prisma/client';
 
@@ -16,22 +15,14 @@ export class PhotosService {
      * @param createPhotoDto - Data for the new photo (e.g., URL, description).
      * @param userId - The ID of the user uploading/creating the photo record.
      */
-    async createPhoto(
-        createPhotoDto: CreatePhotoDto,
-        userId: string,
-        // You might need additional parameters depending on how photos are handled (e.g., file buffer, animalId)
-    ) {
-        // Placeholder for actual implementation using databaseService
-        // Example:
-        // return this.databaseService.photo.create({
-        //     data: {
-        //         ...createPhotoDto, // Contains URL, potentially description, animalId etc.
-        //         userId: userId,
-        //     }
-        // });
-        console.log('Creating photo record:', createPhotoDto, 'for user:', userId);
-        throw new Error('Method createPhoto not implemented.');
-    }
+    async createPhoto(createPhotoDto: UploadPhotoDto, userId: string) {
+        return this.databaseService.animalPhoto.create({
+          data: {
+            photoUrl: createPhotoDto.url,
+            animalId: createPhotoDto.animalId,
+          },
+        });
+      }
 
     /**
      * Finds all photo records associated with a specific user.

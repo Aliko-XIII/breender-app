@@ -153,10 +153,11 @@ model RefreshToken {
 model AnimalPhoto {
   id                 String              @id @default(uuid()) @map("photo_id")
   photoUrl           String              @map("photo_url")
+  animalId           String              @map("animal_id")
   uploadedAt         DateTime            @default(now()) @map("uploaded_at")
+  
   animal             Animal              @relation(fields: [animalId], references: [id], onDelete: Cascade)
   animalRecordPhotos AnimalRecordPhoto[]
-  animalId           String              @map("animal_id")
 
   @@map("animal_photos")
 }

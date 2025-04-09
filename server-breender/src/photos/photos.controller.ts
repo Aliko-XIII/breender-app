@@ -1,14 +1,15 @@
-import { Controller, Delete, Get, Patch, Post, UseGuards, Request, Body, Param, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { AuthGuard } from 'src/auth/auth.guard'; // Assuming AuthGuard is in this location
+import { Controller, Delete, Get, Patch, Post, UploadedFile, UseGuards, Request, Body, Param, NotFoundException, ForbiddenException, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { PhotosService } from './photos.service';
-// Assuming DTOs are in a ./dto subfolder relative to this controller/service
-import { CreatePhotoDto } from './dto/createPhoto.dto';
-import { UpdatePhotoDto } from './dto/updatePhoto.dto';
+import { UploadPhotoDto } from './dto/createPhoto.dto';
+import { extname } from 'path';
 
 @UseGuards(AuthGuard) // Apply authentication guard to all routes in this controller
 @Controller('photos') // Base path for routes is '/photos'
 export class PhotosController {
-  constructor(private readonly photosService: PhotosService) {}
+  constructor(private readonly photosService: PhotosService) { }
 
   /**
    * POST /photos
@@ -16,14 +17,26 @@ export class PhotosController {
    * The user ID is taken from the authenticated user's context (req.authUserId).
    */
   @Post()
-  async create(@Request() req, @Body() createPhotoDto: CreatePhotoDto) {
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: './uploads/photos',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadPhoto(
+    @Request() req,
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createPhotoDto: UploadPhotoDto,
+  ) {
     const authUserId = req.authUserId;
-    try {
-      return await this.photosService.createPhoto(createPhotoDto, authUserId);
-    } catch (error) {
-      // Handle potential errors from the service (e.g., database issues)
-      throw error;
-    }
+    const fileUrl = `/uploads/photos/${file.filename}`;
+    return this.photosService.createPhoto(
+      { ...createPhotoDto, url: fileUrl },
+      authUserId
+    );
   }
 
   /**
@@ -46,25 +59,6 @@ export class PhotosController {
   }
 
   /**
-   * GET /photos/album/:id
-   * Finds all photos associated with a specific album ID.
-   * Requires authorization check using the authenticated user's ID.
-   */
-  @Get('/album/:id')
-  async findByAlbum(@Request() req, @Param('id') albumId: string) {
-    const authUserId = req.authUserId;
-    try {
-      return await this.photosService.findAllPhotosByAnimalId(albumId, authUserId); // Assuming albumId maps to animalId in your service for now
-    } catch (error) {
-      // Handle potential errors (e.g., forbidden access, not found)
-      if (error instanceof ForbiddenException) {
-        throw error;
-      }
-      throw new NotFoundException(`Could not find photos for album ID: ${albumId}`);
-    }
-  }
-
-  /**
    * GET /photos/:id
    * Finds a single photo by its ID.
    * Requires authorization check using the authenticated user's ID.
@@ -80,25 +74,6 @@ export class PhotosController {
         throw error;
       }
       throw new NotFoundException(`Photo with ID ${id} not found`);
-    }
-  }
-
-  /**
-   * PATCH /photos/:id
-   * Updates an existing photo by its ID.
-   * Requires authorization check using the authenticated user's ID.
-   */
-  @Patch(':id')
-  async update(@Request() req, @Param('id') id: string, @Body() updatePhotoDto: UpdatePhotoDto) {
-    const authUserId = req.authUserId;
-    try {
-      return await this.photosService.updatePhoto(id, updatePhotoDto, authUserId);
-    } catch (error) {
-      // Handle potential errors (e.g., not found, forbidden access, database issues)
-      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
-        throw error;
-      }
-      throw error;
     }
   }
 
