@@ -57,7 +57,13 @@ export const AnimalList: React.FC<AnimalListProps> = ({ getUserAnimals }) => {
                                     src={animal.photoUrl || "/animal-placeholder.png"}
                                     alt={animal.name}
                                     className="card-img-top"
-                                    style={{ height: "200px", objectFit: "cover" }}
+                                    style={{
+                                        height: "200px",
+                                        width: "100%",
+                                        objectFit: "contain",
+                                        objectPosition: "center",
+                                        backgroundColor: "#f8f9fa"
+                                    }}
                                 />
                                 <div className="card-body text-center">
                                     <h5 className="card-title">{animal.name}</h5>
