@@ -7,9 +7,11 @@ export const registerUser = async (email: string, pass: string) => {
             { email, pass }
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
-        console.error(error);
-        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    } catch (error: unknown) {
+        if (error instanceof axios.AxiosError) {
+            console.error(error);
+            return { status: error.response?.status || 500, data: error.response?.data || {} };
+        }
     }
 };
 
@@ -20,8 +22,10 @@ export const loginUser = async (email: string, pass: string) => {
             { email, pass }
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
-        console.error(error);
-        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    } catch (error: unknown) {
+        if (error instanceof axios.AxiosError) {
+            console.error(error);
+            return { status: error.response?.status || 500, data: error.response?.data || {} };
+        }
     }
 };
