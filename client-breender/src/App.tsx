@@ -18,6 +18,7 @@ import { CreateReminderForm } from "./components/CreateReminderForm/CreateRemind
 import PhotoUploadForm from "./components/PhotoUploadForm/PhotoUploadForm";
 import DocumentUploadForm from "./components/DocumentUploadForm/DocumentUploadForm";
 import { RecordList } from "./components/RecordList/RecordList";
+import { AnimalMap } from "./components/AnimalMap/AnimalMap";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -69,6 +70,7 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
           <Route path='/animals/:id/records' element={<RecordList />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
+          <Route path='/map' element={<AnimalMap />} />
         </Routes>
         <ScrollToTopButton />
       </UserProvider>
