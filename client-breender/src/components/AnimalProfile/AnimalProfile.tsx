@@ -168,6 +168,9 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
         <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary me-2">
           Create Record
         </Link>
+        <Link to={`/animals/${animalId}/records`} className="btn btn-primary me-2">
+          Records
+        </Link>
         <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary me-2">
           Create Reminder
         </Link>

@@ -17,6 +17,7 @@ import { ScrollToTopButton } from "./components/ScrollToTopButton/ScrollToTopBut
 import { CreateReminderForm } from "./components/CreateReminderForm/CreateReminderForm";
 import PhotoUploadForm from "./components/PhotoUploadForm/PhotoUploadForm";
 import DocumentUploadForm from "./components/DocumentUploadForm/DocumentUploadForm";
+import { RecordList } from "./components/RecordList/RecordList";
 
 interface Api {
   registerUser: (email: string, password: string) => Promise<ApiResponse>;
@@ -66,6 +67,7 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/:id/create-reminder' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
           <Route path='/animals/:id/upload-photo' element={<PhotoUploadForm />} />
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
+          <Route path='/animals/:id/records' element={<RecordList />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
         </Routes>
         <ScrollToTopButton />
