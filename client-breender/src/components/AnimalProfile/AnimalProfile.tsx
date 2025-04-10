@@ -159,27 +159,31 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
   // --- JSX Output ---
   return (
     <div className="container mt-5">
-  
+
       {/* --- Action Panel --- */}
-      <div className="d-flex justify-content-end mb-3">
+      <div className="d-flex justify-content-end mb-3 flex-wrap gap-2">
         <Link to={`/animals/${animalId}`} className="btn btn-outline-primary me-2">
           View Profile
         </Link>
-        <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary">
+        <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary me-2">
           Create Record
         </Link>
-        <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary">
+        <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary me-2">
           Create Reminder
         </Link>
-        <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary">
+        <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary me-2">
           Upload Photo
         </Link>
+        <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">
+          Upload Document
+        </Link>
       </div>
-  
+
+
       {/* --- Animal Profile Card --- */}
       <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
         <h1 className="text-center mb-4">{animalData.name}'s Profile</h1>
-  
+
         <div className="mb-3">
           <strong>Species:</strong> <span className="ms-2">{animalData.species}</span>
         </div>
@@ -200,7 +204,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
           <strong>Location:</strong>
           <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
         </div>
-  
+
         {/* --- Owners Section --- */}
         <div className="mb-3">
           <strong className="d-block mb-2">Owners:</strong>
@@ -223,5 +227,5 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
       </div>
     </div>
   );
-  
+
 };
