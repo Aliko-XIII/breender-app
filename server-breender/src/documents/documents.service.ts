@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { UploadDocumentDto } from './dto/createDocument.dto';
 import { DatabaseService } from 'src/database/database.service';
 
@@ -30,4 +30,39 @@ export class DocumentsService {
         });
         return documents;
     }
+
+    async findAllDocumentsByAnimalId(
+        animalId: string,
+        authUserId: string,
+    ) {
+        const animal = await this.databaseService.animal.findUnique({
+            where: { id: animalId },
+        });
+        if (!animal) {
+            throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+        }
+
+        const ownerAssignment = await this.databaseService.owner.findUnique({
+            where: {
+                userId: authUserId,
+            },
+            include: {
+                animals: true,
+            },
+        });
+
+        if (!ownerAssignment) {
+            throw new ForbiddenException("You are not assigned to this animal.");
+        }
+        const documents = await this.databaseService.animalDocument.findMany({
+            where: { animalId },
+        });
+        return documents;
+    }
+
+    async findDocumentById(id: string, authUserId: any) {
+        return await this.databaseService.animalDocument.findUnique({ where: { id } });
+    }
+
+    
 }

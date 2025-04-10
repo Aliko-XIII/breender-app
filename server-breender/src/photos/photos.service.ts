@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'; // Added NotFoundException
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'; // Added NotFoundException
 import { DatabaseService } from 'src/database/database.service'; // Assuming same path
 // Assuming DTOs exist in a ./dto subfolder relative to this service
 import { UploadPhotoDto } from './dto/createPhoto.dto';
@@ -42,43 +42,37 @@ export class PhotosService {
         return photos;
     }
 
-    /**
-     * Finds all photo records associated with a specific animal.
-     * Requires authorization check via authUserId.
-     * @param animalId - The ID of the animal whose photos are being requested.
-     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
-     */
     async findAllPhotosByAnimalId(
         animalId: string,
         authUserId: string,
     ) {
-        // Placeholder for actual implementation
-        // Add authorization logic: check if authUserId is allowed to see photos for this animal
-        // Example:
-        // const animal = await this.databaseService.animal.findUnique({ where: { id: animalId } });
-        // if (!animal || animal.ownerId !== authUserId) { /* Throw NotFoundException or ForbiddenException */ }
-        // return this.databaseService.photo.findMany({ where: { animalId } });
-        console.log('Finding all photos for animal:', animalId, 'by auth user:', authUserId);
-        throw new Error('Method findAllPhotosByAnimalId not implemented.');
+        const animal = await this.databaseService.animal.findUnique({
+            where: { id: animalId },
+        });
+        if (!animal) {
+            throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+        }
+
+        const ownerAssignment = await this.databaseService.owner.findUnique({
+            where: {
+                userId: authUserId,
+            },
+            include: {
+                animals: true,
+            },
+        });
+
+        if (!ownerAssignment) {
+            throw new ForbiddenException("You are not assigned to this animal.");
+        }
+        const photos = await this.databaseService.animalPhoto.findMany({
+            where: { animalId },
+        });
+        return photos;
     }
 
-    /**
-     * Finds a single photo record by its unique ID.
-     * Requires authorization check via authUserId.
-     * @param id - The ID of the photo record to find.
-     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
-     */
-    async findPhotoById(id: string, authUserId: string) {
-        // Placeholder for actual implementation
-        // Add authorization logic: check if authUserId is allowed to see this photo
-        // Example:
-        // const photo = await this.databaseService.photo.findUnique({ where: { id } });
-        // if (!photo) { throw new NotFoundException(`Photo with ID ${id} not found`); }
-        // Need to verify ownership based on photo.userId or related animal's owner
-        // if (photo.userId !== authUserId /* && check animal ownership if applicable */) { /* Throw ForbiddenException */ }
-        // return photo;
-        console.log('Finding photo by ID:', id, 'by auth user:', authUserId);
-        throw new Error('Method findPhotoById not implemented.');
+    async findPhotoById(id: string, authUserId: any) {
+        return await this.databaseService.animalPhoto.findUnique({ where: { id } });
     }
 
     /**
