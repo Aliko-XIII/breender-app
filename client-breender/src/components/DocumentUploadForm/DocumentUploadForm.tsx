@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Form, Button, Alert, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import { uploadPhoto } from '../../api';
+import { uploadDocument } from '../../api'; // Ensure this endpoint exists
 
-const PhotoUploadForm = () => {
+const DocumentUploadForm = () => {
     const [file, setFile] = useState<File | null>(null);
     const [title, setTitle] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -31,13 +31,13 @@ const PhotoUploadForm = () => {
             setErrorMessage('');
             setSuccessMessage('');
 
-            await uploadPhoto(formData);
+            await uploadDocument(formData);
 
-            setSuccessMessage('Photo uploaded successfully!');
+            setSuccessMessage('Document uploaded successfully!');
             setFile(null);
             setTitle('');
         } catch (error: any) {
-            setErrorMessage(error?.response?.data?.message || 'Failed to upload photo.');
+            setErrorMessage(error?.response?.data?.message || 'Failed to upload document.');
         } finally {
             setIsUploading(false);
         }
@@ -45,12 +45,12 @@ const PhotoUploadForm = () => {
 
     return (
         <Form onSubmit={handleSubmit} className="p-4 border rounded shadow-sm bg-light">
-            <h4 className="mb-3">Upload Photo</h4>
+            <h4 className="mb-3">Upload Document</h4>
 
             {successMessage && <Alert variant="success">{successMessage}</Alert>}
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
 
-            <Form.Group controlId="photoTitle" className="mb-3">
+            <Form.Group controlId="docTitle" className="mb-3">
                 <Form.Label>Title</Form.Label>
                 <Form.Control
                     type="text"
@@ -60,11 +60,11 @@ const PhotoUploadForm = () => {
                 />
             </Form.Group>
 
-            <Form.Group controlId="photoFile" className="mb-3">
-                <Form.Label>Photo</Form.Label>
+            <Form.Group controlId="docFile" className="mb-3">
+                <Form.Label>Document</Form.Label>
                 <Form.Control
                     type="file"
-                    accept="image/*"
+                    accept=".pdf,.doc,.docx,.txt"
                     onChange={(e) => {
                         const input = e.target as HTMLInputElement;
                         setFile(input.files?.[0] || null);
@@ -78,11 +78,11 @@ const PhotoUploadForm = () => {
                         <Spinner animation="border" size="sm" /> Uploading...
                     </>
                 ) : (
-                    'Upload Photo'
+                    'Upload Document'
                 )}
             </Button>
         </Form>
     );
 };
 
-export default PhotoUploadForm;
+export default DocumentUploadForm;
