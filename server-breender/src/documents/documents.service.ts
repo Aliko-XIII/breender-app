@@ -64,5 +64,13 @@ export class DocumentsService {
         return await this.databaseService.animalDocument.findUnique({ where: { id } });
     }
 
-    
+    async removeDocument(
+        id: string,
+        authUserId: string) {
+        const document = await this.databaseService.animalDocument.findUnique({ where: { id } });
+        if (!document) throw new NotFoundException(`Record with ID ${id} not found`);
+        await this.databaseService.animalDocument.delete({ where: { id } });
+    }
+
+
 }

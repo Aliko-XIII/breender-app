@@ -84,18 +84,8 @@ export class PhotosService {
     async removePhoto(
         id: string,
         authUserId: string) {
-        // Placeholder for actual implementation
-        // 1. Find the photo record by ID.
-        // 2. Check if the record exists.
-        // 3. Perform authorization check (does authUserId own this photo record?).
-        // 4. Delete the photo record from the database.
-        // 5. **Important:** Delete the actual photo file from your storage (e.g., S3, local disk).
-        // Example:
-        // const photo = await this.findPhotoById(id, authUserId); // Reuse findById for check
-        // const deletedRecord = await this.databaseService.photo.delete({ where: { id } });
-        // await deleteFileFromStorage(photo.url); // You'll need a helper for this
-        // return deletedRecord;
-        console.log('Removing photo record ID:', id, 'by auth user:', authUserId);
-        throw new Error('Method removePhoto not implemented.');
+        const photo = await this.databaseService.animalPhoto.findUnique({ where: { id } });
+        if (!photo) throw new NotFoundException(`Record with ID ${id} not found`);
+        await this.databaseService.animalPhoto.delete({ where: { id } });
     }
 }
