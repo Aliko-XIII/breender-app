@@ -83,33 +83,6 @@ export class PhotosService {
     }
 
     /**
-     * Updates an existing photo record's metadata (e.g., description).
-     * Requires authorization check via authUserId.
-     * Note: Updating the actual photo file usually involves deletion and re-upload.
-     * @param id - The ID of the photo record to update.
-     * @param updatePhotoDto - The metadata to update the photo record with.
-     * @param authUserId - The ID of the authenticated user making the request (for auth checks).
-     */
-    async updatePhoto(
-        id: string,
-        updatePhotoDto: UpdatePhotoDto,
-        authUserId: string) {
-        // Placeholder for actual implementation
-        // 1. Find the photo record by ID.
-        // 2. Check if the record exists.
-        // 3. Perform authorization check (does authUserId own this photo record?).
-        // 4. Update the photo record metadata using databaseService.
-        // Example:
-        // const existingPhoto = await this.findPhotoById(id, authUserId); // Reuse findById for check
-        // return this.databaseService.photo.update({
-        //     where: { id },
-        //     data: updatePhotoDto, // Update description, tags etc.
-        // });
-        console.log('Updating photo metadata ID:', id, 'with data:', updatePhotoDto, 'by auth user:', authUserId);
-        throw new Error('Method updatePhoto not implemented.');
-    }
-
-    /**
      * Removes/deletes a photo record and potentially the associated file from storage.
      * Requires authorization check via authUserId.
      * @param id - The ID of the photo record to remove.
