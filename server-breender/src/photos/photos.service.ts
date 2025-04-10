@@ -7,7 +7,7 @@ import { UploadPhotoDto } from './dto/createPhoto.dto';
 
 @Injectable()
 export class PhotosService {
-    constructor(private readonly databaseService: DatabaseService) {}
+    constructor(private readonly databaseService: DatabaseService) { }
 
     /**
      * Creates a new photo record associated with a specific user.
@@ -17,12 +17,12 @@ export class PhotosService {
      */
     async createPhoto(createPhotoDto: UploadPhotoDto, userId: string) {
         return this.databaseService.animalPhoto.create({
-          data: {
-            photoUrl: createPhotoDto.url,
-            animalId: createPhotoDto.animalId,
-          },
+            data: {
+                photoUrl: createPhotoDto.url,
+                animalId: createPhotoDto.animalId,
+            },
         });
-      }
+    }
 
     /**
      * Finds all photo records associated with a specific user.
@@ -34,13 +34,12 @@ export class PhotosService {
         userId: string,
         authUserId: string,
     ) {
-        // Placeholder for actual implementation
-        // Add authorization logic: check if authUserId is allowed to see userId's photos
-        // Example:
-        // if (userId !== authUserId && !/* some other condition like friends/public */ ) { /* Throw ForbiddenException */ }
-        // return this.databaseService.photo.findMany({ where: { userId } });
-        console.log('Finding all photos for user:', userId, 'by auth user:', authUserId);
-        throw new Error('Method findAllPhotosByUserId not implemented.');
+        const photos = this.databaseService.animalPhoto.findMany({
+            where: {
+                animal: { owners: { some: { owner: { userId: userId } } } },
+            }
+        });
+        return photos;
     }
 
     /**
@@ -102,7 +101,7 @@ export class PhotosService {
         // const deletedRecord = await this.databaseService.photo.delete({ where: { id } });
         // await deleteFileFromStorage(photo.url); // You'll need a helper for this
         // return deletedRecord;
-         console.log('Removing photo record ID:', id, 'by auth user:', authUserId);
+        console.log('Removing photo record ID:', id, 'by auth user:', authUserId);
         throw new Error('Method removePhoto not implemented.');
     }
 }
