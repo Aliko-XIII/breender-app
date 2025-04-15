@@ -42,17 +42,17 @@ function App({ api }: { api: Api }) {
             <RegisterAnimal createAnimal={animalData => api.createAnimal({ ...animalData, bio: animalData.bio ?? "" })} />
           } />
           <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} updateAnimal={api.updateAnimal} />} />
-          <Route path='/animals/:id/create-record' element={
-            <CreateRecordForm createRecord={api.createRecord} />} />
-          <Route path='/animals/:id/create-reminder' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
           <Route path='/animals/:id/upload-photo' element={<PhotoUploadForm />} />
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
+          <Route path='/users/:userId/records' element={<RecordList />} />
+          <Route path='/users/:userId/records/create' element={<CreateRecordForm createRecord={api.createRecord} />} />
+          <Route path='/users/:userId/reminders' element={<ReminderList />} />
+          <Route path='/users/:userId/reminders/create' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
           <Route path='/animals/:id/records' element={<RecordList />} />
           <Route path='/animals/:id/reminders' element={<ReminderList />} />
-          <Route path='/reminders/user/:userId' element={<ReminderList />} />
-          <Route path='/records/:userId' element={<RecordList />} />
-          <Route path='/records/:userId/create' element={<CreateRecordForm createRecord={api.createRecord} />} />
-          <Route path='/records/view/:recordId' element={<RecordView />} />
+          <Route path='/animals/:id/records/create' element={<CreateRecordForm createRecord={api.createRecord} />} />
+          <Route path='/animals/:id/reminders/create' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
+          <Route path='/records/:recordId' element={<RecordView />} />
           <Route path='/reminders/:reminderId' element={<ReminderView />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
           <Route path='/map' element={<AnimalMap />} />

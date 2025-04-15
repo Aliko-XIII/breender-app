@@ -156,7 +156,7 @@ export const RecordList = () => {
                                                     variant="outline-primary"
                                                     size="sm"
                                                     className="mt-2"
-                                                    onClick={() => navigate(`/records/view/${record.id}`)}
+                                                    onClick={() => navigate(`/records/${record.id}`)}
                                                 >
                                                     View Details
                                                 </Button>
