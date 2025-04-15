@@ -81,7 +81,10 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
   }
 
   return (
-    <div className="container mt-5">
+    <div
+      className="d-flex justify-content-center align-items-center"
+      style={{ minHeight: "100vh" }}
+    >
       <div className="card shadow-lg p-4" style={{ maxWidth: "500px", width: "100%" }}>
         <h1 className="text-center mb-4">User Profile</h1>
 
