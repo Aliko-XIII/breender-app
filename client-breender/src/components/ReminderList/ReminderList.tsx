@@ -83,6 +83,11 @@ export const ReminderList = () => {
               <Card.Body className="d-flex justify-content-between align-items-start flex-wrap p-3">
                 <div className="ms-2 me-auto">
                   <div className="fw-bold">{reminder.reminderType}</div>
+                  {reminder.animal && (
+                    <div>
+                      <small className="text-muted">Animal:</small> {reminder.animal.name} {reminder.animal.breed ? `(${reminder.animal.breed}, ${reminder.animal.species})` : `(${reminder.animal.species})`}
+                    </div>
+                  )}
                   {reminder.message && (
                     <div>
                       <small className="text-muted">Message:</small> {reminder.message}
