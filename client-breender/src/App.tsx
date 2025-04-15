@@ -45,6 +45,8 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/:id/upload-photo' element={<PhotoUploadForm />} />
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
           <Route path='/animals/:id/records' element={<RecordList />} />
+          <Route path='/records/:userId' element={<RecordList />} />
+          <Route path='/records/:userId/create' element={<CreateRecordForm createRecord={api.createRecord} />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
           <Route path='/map' element={<AnimalMap />} />
         </Routes>

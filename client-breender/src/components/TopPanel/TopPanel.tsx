@@ -31,6 +31,7 @@ export const TopPanel = () => {
             {userId && <Nav.Link as={Link} to="/home">Home</Nav.Link>}
             {userId && <Nav.Link as={Link} to="/user-profile">Profile</Nav.Link>}
             {userId && <Nav.Link as={Link} to="/animals">Animals</Nav.Link>}
+            {userId && <Nav.Link as={Link} to={`/records/${userId}`}>My Records</Nav.Link>}
           </Nav>
 
           {/* Logout button aligned right */}

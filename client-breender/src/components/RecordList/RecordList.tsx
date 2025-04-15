@@ -1,123 +1,56 @@
 // src/components/RecordList/RecordList.tsx
 import { useState, useEffect } from 'react';
-import { Alert, ListGroup, Spinner, Card } from 'react-bootstrap';
+import { Alert, ListGroup, Spinner, Card, Button } from 'react-bootstrap';
 import { AnimalRecord, AnimalRecordType } from '../../types'; // Adjust path as needed
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getRecordsByAnimal, getRecordsByUser } from '../../api/recordApi';
 
 export const RecordList = () => {
     const [records, setRecords] = useState<AnimalRecord[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const { id: animalId } = useParams<{ id: string }>();
+    const { id: animalId, userId } = useParams<{ id?: string; userId?: string }>();
+    const navigate = useNavigate();
 
     useEffect(() => {
-        // Function to fetch records from the API
         const fetchRecords = async () => {
             setIsLoading(true);
             setError(null);
-            setRecords([]); // Clear previous records
+            setRecords([]);
 
-            const mockAnimalRecords: AnimalRecord[] = [
-                {
-                    id: "rec-001",
-                    animalId: 'MOCK_ANIMAL_ID',
-                    recordType: AnimalRecordType.CHECKUP,
-                    name: "Annual Wellness Exam",
-                    description: "Routine yearly checkup with Dr. Smith.",
-                    createdAt: "2025-04-10T10:30:00Z", // Use ISO 8601 format
-                    details: {
-                        vetName: "Dr. Smith",
-                        notes: "All vitals normal. Recommended dental cleaning.",
-                        weight: 15.2, // Example detail field
-                        weightUnit: "kg" // Example detail field
-                    }
-                },
-                {
-                    id: "rec-002",
-                    animalId: 'MOCK_ANIMAL_ID',
-                    recordType: AnimalRecordType.WEIGHT,
-                    name: "Weekly Weight Check",
-                    description: null, // No description
-                    createdAt: "2025-04-08T09:00:00Z",
-                    details: {
-                        weight: 15.1,
-                        unit: "kg"
-                    }
-                },
-                {
-                    id: "rec-003",
-                    animalId: 'MOCK_ANIMAL_ID',
-                    recordType: AnimalRecordType.VACCINATION,
-                    name: "Rabies Booster",
-                    description: "Administered rabies vaccine booster.",
-                    createdAt: "2025-03-15T14:15:00Z",
-                    details: {
-                        vaccineName: "RabiesShield III",
-                        batchNumber: "RB12345X",
-                        vetName: "Vet Clinic B"
-                    }
-                }
-            ];
-            setRecords(mockAnimalRecords);
-            setIsLoading(false);
-            return;
-
-            // --- Construct API Query ---
-            // TODO: Later, incorporate userId and filters into the query parameters
-            const queryParams = new URLSearchParams();
             if (animalId) {
-                queryParams.append('animalId', animalId);
-            }
-            // if (userId) {
-            //     queryParams.append('userId', userId);
-            // }
-            // if (filters) {
-            //     Object.entries(filters).forEach(([key, value]) => {
-            //         if (value !== null && value !== undefined && value !== '') {
-            //             queryParams.append(key, String(value));
-            //         }
-            //     });
-            // }
-
-            // --- API Call ---
-            // Adjust the endpoint URL as needed
-            const apiUrl = `/api/records?${queryParams.toString()}`;
-
-            try {
-                const response = await fetch(apiUrl);
-
-                if (!response.ok) {
-                    // Handle HTTP errors (e.g., 404, 500)
-                    const errorData = await response.text(); // Or response.json() if error details are structured
-                    throw new Error(`Failed to fetch records: ${response.status} ${response.statusText} - ${errorData}`);
+                try {
+                    const result = await getRecordsByAnimal(animalId);
+                    if (result.status !== 200) {
+                        throw new Error(`Failed to fetch records: ${result.status}`);
+                    }
+                    setRecords(result.data as AnimalRecord[]);
+                } catch (err: any) {
+                    console.error("Error fetching records:", err);
+                    setError(err.message || "An unexpected error occurred while fetching records.");
+                } finally {
+                    setIsLoading(false);
                 }
-
-                const data: AnimalRecord[] = await response.json();
-                setRecords(data);
-
-            } catch (err: any) {
-                console.error("Error fetching records:", err);
-                setError(err.message || "An unexpected error occurred while fetching records.");
-            } finally {
+            } else if (userId) {
+                try {
+                    const result = await getRecordsByUser(userId);
+                    if (result.status !== 200) {
+                        throw new Error(`Failed to fetch records: ${result.status}`);
+                    }
+                    setRecords(result.data as AnimalRecord[]);
+                } catch (err: any) {
+                    console.error("Error fetching records:", err);
+                    setError(err.message || "An unexpected error occurred while fetching records.");
+                } finally {
+                    setIsLoading(false);
+                }
+            } else {
+                setError("No animal or user ID provided.");
                 setIsLoading(false);
             }
         };
-
-        // Trigger fetch if we have an identifier (animalId for now)
-        // TODO: Adjust this condition when userId/filters are added
-        if (animalId) {
-            fetchRecords();
-        } else {
-            // Handle cases where no identifier is provided yet (e.g., if props become optional)
-            setRecords([]);
-            setIsLoading(false);
-            // Optionally set an error or message indicating required props are missing
-            // setError("Please provide an Animal ID to search for records.");
-        }
-
-        // Dependency array: Re-run the effect if animalId changes
-        // TODO: Add userId and filters to dependencies when implemented
-    }, [animalId /*, userId, filters */]); // Dependency array
+        fetchRecords();
+    }, [animalId, userId]);
 
     // Helper function to format date
     const formatDate = (dateString: string) => {
@@ -155,7 +88,7 @@ export const RecordList = () => {
         return (
             <ListGroup variant="flush">
                 {records.map((record) => (
-                    <ListGroup.Item key={record.id} className="d-flex justify-content-between align-items-start flex-wrap">
+                    <ListGroup.Item key={record.id} className="d-flex justify-content-between align-items-start flex-wrap mb-3">
                         <div className="ms-2 me-auto">
                             <div className="fw-bold">{record.name || `Record ${record.id.substring(0, 6)}`}</div>
                             <div><small className="text-muted">Type:</small> {record.recordType}</div>
@@ -173,11 +106,18 @@ export const RecordList = () => {
     return (
         <div className="d-flex justify-content-center">
             <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
-                <Card.Header>
-                    Animal Records
-                    {/* TODO: Add Filter/Search controls here later */}
+                <Card.Header className="d-flex justify-content-between align-items-center">
+                    <span>Animal Records</span>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => navigate(`/animals/${animalId}/create-record`)}
+                        disabled={!animalId}
+                    >
+                        Create Record
+                    </Button>
                 </Card.Header>
-                <div>
+                <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
                     {isLoading || error || records.length === 0 ? (
                         renderContent()
                     ) : (
@@ -188,8 +128,8 @@ export const RecordList = () => {
                                     className="mb-3 p-0 border-0 bg-transparent"
                                     style={{ background: "none" }}
                                 >
-                                    <Card className="shadow-sm">
-                                        <Card.Body className="d-flex justify-content-between align-items-start flex-wrap">
+                                    <Card className="shadow-sm bg-light border border-primary">
+                                        <Card.Body className="d-flex justify-content-between align-items-start flex-wrap p-3">
                                             <div className="ms-2 me-auto">
                                                 <div className="fw-bold">
                                                     {record.name || `Record ${record.id.substring(0, 6)}`}
