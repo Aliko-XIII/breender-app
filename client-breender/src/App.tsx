@@ -5,7 +5,6 @@ import { WelcomePage } from './components/WelcomePage/WelcomePage';
 import { UserProfile } from "./components/UserProfile/UserProfile";
 import { AnimalProfile } from "./components/AnimalProfile/AnimalProfile";
 import { AuthProvider } from './context/AuthContext';
-import { ApiResponse } from "./types";
 import { TopPanel } from "./components/TopPanel/TopPanel";
 import { UserProvider } from "./context/UserContext";
 import { UserSetup } from "./components/UserSetup/UserSetup";
@@ -19,47 +18,9 @@ import PhotoUploadForm from "./components/PhotoUploadForm/PhotoUploadForm";
 import DocumentUploadForm from "./components/DocumentUploadForm/DocumentUploadForm";
 import { RecordList } from "./components/RecordList/RecordList";
 import { AnimalMap } from "./components/AnimalMap/AnimalMap";
+import * as api from "./api";
 
-interface Api {
-  registerUser: (email: string, password: string) => Promise<ApiResponse>;
-  loginUser: (email: string, password: string) => Promise<ApiResponse>;
-  getUser: (userId: string, includeProfile: boolean) => Promise<ApiResponse>;
-  updateUser: (
-    userId: string,
-    updateData: {
-      email?: string,
-      pass?: string,
-      name?: string,
-      bio?: string,
-      pictureUrl?: string,
-    }
-  ) => Promise<ApiResponse>;
-  getUserAnimals: (userId: string) => Promise<ApiResponse>;
-  createAnimal: (
-    animalData: {
-      name: string,
-      sex: "MALE" | "FEMALE",
-      breed: string,
-      species: string,
-      bio?: string,
-      birthDate: string,
-    }
-  ) => Promise<ApiResponse>;
-  getAnimal: (animalId: string) => Promise<ApiResponse>;
-  updateAnimal: (
-    animalId: string,
-    animalData: Partial<{
-      name: string,
-      sex: "MALE" | "FEMALE",
-      breed: string,
-      species: string,
-      bio?: string,
-      birthDate: string,
-      latitude?: number,
-      longitude?: number,
-    }>
-  ) => Promise<ApiResponse>;
-}
+type Api = typeof api;
 
 function App({ api }: { api: Api }) {
   return (

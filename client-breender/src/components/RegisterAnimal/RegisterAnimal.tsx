@@ -33,7 +33,7 @@ export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await createAnimal({ ...formData});
+            await createAnimal({ ...formData, bio: formData.bio ?? "" });
             alert("Animal created successfully!");
             navigate("/animals");
         } catch (error) {
