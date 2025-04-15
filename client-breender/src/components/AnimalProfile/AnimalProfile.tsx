@@ -139,13 +139,26 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-end mb-3 flex-wrap gap-2">
-        <Link to={`/animals/${animalId}`} className="btn btn-outline-primary me-2">View Profile</Link>
-        <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary me-2">Create Record</Link>
-        <Link to={`/animals/${animalId}/records`} className="btn btn-primary me-2">Records</Link>
-        <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary me-2">Create Reminder</Link>
-        <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary me-2">Upload Photo</Link>
-        <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">Upload Document</Link>
+      <div className="card shadow-lg p-3 mb-4 mx-auto" style={{ maxWidth: "700px", width: "100%" }}>
+        <div className="d-flex flex-column gap-2">
+          <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
+            <Link to="/animals" className="btn btn-outline-secondary">Back</Link>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
+            <span className="fw-bold">Records:</span>
+            <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary">Create Record</Link>
+            <Link to={`/animals/${animalId}/records`} className="btn btn-primary">Records</Link>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
+            <span className="fw-bold">Reminders:</span>
+            <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary">Create Reminder</Link>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <span className="fw-bold">Uploads:</span>
+            <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary">Upload Photo</Link>
+            <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">Upload Document</Link>
+          </div>
+        </div>
       </div>
 
       <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
