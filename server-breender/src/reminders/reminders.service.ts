@@ -4,7 +4,7 @@ import { DatabaseService } from 'src/database/database.service'; // Assuming sam
 import { CreateReminderDto } from './dto/createReminder.dto';
 import { UpdateReminderDto } from './dto/updateReminder.dto';
 import { Prisma } from '@prisma/client';
-// import { Prisma } from '@prisma/client';
+// import { Prisma } from '@prisma/client;
 
 @Injectable()
 export class RemindersService {
@@ -59,6 +59,11 @@ export class RemindersService {
             orderBy: {
                 createdAt: 'desc',
             },
+            include: {
+                animal: {
+                    select: { id: true, name: true, breed: true, species: true }
+                }
+            }
         });
         return reminders;
     }
@@ -91,6 +96,11 @@ export class RemindersService {
             orderBy: {
                 createdAt: 'desc',
             },
+            include: {
+                animal: {
+                    select: { id: true, name: true, breed: true, species: true }
+                }
+            }
         });
         return reminders;
     }

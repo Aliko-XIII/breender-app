@@ -7,4 +7,10 @@ export interface AnimalReminder {
   message?: string | null;
   remindAt: string;
   createdAt: string;
+  animal?: {
+    id: string;
+    name: string;
+    breed?: string;
+    species?: string;
+  };
 }

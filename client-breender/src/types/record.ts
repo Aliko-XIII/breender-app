@@ -8,4 +8,10 @@ export interface AnimalRecord {
   description?: string | null;
   createdAt: string; // API typically sends dates as ISO strings
   details?: any | null; // JSON can be represented as 'any' or a more specific union type if needed
+  animal?: {
+    id: string;
+    name: string;
+    breed?: string;
+    species?: string;
+  };
 }

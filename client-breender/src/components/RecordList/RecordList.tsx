@@ -92,6 +92,11 @@ export const RecordList = () => {
                         <div className="ms-2 me-auto">
                             <div className="fw-bold">{record.name || `Record ${record.id.substring(0, 6)}`}</div>
                             <div><small className="text-muted">Type:</small> {record.recordType}</div>
+                            {record.animal && (
+                                <div>
+                                    <small className="text-muted">Animal:</small> {record.animal.name} ({record.animal.breed}, {record.animal.species})
+                                </div>
+                            )}
                             {record.description && (
                                 <div><small className="text-muted">Desc:</small> {record.description}</div>
                             )}
@@ -137,6 +142,11 @@ export const RecordList = () => {
                                                 <div>
                                                     <small className="text-muted">Type:</small> {record.recordType}
                                                 </div>
+                                                {record.animal && (
+                                                    <div>
+                                                        <small className="text-muted">Animal:</small> {record.animal.name} ({record.animal.breed}, {record.animal.species})
+                                                    </div>
+                                                )}
                                                 {record.description && (
                                                     <div>
                                                         <small className="text-muted">Desc:</small> {record.description}

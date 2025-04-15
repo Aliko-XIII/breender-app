@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { Alert, ListGroup, Spinner, Card, Button } from "react-bootstrap";
 import { AnimalReminder } from "../../types/reminder";
 import { useParams, useNavigate } from "react-router-dom";
-import { getRemindersByAnimal } from "../../api/reminderApi";
+import { getRemindersByAnimal, getRemindersByUser } from "../../api/reminderApi";
 
 export const ReminderList = () => {
   const [reminders, setReminders] = useState<AnimalReminder[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { id: animalId } = useParams<{ id?: string }>();
+  const { id: animalId, userId } = useParams<{ id?: string; userId?: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,13 +28,25 @@ export const ReminderList = () => {
         } finally {
           setIsLoading(false);
         }
+      } else if (userId) {
+        try {
+          const result = await getRemindersByUser(userId);
+          if (result.status !== 200) {
+            throw new Error(result.data?.message || `Failed to fetch reminders: ${result.status}`);
+          }
+          setReminders(result.data as AnimalReminder[]);
+        } catch (err: any) {
+          setError(err.message || "An unexpected error occurred while fetching reminders.");
+        } finally {
+          setIsLoading(false);
+        }
       } else {
-        setError("No animal ID provided.");
+        setError("No animal or user ID provided.");
         setIsLoading(false);
       }
     };
     fetchReminders();
-  }, [animalId]);
+  }, [animalId, userId]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -61,7 +73,7 @@ export const ReminderList = () => {
       return <Alert variant="danger">Error loading reminders: {error}</Alert>;
     }
     if (reminders.length === 0) {
-      return <Alert variant="info">No reminders found for this animal.</Alert>;
+      return <Alert variant="info">No reminders found for this {animalId ? "animal" : "user"}.</Alert>;
     }
     return (
       <ListGroup variant="flush">
@@ -92,15 +104,17 @@ export const ReminderList = () => {
     <div className="d-flex justify-content-center">
       <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
         <Card.Header className="d-flex justify-content-between align-items-center">
-          <span>Animal Reminders</span>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate(`/animals/${animalId}/create-reminder`)}
-            disabled={!animalId}
-          >
-            Create Reminder
-          </Button>
+          <span>{animalId ? "Animal Reminders" : "User Reminders"}</span>
+          {animalId && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => navigate(`/animals/${animalId}/create-reminder`)}
+              disabled={!animalId}
+            >
+              Create Reminder
+            </Button>
+          )}
         </Card.Header>
         <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
           {renderContent()}
