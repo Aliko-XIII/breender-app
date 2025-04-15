@@ -3,15 +3,18 @@ import { Form } from 'react-bootstrap';
 import { GroomingDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const GroomingDetailsForm: React.FC<DetailFormProps<GroomingDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<GroomingDetailsDto>({ service: '', groomerName: '', notes: '' });
+export const GroomingDetailsForm: React.FC<DetailFormProps<GroomingDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<GroomingDetailsDto>(initialDetails ?? { service: '', groomerName: '', notes: '' });
 
     useEffect(() => {
-        // service is required
         const isValid = !!details.service?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { FoodDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const FoodDetailsForm: React.FC<DetailFormProps<FoodDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<FoodDetailsDto>({ type: '', amount: 0, unit: '', notes: '' });
+export const FoodDetailsForm: React.FC<DetailFormProps<FoodDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<FoodDetailsDto>(initialDetails ?? { type: '', amount: 0, unit: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.type?.trim() && typeof details.amount === 'number' && details.amount > 0 && !!details.unit?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

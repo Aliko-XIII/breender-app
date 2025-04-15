@@ -3,15 +3,18 @@ import { Form } from 'react-bootstrap';
 import { TemperatureDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const TemperatureDetailsForm: React.FC<DetailFormProps<TemperatureDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<TemperatureDetailsDto>({ value: 0, unit: '' });
+export const TemperatureDetailsForm: React.FC<DetailFormProps<TemperatureDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<TemperatureDetailsDto>(initialDetails ?? { value: 0, unit: '' });
 
     useEffect(() => {
-        // value is required (number, not 0), unit optional
         const isValid = typeof details.value === 'number' && !isNaN(details.value);
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

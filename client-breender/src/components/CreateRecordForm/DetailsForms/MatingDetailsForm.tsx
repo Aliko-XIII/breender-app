@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { MatingDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const MatingDetailsForm: React.FC<DetailFormProps<MatingDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<MatingDetailsDto>({ partnerDetails: '', partnerId: '', outcome: '', notes: '' });
+export const MatingDetailsForm: React.FC<DetailFormProps<MatingDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<MatingDetailsDto>(initialDetails ?? { partnerDetails: '', partnerId: '', outcome: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.outcome?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

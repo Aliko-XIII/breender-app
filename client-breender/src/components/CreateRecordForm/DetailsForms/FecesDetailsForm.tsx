@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { FecesDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const FecesDetailsForm: React.FC<DetailFormProps<FecesDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<FecesDetailsDto>({ consistency: '', color: '', abnormalities: '', notes: '' });
+export const FecesDetailsForm: React.FC<DetailFormProps<FecesDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<FecesDetailsDto>(initialDetails ?? { consistency: '', color: '', abnormalities: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.notes?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

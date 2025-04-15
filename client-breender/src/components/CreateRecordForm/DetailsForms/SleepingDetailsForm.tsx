@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { SleepingDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const SleepingDetailsForm: React.FC<DetailFormProps<SleepingDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<SleepingDetailsDto>({ durationHours: undefined, quality: '', notes: '' });
+export const SleepingDetailsForm: React.FC<DetailFormProps<SleepingDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<SleepingDetailsDto>(initialDetails ?? { durationHours: undefined, quality: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.notes?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

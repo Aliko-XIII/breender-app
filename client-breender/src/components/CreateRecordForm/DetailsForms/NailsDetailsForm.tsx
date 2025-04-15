@@ -3,14 +3,17 @@ import { Form } from 'react-bootstrap';
 import { NailsDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const NailsDetailsForm: React.FC<DetailFormProps<NailsDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<NailsDetailsDto>({ notes: '' });
+export const NailsDetailsForm: React.FC<DetailFormProps<NailsDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<NailsDetailsDto>(initialDetails ?? { notes: '' });
 
     useEffect(() => {
-        // notes is optional, always valid
         onValidityChange(true);
         onChange(details);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

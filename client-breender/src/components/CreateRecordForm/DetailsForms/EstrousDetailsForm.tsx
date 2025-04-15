@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { EstrousDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const EstrousDetailsForm: React.FC<DetailFormProps<EstrousDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<EstrousDetailsDto>({ stage: '', observations: '', notes: '' });
+export const EstrousDetailsForm: React.FC<DetailFormProps<EstrousDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<EstrousDetailsDto>(initialDetails ?? { stage: '', observations: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.stage?.trim() && !!details.observations?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

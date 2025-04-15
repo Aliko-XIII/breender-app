@@ -6,6 +6,7 @@ import React from "react";
 export interface DetailFormProps<T> {
     onChange: (details: T | null) => void;
     onValidityChange: (isValid: boolean) => void;
+    initialDetails?: T | null;
 }
 
 // Helper function to render a text input field

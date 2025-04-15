@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { VomitDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const VomitDetailsForm: React.FC<DetailFormProps<VomitDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<VomitDetailsDto>({ contentDescription: '', frequency: '', notes: '' });
+export const VomitDetailsForm: React.FC<DetailFormProps<VomitDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<VomitDetailsDto>(initialDetails ?? { contentDescription: '', frequency: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.notes?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

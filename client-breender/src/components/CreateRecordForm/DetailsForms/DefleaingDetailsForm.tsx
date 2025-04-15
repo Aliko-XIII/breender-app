@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { DefleaingDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const DefleaingDetailsForm: React.FC<DetailFormProps<DefleaingDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<DefleaingDetailsDto>({ productName: '', applicationMethod: '', notes: '' });
+export const DefleaingDetailsForm: React.FC<DetailFormProps<DefleaingDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<DefleaingDetailsDto>(initialDetails ?? { productName: '', applicationMethod: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.productName?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

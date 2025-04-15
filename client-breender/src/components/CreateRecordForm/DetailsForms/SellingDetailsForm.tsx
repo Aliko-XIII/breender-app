@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { SellingDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const SellingDetailsForm: React.FC<DetailFormProps<SellingDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<SellingDetailsDto>({ buyerName: '', buyerContact: '', price: undefined, currency: '', notes: '' });
+export const SellingDetailsForm: React.FC<DetailFormProps<SellingDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<SellingDetailsDto>(initialDetails ?? { buyerName: '', buyerContact: '', price: undefined, currency: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.notes?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

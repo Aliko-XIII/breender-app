@@ -3,14 +3,18 @@ import { Form } from 'react-bootstrap';
 import { PregnancyDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const PregnancyDetailsForm: React.FC<DetailFormProps<PregnancyDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<PregnancyDetailsDto>({ confirmationMethod: '', estimatedDueDate: '', notes: '' });
+export const PregnancyDetailsForm: React.FC<DetailFormProps<PregnancyDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<PregnancyDetailsDto>(initialDetails ?? { confirmationMethod: '', estimatedDueDate: '', notes: '' });
 
     useEffect(() => {
         const isValid = !!details.notes?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>

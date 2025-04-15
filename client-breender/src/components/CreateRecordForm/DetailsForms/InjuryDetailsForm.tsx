@@ -3,15 +3,18 @@ import { Form } from 'react-bootstrap';
 import { InjuryDetailsDto } from '../../../types';
 import { DetailFormProps, renderTextField } from './common';
 
-export const InjuryDetailsForm: React.FC<DetailFormProps<InjuryDetailsDto>> = ({ onChange, onValidityChange }) => {
-    const [details, setDetails] = useState<InjuryDetailsDto>({ type: '', location: '', severity: '', notes: '' });
+export const InjuryDetailsForm: React.FC<DetailFormProps<InjuryDetailsDto>> = ({ onChange, onValidityChange, initialDetails }) => {
+    const [details, setDetails] = useState<InjuryDetailsDto>(initialDetails ?? { type: '', location: '', severity: '', notes: '' });
 
     useEffect(() => {
-        // type and notes are required
         const isValid = !!details.type?.trim() && !!details.notes?.trim();
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
+
+    useEffect(() => {
+        if (initialDetails) setDetails(initialDetails);
+    }, [initialDetails]);
 
     return (
         <Form noValidate>
