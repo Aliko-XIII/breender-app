@@ -55,7 +55,6 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
     };
 
     fetchUserProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIdToLoad, navigate, getUser, isOwnProfile, isLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
