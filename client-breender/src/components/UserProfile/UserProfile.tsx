@@ -19,6 +19,8 @@ interface UserProfileProps {
 
 export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser }) => {
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+  const [formData, setFormData] = useState<Partial<UserProfileData>>({});
+  const [isEditing, setIsEditing] = useState(false);
   const { userId: currentUserId, isLoading } = useUser();
   const { id: routeUserId } = useParams();
   const navigate = useNavigate();
@@ -37,32 +39,35 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
           return;
         }
 
-        setUserProfile({
+        const profileData: UserProfileData = {
           name: response.data.profile.name,
           bio: response.data.profile.bio,
           pictureUrl: response.data.profile.pictureUrl,
           phone: response.data.profile.phone,
           email: response.data.email,
           role: response.data.role,
-        });
+        };
+        setUserProfile(profileData);
+        setFormData(profileData);
       } catch (error) {
         console.error("Error fetching user profile:", error);
       }
     };
 
     fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userIdToLoad, navigate, getUser, isOwnProfile, isLoading]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (userProfile && isOwnProfile) {
-      setUserProfile({ ...userProfile, [e.target.name]: e.target.value });
-    }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
-    if (isOwnProfile && currentUserId && userProfile) {
+    if (isOwnProfile && currentUserId && formData) {
       try {
-        await updateUser(currentUserId, userProfile);
+        await updateUser(currentUserId, formData);
+        setUserProfile({ ...userProfile!, ...formData });
+        setIsEditing(false);
         alert("Profile updated successfully!");
       } catch (error) {
         console.error("Error updating profile:", error);
@@ -91,59 +96,67 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
 
         <div className="mb-3">
           <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={userProfile.name}
-            onChange={handleChange}
-            className="form-control"
-            readOnly={!isOwnProfile}
-          />
+          {isEditing ? (
+            <input
+              type="text"
+              name="name"
+              value={formData.name || ""}
+              onChange={handleChange}
+              className="form-control"
+            />
+          ) : (
+            <span className="ms-2">{userProfile.name}</span>
+          )}
         </div>
 
         <div className="mb-3">
           <label>Email:</label>
-          <p>{userProfile.email}</p>
+          <span className="ms-2">{userProfile.email}</span>
         </div>
 
         <div className="mb-3">
           <label>Role:</label>
-          <p>{userProfile.role}</p>
+          <span className="ms-2">{userProfile.role}</span>
         </div>
 
         <div className="mb-3">
           <label>Phone:</label>
-          <input
-            type="text"
-            name="phone"
-            value={userProfile.phone || ""}
-            onChange={handleChange}
-            className="form-control"
-            placeholder="Not set"
-            readOnly={!isOwnProfile}
-          />
+          {isEditing ? (
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone || ""}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Not set"
+            />
+          ) : (
+            <span className="ms-2">{userProfile.phone || "Not set"}</span>
+          )}
         </div>
 
         <div className="mb-3">
           <label>Bio:</label>
-          <textarea
-            name="bio"
-            value={userProfile.bio}
-            onChange={handleChange}
-            className="form-control"
-            placeholder="Not set"
-            readOnly={!isOwnProfile}
-          />
+          {isEditing ? (
+            <textarea
+              name="bio"
+              value={formData.bio || ""}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Not set"
+            />
+          ) : (
+            <p className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{userProfile.bio || "Not set"}</p>
+          )}
         </div>
 
-        {/* Hide this section if not user's own profile */}
-        {isOwnProfile && (
+        {isEditing && (
           <div className="mb-3">
             <label>Picture URL:</label>
             <input
               type="text"
               name="pictureUrl"
-              value={userProfile.pictureUrl || ""}
+              value={formData.pictureUrl || ""}
               onChange={handleChange}
               className="form-control"
               placeholder="Not set"
@@ -151,11 +164,32 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
           </div>
         )}
 
-        {/* Save button only if user's own profile */}
         {isOwnProfile && (
-          <button onClick={handleSave} className="btn btn-primary w-100">
-            Save
-          </button>
+          <div className="mt-3">
+            {isEditing ? (
+              <>
+                <button onClick={handleSave} className="btn btn-success me-2">
+                  Save
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setIsEditing(false);
+                    setFormData(userProfile);
+                  }}
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn btn-primary"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit
+              </button>
+            )}
+          </div>
         )}
       </div>
     </div>

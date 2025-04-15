@@ -49,3 +49,28 @@ export const createAnimal = async (
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
+
+export const updateAnimal = async (
+    animalId: string,
+    animalData: Partial<{
+        name: string,
+        sex: "MALE" | "FEMALE",
+        breed: string,
+        species: string,
+        bio: string,
+        birthDate: string,
+        latitude: number,
+        longitude: number,
+    }>
+) => {
+    try {
+        const response = await axiosInstance.patch(
+            `/animals/${animalId}`,
+            animalData
+        );
+        return { status: response.status, data: response.data };
+    } catch (error: any) {
+        console.error(error);
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};

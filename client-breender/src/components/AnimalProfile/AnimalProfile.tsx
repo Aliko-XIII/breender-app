@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { ApiResponse } from '../../types'; // Adjust path as needed
+import { ApiResponse } from '../../types';
 import { Link, useParams } from 'react-router-dom';
-// Import the updated UserMention component
-import { UserMention } from '../UserMention/UserMention'; // Adjust path!
-// Import useUser to ensure context is available
-import { useUser } from '../../context/UserContext'; // Adjust path!
+import { UserMention } from '../UserMention/UserMention';
+import { useUser } from '../../context/UserContext';
 
 interface AnimalProfileProps {
   getAnimal: (animalId: string) => Promise<ApiResponse>;
+  updateAnimal: (animalId: string, data: Partial<AnimalProfileData>) => Promise<ApiResponse>;
 }
 
-// Interface for the owner information needed by UserMention
 interface OwnerInfo {
   id: string;
   name: string;
@@ -18,7 +16,6 @@ interface OwnerInfo {
   pictureUrl?: string | null;
 }
 
-// Main data interface for the animal profile
 interface AnimalProfileData {
   name: string;
   sex: 'MALE' | 'FEMALE';
@@ -28,17 +25,17 @@ interface AnimalProfileData {
   birthDate: string;
   latitude?: number;
   longitude?: number;
-  owners: OwnerInfo[]; // Array of objects conforming to OwnerInfo
+  owners: OwnerInfo[];
 }
 
-export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
+export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateAnimal }) => {
   const { id: animalId } = useParams<{ id: string }>();
   const [animalData, setAnimalData] = useState<AnimalProfileData | null>(null);
+  const [formData, setFormData] = useState<Partial<AnimalProfileData>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Ensure UserContext is initialized for UserMention to use
-  useUser();
+  const [isEditing, setIsEditing] = useState(false);
+  const { userId: currentUserId } = useUser();
 
   useEffect(() => {
     const fetchAnimalProfile = async () => {
@@ -47,49 +44,32 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
         setIsLoading(false);
         return;
       }
-
       setIsLoading(true);
       setError(null);
       try {
         const response = await getAnimal(animalId);
-
         if (response.status === 200 && response.data) {
-          // --- CRITICAL DATA MAPPING ---
-          // Adjust the paths below based on your ACTUAL API response structure.
-          // This example assumes:
-          // ID:       ownerRelation.owner.user.id
-          // Name:     ownerRelation.owner.user.userProfile.name
-          // Email:    ownerRelation.owner.user.email
-          // Picture:  ownerRelation.owner.user.userProfile.pictureUrl
-          const mappedOwners: OwnerInfo[] = response.data.owners ? response.data.owners.map(
-            (ownerRelation: any) => { // Use a specific type from your API if available
-              const user = ownerRelation?.owner?.user;
-              const profile = user?.userProfile;
-
-              const userId = user?.id;
-              const userName = profile?.name;
-              const userEmail = user?.email; // Extract email
-              const userPictureUrl = profile?.pictureUrl; // Extract picture URL
-
-              // Validate that required fields (id, name, email) are present
-              if (userId && userName && userEmail) {
-                return {
-                  id: userId,
-                  name: userName,
-                  email: userEmail, // Include email
-                  pictureUrl: userPictureUrl || null // Include pictureUrl (default to null if missing)
-                };
-              } else {
-                // Log a warning if data for an owner is incomplete
-                console.warn('Incomplete owner data received (missing id, name, or email):', ownerRelation);
-                return null; // Mark this entry as invalid
-              }
-            }
-          ).filter((owner: any): owner is OwnerInfo => owner !== null) // Filter out invalid entries and confirm type
-            : []; // Default to an empty array if response.data.owners is null/undefined
-          // --- End Critical Data Mapping ---
-
-          // Structure the final animal data state
+          const mappedOwners: OwnerInfo[] = response.data.owners
+            ? response.data.owners.map((ownerRelation: any) => {
+                const user = ownerRelation?.owner?.user;
+                const profile = user?.userProfile;
+                const userId = user?.id;
+                const userName = profile?.name;
+                const userEmail = user?.email;
+                const userPictureUrl = profile?.pictureUrl;
+                if (userId && userName && userEmail) {
+                  return {
+                    id: userId,
+                    name: userName,
+                    email: userEmail,
+                    pictureUrl: userPictureUrl || null,
+                  };
+                } else {
+                  console.warn('Incomplete owner data:', ownerRelation);
+                  return null;
+                }
+              }).filter((owner: any): owner is OwnerInfo => owner !== null)
+            : [];
           const data: AnimalProfileData = {
             name: response.data.name,
             sex: response.data.sex,
@@ -99,44 +79,43 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
             birthDate: response.data.birthDate,
             latitude: response.data.latitude,
             longitude: response.data.longitude,
-            owners: mappedOwners, // Assign the processed owner data
+            owners: mappedOwners,
           };
           setAnimalData(data);
+          setFormData(data);
         } else {
-          // Handle non-200 responses
           setError(response.message || `Failed to fetch data. Status: ${response.status}`);
         }
       } catch (err) {
-        // Handle network or other errors during fetch
         console.error("Error fetching animal profile:", err);
         setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       } finally {
-        // Ensure loading state is turned off
         setIsLoading(false);
       }
     };
-
     fetchAnimalProfile();
-  }, [animalId, getAnimal]); // Dependencies for useEffect
+  }, [animalId, getAnimal]);
 
-  // --- Render Logic ---
+  const isOwner = animalData?.owners.some(owner => owner.id === currentUserId);
 
-  // Loading State
-  if (isLoading) {
-    return <div className="container mt-5 text-center">Loading animal data...</div>;
-  }
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  // Error State
-  if (error) {
-    return <div className="container mt-5 alert alert-danger">{error}</div>;
-  }
+  const handleSave = async () => {
+    if (!animalId || !isOwner) return;
+    try {
+      setIsLoading(true);
+      await updateAnimal(animalId, formData);
+      setAnimalData({ ...animalData!, ...formData });
+      setIsEditing(false);
+    } catch (err) {
+      alert("Failed to update animal profile.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Data Not Found State
-  if (!animalData) {
-    return <div className="container mt-5">Could not load animal profile.</div>;
-  }
-
-  // --- Helper Functions --- (Optional but recommended)
   const displaySex = (sex: 'MALE' | 'FEMALE'): string => {
     switch (sex) {
       case 'MALE': return 'Male';
@@ -148,67 +127,164 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
   const displayBirthDate = (dateString: string): string => {
     if (!dateString) return 'Not available';
     try {
-      // Format date based on locale
       return new Date(dateString).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
     } catch (e) {
-      console.error("Error parsing birth date:", e);
       return 'Invalid Date';
     }
   };
 
-  // --- JSX Output ---
+  if (isLoading) return <div className="container mt-5 text-center">Loading animal data...</div>;
+  if (error) return <div className="container mt-5 alert alert-danger">{error}</div>;
+  if (!animalData) return <div className="container mt-5">Could not load animal profile.</div>;
+
   return (
     <div className="container mt-5">
-
-      {/* --- Action Panel --- */}
       <div className="d-flex justify-content-end mb-3 flex-wrap gap-2">
-        <Link to={`/animals/${animalId}`} className="btn btn-outline-primary me-2">
-          View Profile
-        </Link>
-        <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary me-2">
-          Create Record
-        </Link>
-        <Link to={`/animals/${animalId}/records`} className="btn btn-primary me-2">
-          Records
-        </Link>
-        <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary me-2">
-          Create Reminder
-        </Link>
-        <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary me-2">
-          Upload Photo
-        </Link>
-        <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">
-          Upload Document
-        </Link>
+        <Link to={`/animals/${animalId}`} className="btn btn-outline-primary me-2">View Profile</Link>
+        <Link to={`/animals/${animalId}/create-record`} className="btn btn-primary me-2">Create Record</Link>
+        <Link to={`/animals/${animalId}/records`} className="btn btn-primary me-2">Records</Link>
+        <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary me-2">Create Reminder</Link>
+        <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary me-2">Upload Photo</Link>
+        <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">Upload Document</Link>
       </div>
 
-
-      {/* --- Animal Profile Card --- */}
       <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
-        <h1 className="text-center mb-4">{animalData.name}'s Profile</h1>
+        <h1 className="text-center mb-4">
+          {isEditing ? (
+            <input
+              type="text"
+              name="name"
+              value={formData.name || ""}
+              onChange={handleChange}
+              className="form-control text-center"
+              style={{ fontSize: "2rem", fontWeight: "bold" }}
+              placeholder="Animal Name"
+            />
+          ) : (
+            `${animalData.name}'s Profile`
+          )}
+        </h1>
 
+        {/* Editable fields for owners */}
         <div className="mb-3">
-          <strong>Species:</strong> <span className="ms-2">{animalData.species}</span>
+          <label><strong>Name:</strong></label>
+          {isEditing ? (
+            <input
+              type="text"
+              name="name"
+              value={formData.name || ""}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Animal Name"
+            />
+          ) : (
+            <span className="ms-2">{animalData.name}</span>
+          )}
         </div>
         <div className="mb-3">
-          <strong>Breed:</strong> <span className="ms-2">{animalData.breed}</span>
+          <label><strong>Species:</strong></label>
+          {isEditing ? (
+            <input
+              type="text"
+              name="species"
+              value={formData.species || ""}
+              onChange={handleChange}
+              className="form-control"
+            />
+          ) : (
+            <span className="ms-2">{animalData.species}</span>
+          )}
         </div>
         <div className="mb-3">
-          <strong>Sex:</strong> <span className="ms-2">{displaySex(animalData.sex)}</span>
+          <label><strong>Breed:</strong></label>
+          {isEditing ? (
+            <input
+              type="text"
+              name="breed"
+              value={formData.breed || ""}
+              onChange={handleChange}
+              className="form-control"
+            />
+          ) : (
+            <span className="ms-2">{animalData.breed}</span>
+          )}
         </div>
         <div className="mb-3">
-          <strong>Birth Date:</strong> <span className="ms-2">{displayBirthDate(animalData.birthDate)}</span>
+          <label><strong>Sex:</strong></label>
+          {isEditing ? (
+            <select
+              name="sex"
+              value={formData.sex || ""}
+              onChange={handleChange}
+              className="form-control"
+            >
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+            </select>
+          ) : (
+            <span className="ms-2">{displaySex(animalData.sex)}</span>
+          )}
         </div>
         <div className="mb-3">
-          <strong>Bio:</strong>
-          <p className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{animalData.bio || "No bio available."}</p>
+          <label><strong>Birth Date:</strong></label>
+          {isEditing ? (
+            <input
+              type="date"
+              name="birthDate"
+              value={formData.birthDate ? formData.birthDate.slice(0, 10) : ""}
+              onChange={handleChange}
+              className="form-control"
+            />
+          ) : (
+            <span className="ms-2">{displayBirthDate(animalData.birthDate)}</span>
+          )}
         </div>
         <div className="mb-3">
-          <strong>Location:</strong>
-          <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
+          <label><strong>Bio:</strong></label>
+          {isEditing ? (
+            <textarea
+              name="bio"
+              value={formData.bio || ""}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="No bio available."
+            />
+          ) : (
+            <p className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{animalData.bio || "No bio available."}</p>
+          )}
+        </div>
+        <div className="mb-3">
+          <label><strong>Location:</strong></label>
+          {isEditing ? (
+            <div className="row">
+              <div className="col">
+                <input
+                  type="number"
+                  name="latitude"
+                  value={formData.latitude ?? ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Latitude"
+                  step="any"
+                />
+              </div>
+              <div className="col">
+                <input
+                  type="number"
+                  name="longitude"
+                  value={formData.longitude ?? ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Longitude"
+                  step="any"
+                />
+              </div>
+            </div>
+          ) : (
+            <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
+          )}
         </div>
 
-        {/* --- Owners Section --- */}
         <div className="mb-3">
           <strong className="d-block mb-2">Owners:</strong>
           {animalData.owners.length > 0 ? (
@@ -227,8 +303,21 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal }) => {
             <p className="ms-1">No owners assigned.</p>
           )}
         </div>
+
+        {/* Edit/Save buttons for owners */}
+        {isOwner && (
+          <div className="mt-3">
+            {isEditing ? (
+              <>
+                <button className="btn btn-success me-2" onClick={handleSave}>Save</button>
+                <button className="btn btn-secondary" onClick={() => { setIsEditing(false); setFormData(animalData); }}>Cancel</button>
+              </>
+            ) : (
+              <button className="btn btn-primary" onClick={() => setIsEditing(true)}>Edit</button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
-
 };

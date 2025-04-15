@@ -46,6 +46,19 @@ interface Api {
     }
   ) => Promise<ApiResponse>;
   getAnimal: (animalId: string) => Promise<ApiResponse>;
+  updateAnimal: (
+    animalId: string,
+    animalData: Partial<{
+      name: string,
+      sex: "MALE" | "FEMALE",
+      breed: string,
+      species: string,
+      bio?: string,
+      birthDate: string,
+      latitude?: number,
+      longitude?: number,
+    }>
+  ) => Promise<ApiResponse>;
 }
 
 function App({ api }: { api: Api }) {
@@ -62,7 +75,7 @@ function App({ api }: { api: Api }) {
           <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
           <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
           <Route path='/animals/new' element={<RegisterAnimal createAnimal={api.createAnimal} />} />
-          <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} />} />
+          <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} updateAnimal={api.updateAnimal} />} />
           <Route path='/animals/:id/create-record' element={
             <CreateRecordForm onSave={(data) => console.log("Saving:", data)} />} />
           <Route path='/animals/:id/create-reminder' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
