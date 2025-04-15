@@ -6,7 +6,34 @@ import { AnimalRecordType, AnyAnimalRecordDetails } from '../../../types'; // Ad
 import { CheckupDetailsForm } from './CheckupDetailsForm';
 import { SurgeryDetailsForm } from './SurgeryDetailsForm';
 import { WeightDetailsForm } from './WeightDetailsForm';
-// ... import other detail forms ONLY IF you uncomment their cases below
+import { DiagnosisDetailsForm } from './DiagnosisDetailsForm';
+import { PrescriptionDetailsForm } from './PrescriptionDetailsForm';
+import { MedicationDetailsForm } from './MedicationDetailsForm';
+import { VaccinationDetailsForm } from './VaccinationDetailsForm';
+import { DewormingDetailsForm } from './DewormingDetailsForm';
+import { DefleaingDetailsForm } from './DefleaingDetailsForm';
+import { BathingDetailsForm } from './BathingDetailsForm';
+import { GroomingDetailsForm } from './GroomingDetailsForm';
+import { NailsDetailsForm } from './NailsDetailsForm';
+import { InjuryDetailsForm } from './InjuryDetailsForm';
+import { TemperatureDetailsForm } from './TemperatureDetailsForm';
+import { IllnessDetailsForm } from './IllnessDetailsForm';
+import { BehaviorDetailsForm } from './BehaviorDetailsForm';
+import { SleepingDetailsForm } from './SleepingDetailsForm';
+import { FecesDetailsForm } from './FecesDetailsForm';
+import { UrineDetailsForm } from './UrineDetailsForm';
+import { VomitDetailsForm } from './VomitDetailsForm';
+import { FoodDetailsForm } from './FoodDetailsForm';
+import { WaterDetailsForm } from './WaterDetailsForm';
+import { HeatDetailsForm } from './HeatDetailsForm';
+import { MatingDetailsForm } from './MatingDetailsForm';
+import { PregnancyDetailsForm } from './PregnancyDetailsForm';
+import { BirthDetailsForm } from './BirthDetailsForm';
+import { EstrousDetailsForm } from './EstrousDetailsForm';
+import { SellingDetailsForm } from './SellingDetailsForm';
+import { BuyingDetailsForm } from './BuyingDetailsForm';
+import { NotesDetailsForm } from './NotesDetailsForm';
+import { OtherDetailsForm } from './OtherDetailsForm';
 
 interface RecordDetailsFormProps {
     recordType: AnimalRecordType | "";
@@ -22,14 +49,40 @@ const hasDetailsComponent = (type: AnimalRecordType | ""): boolean => {
         case AnimalRecordType.CHECKUP:
         case AnimalRecordType.SURGERY:
         case AnimalRecordType.WEIGHT:
-             // Add any other types for which you HAVE an active form component case below
+        case AnimalRecordType.DIAGNOSIS:
+        case AnimalRecordType.PRESCRIPTION:
+        case AnimalRecordType.MEDICATION:
+        case AnimalRecordType.VACCINATION:
+        case AnimalRecordType.DEWORMING:
+        case AnimalRecordType.DEFLEAING:
+        case AnimalRecordType.BATHING:
+        case AnimalRecordType.GROOMING:
+        case AnimalRecordType.NAILS:
+        case AnimalRecordType.INJURY:
+        case AnimalRecordType.TEMPERATURE:
+        case AnimalRecordType.ILLNESS:
+        case AnimalRecordType.BEHAVIOR:
+        case AnimalRecordType.SLEEPING:
+        case AnimalRecordType.FECES:
+        case AnimalRecordType.URINE:
+        case AnimalRecordType.VOMIT:
+        case AnimalRecordType.FOOD:
+        case AnimalRecordType.WATER:
+        case AnimalRecordType.HEAT:
+        case AnimalRecordType.MATING:
+        case AnimalRecordType.PREGNANCY:
+        case AnimalRecordType.BIRTH:
+        case AnimalRecordType.ESTROUS:
+        case AnimalRecordType.SELLING:
+        case AnimalRecordType.BUYING:
+        case AnimalRecordType.NOTES:
+        case AnimalRecordType.OTHER:
             return true;
         default:
             // Types not listed above, or empty string, don't have a specific component handled
             return false;
     }
 };
-
 
 export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
     recordType,
@@ -50,7 +103,6 @@ export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
         // The parent form sets validity to false on type change initially,
         // and the child component will update it shortly after rendering.
     }, [recordType, onChange, onValidityChange]); // Rerun when type changes
-
 
     // --- Render Logic ---
 
@@ -80,17 +132,62 @@ export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
             return <SurgeryDetailsForm {...props} />;
         case AnimalRecordType.WEIGHT:
             return <WeightDetailsForm {...props} />;
-
-        // --- Commented out examples - uncomment AND add to hasDetailsComponent if you implement them ---
-        // case AnimalRecordType.DIAGNOSIS:
-        //     return <DiagnosisDetailsForm {...props} />;
-        // case AnimalRecordType.Prescription:
-        //     return <PrescriptionDetailsForm {...props} />;
-        // case AnimalRecordType.Medication:
-        //     return <MedicationDetailsForm {...props} />;
-        // case AnimalRecordType.Vaccination:
-        //     return <VaccinationDetailsForm {...props} />;
-        // ... etc.
+        case AnimalRecordType.DIAGNOSIS:
+            return <DiagnosisDetailsForm {...props} />;
+        case AnimalRecordType.PRESCRIPTION:
+            return <PrescriptionDetailsForm {...props} />;
+        case AnimalRecordType.MEDICATION:
+            return <MedicationDetailsForm {...props} />;
+        case AnimalRecordType.VACCINATION:
+            return <VaccinationDetailsForm {...props} />;
+        case AnimalRecordType.DEWORMING:
+            return <DewormingDetailsForm {...props} />;
+        case AnimalRecordType.DEFLEAING:
+            return <DefleaingDetailsForm {...props} />;
+        case AnimalRecordType.BATHING:
+            return <BathingDetailsForm {...props} />;
+        case AnimalRecordType.GROOMING:
+            return <GroomingDetailsForm {...props} />;
+        case AnimalRecordType.NAILS:
+            return <NailsDetailsForm {...props} />;
+        case AnimalRecordType.INJURY:
+            return <InjuryDetailsForm {...props} />;
+        case AnimalRecordType.TEMPERATURE:
+            return <TemperatureDetailsForm {...props} />;
+        case AnimalRecordType.ILLNESS:
+            return <IllnessDetailsForm {...props} />;
+        case AnimalRecordType.BEHAVIOR:
+            return <BehaviorDetailsForm {...props} />;
+        case AnimalRecordType.SLEEPING:
+            return <SleepingDetailsForm {...props} />;
+        case AnimalRecordType.FECES:
+            return <FecesDetailsForm {...props} />;
+        case AnimalRecordType.URINE:
+            return <UrineDetailsForm {...props} />;
+        case AnimalRecordType.VOMIT:
+            return <VomitDetailsForm {...props} />;
+        case AnimalRecordType.FOOD:
+            return <FoodDetailsForm {...props} />;
+        case AnimalRecordType.WATER:
+            return <WaterDetailsForm {...props} />;
+        case AnimalRecordType.HEAT:
+            return <HeatDetailsForm {...props} />;
+        case AnimalRecordType.MATING:
+            return <MatingDetailsForm {...props} />;
+        case AnimalRecordType.PREGNANCY:
+            return <PregnancyDetailsForm {...props} />;
+        case AnimalRecordType.BIRTH:
+            return <BirthDetailsForm {...props} />;
+        case AnimalRecordType.ESTROUS:
+            return <EstrousDetailsForm {...props} />;
+        case AnimalRecordType.SELLING:
+            return <SellingDetailsForm {...props} />;
+        case AnimalRecordType.BUYING:
+            return <BuyingDetailsForm {...props} />;
+        case AnimalRecordType.NOTES:
+            return <NotesDetailsForm {...props} />;
+        case AnimalRecordType.OTHER:
+            return <OtherDetailsForm {...props} />;
 
         default:
             // This case should ideally not be reached if hasDetailsComponent is correct.

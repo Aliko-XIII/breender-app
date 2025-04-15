@@ -4,7 +4,6 @@ import { Alert, ListGroup, Spinner, Card } from 'react-bootstrap';
 import { AnimalRecord, AnimalRecordType } from '../../types'; // Adjust path as needed
 import { useParams } from 'react-router-dom';
 
-
 export const RecordList = () => {
     const [records, setRecords] = useState<AnimalRecord[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -163,27 +162,58 @@ export const RecordList = () => {
                             {record.description && (
                                 <div><small className="text-muted">Desc:</small> {record.description}</div>
                             )}
-                            {/* Optionally display something about details, e.g., presence */}
-                            {/* {record.details && <div><small className="text-muted">Details available</small></div>} */}
                         </div>
                         <span className="text-muted ms-md-3 mt-2 mt-md-0"><small>{formatDate(record.createdAt)}</small></span>
-                        {/* TODO: Add View/Edit/Delete buttons here later */}
-                        {/* <div className="ms-3 mt-2 mt-md-0">
-                            <Button variant="outline-secondary" size="sm">View</Button>
-                         </div> */}
                     </ListGroup.Item>
                 ))}
             </ListGroup>
         );
-    }
+    };
 
     return (
-        <Card className="mt-4">
-            <Card.Header>
-                Animal Records
-                {/* TODO: Add Filter/Search controls here later */}
-            </Card.Header>
-            {renderContent()}
-        </Card>
+        <div className="d-flex justify-content-center">
+            <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
+                <Card.Header>
+                    Animal Records
+                    {/* TODO: Add Filter/Search controls here later */}
+                </Card.Header>
+                <div>
+                    {isLoading || error || records.length === 0 ? (
+                        renderContent()
+                    ) : (
+                        <ListGroup variant="flush">
+                            {records.map((record) => (
+                                <ListGroup.Item
+                                    key={record.id}
+                                    className="mb-3 p-0 border-0 bg-transparent"
+                                    style={{ background: "none" }}
+                                >
+                                    <Card className="shadow-sm">
+                                        <Card.Body className="d-flex justify-content-between align-items-start flex-wrap">
+                                            <div className="ms-2 me-auto">
+                                                <div className="fw-bold">
+                                                    {record.name || `Record ${record.id.substring(0, 6)}`}
+                                                </div>
+                                                <div>
+                                                    <small className="text-muted">Type:</small> {record.recordType}
+                                                </div>
+                                                {record.description && (
+                                                    <div>
+                                                        <small className="text-muted">Desc:</small> {record.description}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className="text-muted ms-md-3 mt-2 mt-md-0">
+                                                <small>{formatDate(record.createdAt)}</small>
+                                            </span>
+                                        </Card.Body>
+                                    </Card>
+                                </ListGroup.Item>
+                            ))}
+                        </ListGroup>
+                    )}
+                </div>
+            </Card>
+        </div>
     );
 };

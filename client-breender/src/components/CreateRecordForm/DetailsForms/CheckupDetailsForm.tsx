@@ -12,11 +12,11 @@ export const CheckupDetailsForm: React.FC<DetailFormProps<CheckupDetailsDto>> = 
         onValidityChange(isValid);
         onChange(isValid ? details : null);
     }, [details, onChange, onValidityChange]);
- 
+
     return (
         <Form noValidate> {/* Add noValidate to prevent browser default validation interfering */}
-             {renderTextField("Notes", "notes", details, setDetails, { isRequired: true, isTextArea: true, placeholder: "Observations, results..." })}
-             {renderTextField("Vet Name (Optional)", "vetName", details, setDetails, { placeholder: "Dr. Smith" })}
+            {renderTextField('Notes', 'notes', details, setDetails, { isRequired: true, isTextArea: true })}
+            {renderTextField('Vet Name (Optional)', 'vetName', details, setDetails)}
         </Form>
     );
 };
