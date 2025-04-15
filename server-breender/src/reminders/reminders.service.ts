@@ -106,7 +106,14 @@ export class RemindersService {
     }
 
     async findReminderById(id: string, authUserId: any) {
-        return await this.databaseService.reminder.findUnique({ where: { id } });
+        return await this.databaseService.reminder.findUnique({
+            where: { id },
+            include: {
+                animal: {
+                    select: { id: true, name: true, breed: true, species: true }
+                }
+            }
+        });
     }
 
     async updateReminder(

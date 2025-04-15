@@ -21,6 +21,7 @@ import { AnimalMap } from "./components/AnimalMap/AnimalMap";
 import { RecordView } from "./components/RecordView/RecordView";
 import * as api from "./api";
 import { ReminderList } from "./components/ReminderList/ReminderList";
+import { ReminderView } from "./components/ReminderView/ReminderView";
 
 type Api = typeof api;
 
@@ -48,10 +49,11 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
           <Route path='/animals/:id/records' element={<RecordList />} />
           <Route path='/animals/:id/reminders' element={<ReminderList />} />
+          <Route path='/reminders/user/:userId' element={<ReminderList />} />
           <Route path='/records/:userId' element={<RecordList />} />
-          <Route path='/reminders/:userId' element={<ReminderList />} />
           <Route path='/records/:userId/create' element={<CreateRecordForm createRecord={api.createRecord} />} />
           <Route path='/records/view/:recordId' element={<RecordView />} />
+          <Route path='/reminders/:reminderId' element={<ReminderView />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
           <Route path='/map' element={<AnimalMap />} />
         </Routes>

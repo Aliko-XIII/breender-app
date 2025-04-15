@@ -111,7 +111,19 @@ export class RecordsService {
     }
 
     async findRecordById(id: string, authUserId: any) {
-        return await this.databaseService.animalRecord.findUnique({ where: { id } });
+        return await this.databaseService.animalRecord.findUnique({
+            where: { id },
+            include: {
+                animal: {
+                    select: {
+                        id: true,
+                        name: true,
+                        breed: true,
+                        species: true
+                    }
+                }
+            }
+        });
     }
 
     async updateRecord(

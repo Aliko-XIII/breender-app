@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { AnimalMapInfo } from '../../types'; // Adjust path
-import { mockMapAnimals } from '../../mocks/mapAnimals'; // Import mock data
 
 // --- Component Props (Optional for now) ---
 interface AnimalMapProps {

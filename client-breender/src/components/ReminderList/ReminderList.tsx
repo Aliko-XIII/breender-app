@@ -23,20 +23,21 @@ export const ReminderList = () => {
             throw new Error(result.data?.message || `Failed to fetch reminders: ${result.status}`);
           }
           setReminders(result.data as AnimalReminder[]);
-        } catch (err: any) {
-          setError(err.message || "An unexpected error occurred while fetching reminders.");
+        } catch {
+          setError("An unexpected error occurred while fetching reminders.");
         } finally {
           setIsLoading(false);
         }
       } else if (userId) {
         try {
+          // Use the correct fetcher for user reminders
           const result = await getRemindersByUser(userId);
           if (result.status !== 200) {
             throw new Error(result.data?.message || `Failed to fetch reminders: ${result.status}`);
           }
           setReminders(result.data as AnimalReminder[]);
-        } catch (err: any) {
-          setError(err.message || "An unexpected error occurred while fetching reminders.");
+        } catch {
+          setError("An unexpected error occurred while fetching reminders.");
         } finally {
           setIsLoading(false);
         }
@@ -53,7 +54,7 @@ export const ReminderList = () => {
       return new Date(dateString).toLocaleDateString(undefined, {
         year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
       });
-    } catch (e) {
+    } catch {
       return dateString;
     }
   };
@@ -97,6 +98,14 @@ export const ReminderList = () => {
                 <span className="text-muted ms-md-3 mt-2 mt-md-0">
                   <small>{formatDate(reminder.remindAt)}</small>
                 </span>
+                <Button
+                  variant="outline-primary"
+                  size="sm"
+                  className="ms-3 mt-2 mt-md-0"
+                  onClick={() => navigate(`/reminders/${reminder.id}`)}
+                >
+                  View
+                </Button>
               </Card.Body>
             </Card>
           </ListGroup.Item>

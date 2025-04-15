@@ -24,16 +24,16 @@ export const RecordView: React.FC = () => {
   }, [recordId]);
 
   // Helper to render details object nicely
-  function renderDetails(details: any) {
+  function renderDetails(details: Record<string, unknown> | null | undefined) {
     if (!details || typeof details !== 'object') return <span className="text-muted">(none)</span>;
-    const entries = Object.entries(details).filter(([_, v]) => v !== undefined && v !== null && v !== '');
+    const entries = Object.entries(details).filter(([, v]) => v !== undefined && v !== null && v !== '');
     if (entries.length === 0) return <span className="text-muted">(none)</span>;
     return (
       <dl className="row mb-0">
         {entries.map(([key, value]) => (
           <React.Fragment key={key}>
             <dt className="col-5 text-capitalize" style={{ fontWeight: 500 }}>{key.replace(/([A-Z])/g, ' $1')}</dt>
-            <dd className="col-7 mb-1">{Array.isArray(value) ? value.join(', ') : value.toString()}</dd>
+            <dd className="col-7 mb-1">{Array.isArray(value) ? value.join(', ') : String(value)}</dd>
           </React.Fragment>
         ))}
       </dl>
@@ -49,6 +49,14 @@ export const RecordView: React.FC = () => {
       <Card style={{ maxWidth: 600, width: "100%" }} className="shadow">
         <Card.Header className="fw-bold">Record Details</Card.Header>
         <Card.Body>
+          {/* Animal Basic Details */}
+          {record.animal && (
+            <div className="mb-3 p-2 rounded bg-light border">
+              <div><b>Animal:</b> {record.animal.name}</div>
+              <div><b>Breed:</b> {record.animal.breed || <span className="text-muted">(none)</span>}</div>
+              <div><b>Species:</b> {record.animal.species || <span className="text-muted">(none)</span>}</div>
+            </div>
+          )}
           <div><b>Name:</b> {record.name}</div>
           <div><b>Type:</b> {record.recordType}</div>
           <div><b>Description:</b> {record.description || <span className="text-muted">(none)</span>}</div>
