@@ -43,7 +43,10 @@ export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) 
     };
 
     return (
-        <div className="container mt-5">
+        <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ minHeight: "100vh", paddingTop: "40px", paddingBottom: "40px" }}
+        >
             <div className="card shadow-lg p-4" style={{ maxWidth: "500px", width: "100%" }}>
                 <h1 className="text-center mb-4">Register New Animal</h1>
                 <form onSubmit={handleSubmit}>

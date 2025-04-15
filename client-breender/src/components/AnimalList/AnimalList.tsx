@@ -51,20 +51,41 @@ export const AnimalList: React.FC<AnimalListProps> = ({ getUserAnimals }) => {
             <div className="row">
                 {animals.length > 0 ? (
                     animals.map((animal) => (
-                        <div key={animal.id} className="col-md-4 mb-4">
-                            <div className="card shadow-sm">
-                                <img
-                                    src={animal.photoUrl || "/animal-placeholder.png"}
-                                    alt={animal.name}
-                                    className="card-img-top"
+                        <div key={animal.id} className="col-md-4 mb-4 d-flex justify-content-center">
+                            <div
+                                className="card shadow-sm"
+                                style={{
+                                    borderRadius: "1.5rem",
+                                    maxWidth: "350px",
+                                    margin: "0 auto",
+                                    overflow: "hidden",
+                                    paddingLeft: "20px",
+                                    paddingRight: "20px"
+                                }}
+                            >
+                                <div
                                     style={{
-                                        height: "200px",
-                                        width: "100%",
-                                        objectFit: "contain",
-                                        objectPosition: "center",
-                                        backgroundColor: "#f8f9fa"
+                                        display: "flex",
+                                        justifyContent: "center",
+                                        paddingTop: "16px",
+                                        paddingBottom: "16px"
                                     }}
-                                />
+                                >
+                                    <img
+                                        src={animal.photoUrl || "/animal-placeholder.png"}
+                                        alt={animal.name}
+                                        className="card-img-top"
+                                        style={{
+                                            height: "160px",
+                                            width: "160px",
+                                            objectFit: "cover",
+                                            objectPosition: "center",
+                                            backgroundColor: "transparent",
+                                            borderRadius: "50%",
+                                            boxShadow: "0 2px 8px rgba(0,0,0,0.07)"
+                                        }}
+                                    />
+                                </div>
                                 <div className="card-body text-center">
                                     <h5 className="card-title">{animal.name}</h5>
                                     <p className="card-text text-muted">{animal.species}</p>
