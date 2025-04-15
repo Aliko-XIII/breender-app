@@ -152,6 +152,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
             <span className="fw-bold">Reminders:</span>
             <Link to={`/animals/${animalId}/create-reminder`} className="btn btn-primary">Create Reminder</Link>
+            <Link to={`/animals/${animalId}/reminders`} className="btn btn-primary">View Reminders</Link>
           </div>
           <div className="d-flex align-items-center gap-2 flex-wrap">
             <span className="fw-bold">Uploads:</span>
