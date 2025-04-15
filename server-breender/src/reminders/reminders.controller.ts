@@ -19,6 +19,10 @@ export class RemindersController {
     create(@Request() req, @Body() createReminderDto: CreateReminderDto) {
         // Assumes AuthGuard adds authUserId to the request object
         const authUserId = req.authUserId;
+        // Ensure remindAt is a Date instance
+        if (createReminderDto.remindAt && typeof createReminderDto.remindAt === 'string') {
+            createReminderDto.remindAt = new Date(createReminderDto.remindAt) as any;
+        }
         // Pass authUserId as the userId creating the reminder
         return this.remindersService.createReminder(createReminderDto, authUserId);
     }
