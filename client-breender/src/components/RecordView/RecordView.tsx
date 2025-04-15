@@ -23,6 +23,23 @@ export const RecordView: React.FC = () => {
       .finally(() => setLoading(false));
   }, [recordId]);
 
+  // Helper to render details object nicely
+  function renderDetails(details: any) {
+    if (!details || typeof details !== 'object') return <span className="text-muted">(none)</span>;
+    const entries = Object.entries(details).filter(([_, v]) => v !== undefined && v !== null && v !== '');
+    if (entries.length === 0) return <span className="text-muted">(none)</span>;
+    return (
+      <dl className="row mb-0">
+        {entries.map(([key, value]) => (
+          <React.Fragment key={key}>
+            <dt className="col-5 text-capitalize" style={{ fontWeight: 500 }}>{key.replace(/([A-Z])/g, ' $1')}</dt>
+            <dd className="col-7 mb-1">{Array.isArray(value) ? value.join(', ') : value.toString()}</dd>
+          </React.Fragment>
+        ))}
+      </dl>
+    );
+  }
+
   if (loading) return <Spinner animation="border" className="mt-5 d-block mx-auto" />;
   if (error) return <Alert variant="danger" className="mt-5">{error}</Alert>;
   if (!record) return <Alert variant="warning" className="mt-5">Record not found.</Alert>;
@@ -38,7 +55,7 @@ export const RecordView: React.FC = () => {
           <div><b>Created:</b> {new Date(record.createdAt).toLocaleString()}</div>
           <div className="mt-3">
             <b>Details:</b>
-            <pre className="bg-light p-2 rounded border" style={{ whiteSpace: 'pre-wrap' }}>{record.details ? JSON.stringify(record.details, null, 2) : '(none)'}</pre>
+            {renderDetails(record.details)}
           </div>
           <Button variant="secondary" className="mt-3" onClick={() => navigate(-1)}>Back</Button>
         </Card.Body>
