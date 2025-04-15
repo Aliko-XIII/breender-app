@@ -142,6 +142,14 @@ export const RecordList = () => {
                                                         <small className="text-muted">Desc:</small> {record.description}
                                                     </div>
                                                 )}
+                                                <Button
+                                                    variant="outline-primary"
+                                                    size="sm"
+                                                    className="mt-2"
+                                                    onClick={() => navigate(`/records/view/${record.id}`)}
+                                                >
+                                                    View Details
+                                                </Button>
                                             </div>
                                             <span className="text-muted ms-md-3 mt-2 mt-md-0">
                                                 <small>{formatDate(record.createdAt)}</small>

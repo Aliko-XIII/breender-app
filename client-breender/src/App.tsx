@@ -18,6 +18,7 @@ import PhotoUploadForm from "./components/PhotoUploadForm/PhotoUploadForm";
 import DocumentUploadForm from "./components/DocumentUploadForm/DocumentUploadForm";
 import { RecordList } from "./components/RecordList/RecordList";
 import { AnimalMap } from "./components/AnimalMap/AnimalMap";
+import { RecordView } from "./components/RecordView/RecordView";
 import * as api from "./api";
 
 type Api = typeof api;
@@ -47,6 +48,7 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/:id/records' element={<RecordList />} />
           <Route path='/records/:userId' element={<RecordList />} />
           <Route path='/records/:userId/create' element={<CreateRecordForm createRecord={api.createRecord} />} />
+          <Route path='/records/view/:recordId' element={<RecordView />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
           <Route path='/map' element={<AnimalMap />} />
         </Routes>
