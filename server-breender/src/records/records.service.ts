@@ -42,7 +42,10 @@ export class RecordsService {
         // Create and store the animal document
         return this.databaseService.animalRecord.create({
             data: {
-                animalId, recordType, description,
+                animalId,
+                recordType,
+                description,
+                details, // <-- add this line to save details
             },
         });
     }

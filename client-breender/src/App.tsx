@@ -35,10 +35,12 @@ function App({ api }: { api: Api }) {
           <Route path='/user-profile/:id' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
           <Route path='/user-profile' element={<UserProfile getUser={api.getUser} updateUser={api.updateUser} />} />
           <Route path='/animals' element={<AnimalList getUserAnimals={api.getUserAnimals} />} />
-          <Route path='/animals/new' element={<RegisterAnimal createAnimal={api.createAnimal} />} />
+          <Route path='/animals/new' element={
+            <RegisterAnimal createAnimal={animalData => api.createAnimal({ ...animalData, bio: animalData.bio ?? "" })} />
+          } />
           <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} updateAnimal={api.updateAnimal} />} />
           <Route path='/animals/:id/create-record' element={
-            <CreateRecordForm onSave={(data) => console.log("Saving:", data)} />} />
+            <CreateRecordForm createRecord={api.createRecord} />} />
           <Route path='/animals/:id/create-reminder' element={<CreateReminderForm onSave={(data) => console.log("Reminder:", data)} />} />
           <Route path='/animals/:id/upload-photo' element={<PhotoUploadForm />} />
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
