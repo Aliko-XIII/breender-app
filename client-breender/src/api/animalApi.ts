@@ -8,6 +8,9 @@ export interface AnimalFilters {
     birthdateFrom?: string;
     birthdateTo?: string;
     userId?: string;
+    latitude?: number;
+    longitude?: number;
+    radius?: number;
 }
 
 export const getAnimal = async (

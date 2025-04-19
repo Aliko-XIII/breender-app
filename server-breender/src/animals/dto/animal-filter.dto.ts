@@ -29,4 +29,13 @@ export class AnimalFilterDto {
   @IsOptional()
   @IsString()
   userId?: string;
+
+  @IsOptional()
+  latitude?: number;
+
+  @IsOptional()
+  longitude?: number;
+
+  @IsOptional()
+  radius?: number; // in kilometers
 }

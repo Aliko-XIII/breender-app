@@ -16,7 +16,10 @@ export const AnimalList: React.FC = () => {
         breed: "",
         sex: "",
         birthdateFrom: "",
-        birthdateTo: ""
+        birthdateTo: "",
+        latitude: "",
+        longitude: "",
+        radius: ""
     });
 
     // Handle filter input changes
@@ -36,7 +39,14 @@ export const AnimalList: React.FC = () => {
             // Only send non-empty filters
             const activeFilters: any = { userId };
             Object.entries(filters).forEach(([key, value]) => {
-                if (value) activeFilters[key] = value;
+                if (value !== "") {
+                    // Convert to number for location fields
+                    if (["latitude", "longitude", "radius"].includes(key)) {
+                        activeFilters[key] = Number(value);
+                    } else {
+                        activeFilters[key] = value;
+                    }
+                }
             });
             const userAnimals = await getAnimals(activeFilters);
             setAnimals(userAnimals.data.map((animal: any) => ({
@@ -96,6 +106,15 @@ export const AnimalList: React.FC = () => {
                     </div>
                     <div className="col-md-2">
                         <input type="date" className="form-control" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="number" className="form-control" name="latitude" placeholder="Latitude" value={filters.latitude} onChange={handleFilterChange} step="any" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="number" className="form-control" name="longitude" placeholder="Longitude" value={filters.longitude} onChange={handleFilterChange} step="any" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="number" className="form-control" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" />
                     </div>
                     <div className="col-md-2">
                         <button type="submit" className="btn btn-primary w-100">Apply Filters</button>

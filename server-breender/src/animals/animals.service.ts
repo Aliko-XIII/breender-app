@@ -156,6 +156,7 @@ export class AnimalsService {
 
   async findAllAnimals(authUserId: string, filter?: AnimalFilterDto) {
     const where: any = {};
+    let locationFilter = null;
     if (filter) {
       if (filter.name) where.name = { contains: filter.name, mode: 'insensitive' };
       if (filter.species) where.species = { contains: filter.species, mode: 'insensitive' };
@@ -190,8 +191,38 @@ export class AnimalsService {
           return [];
         }
       }
+      if (
+        typeof filter.latitude === 'number' &&
+        typeof filter.longitude === 'number' &&
+        typeof filter.radius === 'number'
+      ) {
+        locationFilter = {
+          latitude: filter.latitude,
+          longitude: filter.longitude,
+          radius: filter.radius,
+        };
+      }
     }
-    return await this.databaseService.animal.findMany({ where });
+    let animals = await this.databaseService.animal.findMany({ where });
+    if (locationFilter) {
+      // Haversine formula for distance filtering
+      const toRad = (value: number) => (value * Math.PI) / 180;
+      animals = animals.filter((animal) => {
+        if (typeof animal.latitude !== 'number' || typeof animal.longitude !== 'number') return false;
+        const R = 6371; // Earth radius in km
+        const dLat = toRad(animal.latitude - locationFilter.latitude);
+        const dLon = toRad(animal.longitude - locationFilter.longitude);
+        const lat1 = toRad(locationFilter.latitude);
+        const lat2 = toRad(animal.latitude);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+        return distance <= locationFilter.radius;
+      });
+    }
+    return animals;
   }
 
   async findAnimalById(id: string, authUserId: string) {
