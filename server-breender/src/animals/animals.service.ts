@@ -5,6 +5,7 @@ import { DatabaseService } from 'src/database/database.service';
 import { Prisma } from '@prisma/client';
 import { CreateAnimalDocumentDto } from './dto/create-animal-doc.dto';
 import { UpdateAnimalDocumentDto } from './dto/update-animal-doc.dto';
+import { AnimalFilterDto } from './dto/animal-filter.dto';
 
 @Injectable()
 export class AnimalsService {
@@ -153,8 +154,44 @@ export class AnimalsService {
     }
   }
 
-  async findAllAnimals(authUserId: string) {
-    return await this.databaseService.animal.findMany();
+  async findAllAnimals(authUserId: string, filter?: AnimalFilterDto) {
+    const where: any = {};
+    if (filter) {
+      if (filter.name) where.name = { contains: filter.name, mode: 'insensitive' };
+      if (filter.species) where.species = { contains: filter.species, mode: 'insensitive' };
+      if (filter.breed) where.breed = { contains: filter.breed, mode: 'insensitive' };
+      if (filter.sex) where.sex = filter.sex;
+      if (filter.birthdateFrom || filter.birthdateTo) {
+        where.birthDate = {};
+        if (filter.birthdateFrom) {
+          where.birthDate.gte = new Date(filter.birthdateFrom);
+        }
+        if (filter.birthdateTo) {
+          where.birthDate.lte = new Date(filter.birthdateTo);
+        }
+      }
+      if (filter.userId) {
+        // Find owner by userId
+        const owner = await this.databaseService.owner.findUnique({ where: { userId: filter.userId } });
+        if (owner) {
+          const animalOwnerRecords = await this.databaseService.animalOwner.findMany({
+            where: { ownerId: owner.id },
+            select: { animalId: true },
+          });
+          const animalIds = animalOwnerRecords.map((ao) => ao.animalId);
+          if (animalIds.length > 0) {
+            where.id = { in: animalIds };
+          } else {
+            // No animals for this owner, return empty
+            return [];
+          }
+        } else {
+          // No such owner, return empty
+          return [];
+        }
+      }
+    }
+    return await this.databaseService.animal.findMany({ where });
   }
 
   async findAnimalById(id: string, authUserId: string) {

@@ -26,16 +26,17 @@ axiosInstance.interceptors.request.use(async (config) => {
     }
   };
 
-  if (isTokenExpired() && refreshToken) {
+  if (accessToken && isTokenExpired() && refreshToken) {
     try {
       // Refresh the token
-      const response = await axios.post('http://localhost:3000/api/v1/auth/refresh', {}, { withCredentials: true });
-      cookies.set('accessToken', response.data.accessToken, { path: '/', secure: true, sameSite: 'strict' });
-      config.headers.Authorization = `Bearer ${response.data.accessToken}`;
+      const response = await axios.post('http://localhost:3000/api/v1/auth/refresh', { refreshToken }, { withCredentials: true });
+      const newAccessToken = response.data.data.access_token;
+      cookies.set('access_token', newAccessToken, { path: '/' });
+      config.headers.Authorization = `Bearer ${newAccessToken}`;
     } catch (error) {
       console.error('Token refresh failed', error);
-      cookies.remove('accessToken');
-      cookies.remove('refreshToken');
+      cookies.remove('access_token', { path: '/' });
+      cookies.remove('refresh_token', { path: '/' });
       window.location.href = '/login'; // Redirect to login
       return Promise.reject(error);
     }

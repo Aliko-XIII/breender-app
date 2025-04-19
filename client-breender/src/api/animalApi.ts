@@ -1,11 +1,21 @@
 import axiosInstance from "./axiosInstance";
 
-export const getUserAnimals = async (
-    userId: string,
+export interface AnimalFilters {
+    name?: string;
+    species?: string;
+    breed?: string;
+    sex?: "MALE" | "FEMALE";
+    birthdateFrom?: string;
+    birthdateTo?: string;
+    userId?: string;
+}
+
+export const getAnimal = async (
+    animalId: string,
 ) => {
     try {
         const response = await axiosInstance.get(
-            `users/${userId}/animals`,
+            `animals/${animalId}`,
         );
         return { status: response.status, data: response.data };
     } catch (error: any) {
@@ -14,12 +24,14 @@ export const getUserAnimals = async (
     }
 };
 
-export const getAnimal = async (
-    animalId: string,
+export const getAnimals = async (
+    filters?: AnimalFilters
 ) => {
     try {
+        const params = filters ? { ...filters } : undefined;
         const response = await axiosInstance.get(
-            `animals/${animalId}`,
+            `/animals`,
+            { params }
         );
         return { status: response.status, data: response.data };
     } catch (error: any) {

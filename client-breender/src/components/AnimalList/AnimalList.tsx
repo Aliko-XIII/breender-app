@@ -1,44 +1,68 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ApiResponse } from "../../types";
+import { getAnimals } from "../../api/animalApi";
 import { useUser } from "../../context/UserContext";
 
-interface AnimalListProps {
-    getUserAnimals: (userId: string) => Promise<ApiResponse>;
-}
-
-export const AnimalList: React.FC<AnimalListProps> = ({ getUserAnimals }) => {
+export const AnimalList: React.FC = () => {
     const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const { userId, isLoading } = useUser();
     const navigate = useNavigate();
 
+    // Filter state
+    const [filters, setFilters] = useState({
+        name: "",
+        species: "",
+        breed: "",
+        sex: "",
+        birthdateFrom: "",
+        birthdateTo: ""
+    });
+
+    // Handle filter input changes
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // Load animals with filters
+    const loadAnimals = async () => {
+        try {
+            if (isLoading) return;
+            if (!userId) {
+                navigate("/login");
+                return;
+            }
+            // Only send non-empty filters
+            const activeFilters: any = { userId };
+            Object.entries(filters).forEach(([key, value]) => {
+                if (value) activeFilters[key] = value;
+            });
+            const userAnimals = await getAnimals(activeFilters);
+            setAnimals(userAnimals.data.map((animal: any) => ({
+                id: animal.id,
+                name: animal.name,
+                species: animal.species,
+                photoUrl: animal.photoUrl,
+            })));
+        } catch (error) {
+            console.error("Failed to fetch animals:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const loadAnimals = async () => {
-            try {
-                if (isLoading) return;
-
-                if (!userId) {
-                    navigate("/login");
-                    return;
-                }
-                const userAnimals = await getUserAnimals(userId);
-                setAnimals(userAnimals.data.map((animal: any) => ({
-                    id: animal.id,
-                    name: animal.name,
-                    species: animal.species,
-                    photoUrl: animal.photoUrl,
-                })));
-            } catch (error) {
-                console.error("Failed to fetch animals:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         loadAnimals();
-    }, [getUserAnimals, userId, isLoading, navigate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId, isLoading]);
+
+    // Filter form submit
+    const handleFilterSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+        loadAnimals();
+    };
 
     if (loading) return <div>Loading your animals...</div>;
 
@@ -48,6 +72,36 @@ export const AnimalList: React.FC<AnimalListProps> = ({ getUserAnimals }) => {
             <div className="text-center mb-4">
                 <Link to="/animals/new" className="btn btn-success">Register New Animal</Link>
             </div>
+            {/* Filter Form */}
+            <form className="mb-4" onSubmit={handleFilterSubmit}>
+                <div className="row g-2 align-items-end">
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} />
+                    </div>
+                    <div className="col-md-2">
+                        <select className="form-select" name="sex" value={filters.sex} onChange={handleFilterChange}>
+                            <option value="">Sex</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                        </select>
+                    </div>
+                    <div className="col-md-2">
+                        <input type="date" className="form-control" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="date" className="form-control" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" />
+                    </div>
+                    <div className="col-md-2">
+                        <button type="submit" className="btn btn-primary w-100">Apply Filters</button>
+                    </div>
+                </div>
+            </form>
             <div className="row">
                 {animals.length > 0 ? (
                     animals.map((animal) => (

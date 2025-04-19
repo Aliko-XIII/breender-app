@@ -7,7 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
-  Request, 
+  Request,
+  Query,
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
@@ -15,6 +16,7 @@ import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateAnimalDocumentDto } from './dto/create-animal-doc.dto';
 import { UpdateAnimalDocumentDto } from './dto/update-animal-doc.dto';
+import { AnimalFilterDto } from './dto/animal-filter.dto';
 
 @UseGuards(AuthGuard)
 @Controller('animals')
@@ -52,9 +54,9 @@ export class AnimalsController {
   }
 
   @Get()
-  findAll(@Request() req) {
+  findAll(@Request() req, @Query() filter: AnimalFilterDto) {
     const authUserId = req.authUserId;
-    return this.animalsService.findAllAnimals(authUserId);
+    return this.animalsService.findAllAnimals(authUserId, filter);
   }
 
   @Get(':id')
