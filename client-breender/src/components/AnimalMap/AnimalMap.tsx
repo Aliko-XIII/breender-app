@@ -12,7 +12,11 @@ interface AnimalMapProps {
 // --- Map Styling ---
 const containerStyle = {
   width: '100%',
-  height: '600px' // Adjust height as needed
+  height: '400px', // Reduced height for a less intrusive map
+  maxWidth: '800px', // Optional: limit max width
+  margin: '0 auto', // Center the map horizontally
+  borderRadius: '16px', // Optional: rounded corners
+  boxShadow: '0 2px 12px rgba(0,0,0,0.08)' // Optional: subtle shadow
 };
 
 // --- Initial Map Center (Izmail, Ukraine) ---
@@ -84,7 +88,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
 
     // --- Render Logic ---
     return (
-        <div className="animal-map-container my-4">
+        <div className="animal-map-container my-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
              {/* Consider adding filtering controls here later */}
              <h2>Animal Locations</h2>
 
