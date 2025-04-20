@@ -6,6 +6,7 @@ import { UpdateRecordDto } from './dto/updateRecord.dto';
 import { plainToInstance } from 'class-transformer';
 import { validateOrReject } from 'class-validator';
 import { BathingDetailsDto, BehaviorDetailsDto, BirthDetailsDto, BuyingDetailsDto, CheckupDetailsDto, DefleaingDetailsDto, DewormingDetailsDto, DiagnosisDetailsDto, EstrousDetailsDto, FecesDetailsDto, FoodDetailsDto, GroomingDetailsDto, HeatDetailsDto, IllnessDetailsDto, InjuryDetailsDto, MatingDetailsDto, MedicationDetailsDto, NailsDetailsDto, NotesDetailsDto, OtherDetailsDto, PregnancyDetailsDto, PrescriptionDetailsDto, SellingDetailsDto, SleepingDetailsDto, SurgeryDetailsDto, TemperatureDetailsDto, UrineDetailsDto, VaccinationDetailsDto, VomitDetailsDto, WaterDetailsDto, WeightDetailsDto } from './dto/details.dto';
+import { FilterRecordDto } from './dto/filterRecord.dto';
 
 @Injectable()
 export class RecordsService {
@@ -190,6 +191,49 @@ export class RecordsService {
         const record = await this.databaseService.animalRecord.findUnique({ where: { id } });
         if (!record) throw new NotFoundException(`Record with ID ${id} not found`);
         await this.databaseService.animalRecord.delete({ where: { id } });
+    }
+
+    async getRecords(filter: FilterRecordDto, authUserId: string) {
+        // Only allow user to get their own or their animals' records
+        // If userId is provided, it must match authUserId
+        if (filter.userId && filter.userId !== authUserId) {
+            throw new ForbiddenException('You can only access your own records.');
+        }
+
+        // Build Prisma where clause
+        const where: any = {};
+        if (filter.animalId) {
+            where.animalId = filter.animalId;
+        }
+        if (filter.recordType) {
+            where.recordType = filter.recordType;
+        }
+        if (filter.dateFrom || filter.dateTo) {
+            where.createdAt = {};
+            if (filter.dateFrom) {
+                where.createdAt.gte = new Date(filter.dateFrom);
+            }
+            if (filter.dateTo) {
+                where.createdAt.lte = new Date(filter.dateTo);
+            }
+        }
+        // If userId is provided, filter by animals owned by user
+        if (filter.userId) {
+            where.animal = { owners: { some: { owner: { userId: filter.userId } } } };
+        } else {
+            // Default: only allow records for animals owned by authUserId
+            where.animal = { owners: { some: { owner: { userId: authUserId } } } };
+        }
+
+        return this.databaseService.animalRecord.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                animal: {
+                    select: { id: true, name: true, species: true, breed: true }
+                }
+            }
+        });
     }
 
     private async validateDetailsByType(details: object, recordType: AnimalRecordType): Promise<void> {

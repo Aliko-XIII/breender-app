@@ -1,8 +1,9 @@
-import { Controller, Delete, Get, Patch, Post, UseGuards, Request, Body, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Patch, Post, UseGuards, Request, Body, Param, Query } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateRecordDto } from './dto/createRecord.dto';
 import { RecordsService } from './records.service';
 import { UpdateRecordDto } from './dto/updateRecord.dto';
+import { FilterRecordDto } from './dto/filterRecord.dto';
 
 @UseGuards(AuthGuard)
 @Controller('records')
@@ -31,6 +32,12 @@ export class RecordsController {
     findOne(@Request() req, @Param('id') id: string) {
         const authUserId = req.authUserId;
         return this.recordsService.findRecordById(id, authUserId);
+    }
+
+    @Get()
+    getRecords(@Request() req, @Query() filter: FilterRecordDto) {
+        const authUserId = req.authUserId;
+        return this.recordsService.getRecords(filter, authUserId);
     }
 
     @Patch(':id')
