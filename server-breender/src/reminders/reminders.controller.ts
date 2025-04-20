@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, Patch, Post, UseGuards, Request, Body, Param } from '@nestjs/common';
+import { Controller, Delete, Get, Patch, Post, UseGuards, Request, Body, Param, Query } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard'; // Assuming AuthGuard is in this location
 import { RemindersService } from './reminders.service';
 // Assuming DTOs are in a ./dto subfolder relative to this controller/service
@@ -28,25 +28,30 @@ export class RemindersController {
     }
 
     /**
-     * GET /reminders/user/:id
-     * Finds all reminders belonging to a specific user ID.
-     * Requires auth check using the authenticated user's ID.
+     * GET /reminders
+     * Unified endpoint for filtering reminders by user, animal, type, message, and time period.
+     * Query params: userId, animalId, reminderType, message, remindAtFrom, remindAtTo
      */
-    @Get('/user/:id')
-    findByUser(@Request() req, @Param('id') userId: string) { // Renamed param to userId for clarity
+    @Get()
+    async getReminders(
+        @Request() req,
+        @Query('userId') userId?: string,
+        @Query('animalId') animalId?: string,
+        @Query('reminderType') reminderType?: string,
+        @Query('message') message?: string,
+        @Query('remindAtFrom') remindAtFrom?: string,
+        @Query('remindAtTo') remindAtTo?: string
+    ) {
         const authUserId = req.authUserId;
-        return this.remindersService.findAllRemindersByUserId(userId, authUserId);
-    }
-
-    /**
-     * GET /reminders/animal/:id
-     * Finds all reminders associated with a specific animal ID.
-     * Requires auth check using the authenticated user's ID.
-     */
-    @Get('/animal/:id')
-    findByAnimal(@Request() req, @Param('id') animalId: string) { // Renamed param to animalId for clarity
-        const authUserId = req.authUserId;
-        return this.remindersService.findAllRemindersByAnimalId(animalId, authUserId);
+        return this.remindersService.getReminders({
+            userId,
+            animalId,
+            reminderType,
+            message,
+            remindAtFrom,
+            remindAtTo,
+            authUserId
+        });
     }
 
     /**

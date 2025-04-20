@@ -178,4 +178,56 @@ export class RemindersService {
         if (!reminder) throw new NotFoundException(`Reminder with ID ${id} not found`);
         await this.databaseService.reminder.delete({ where: { id } });
     }
+
+    /**
+     * Unified reminders query with filters.
+     */
+    async getReminders(filters: {
+        userId?: string;
+        animalId?: string;
+        reminderType?: string;
+        message?: string;
+        remindAtFrom?: string;
+        remindAtTo?: string;
+        authUserId: string;
+    }) {
+        const { userId, animalId, reminderType, message, remindAtFrom, remindAtTo, authUserId } = filters;
+
+        // Only allow user to see their own reminders
+        if (userId && userId !== authUserId) {
+            throw new ForbiddenException('You can only access your own reminders.');
+        }
+
+        // Build Prisma where clause
+        const where: any = {};
+        if (userId) where.userId = userId;
+        if (animalId) where.animalId = animalId;
+        if (reminderType) where.reminderType = reminderType;
+        if (message) where.message = { contains: message, mode: 'insensitive' };
+        if (remindAtFrom || remindAtTo) {
+            where.remindAt = {};
+            if (remindAtFrom) where.remindAt.gte = new Date(remindAtFrom);
+            if (remindAtTo) where.remindAt.lte = new Date(remindAtTo);
+        }
+
+        // Only allow reminders for animals the user owns
+        // (If animalId is provided, check ownership; otherwise, filter by userId)
+        if (animalId) {
+            const animal = await this.databaseService.animal.findUnique({ where: { id: animalId } });
+            if (!animal) throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+            const ownerAssignment = await this.databaseService.owner.findUnique({
+                where: { userId: authUserId },
+                include: { animals: true },
+            });
+            if (!ownerAssignment) throw new ForbiddenException('You are not assigned to this animal.');
+        }
+
+        return this.databaseService.reminder.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            include: {
+                animal: { select: { id: true, name: true, breed: true, species: true } }
+            }
+        });
+    }
 }

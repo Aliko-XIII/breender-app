@@ -1,53 +1,68 @@
-import { useState, useEffect } from "react";
-import { Alert, ListGroup, Spinner, Card, Button } from "react-bootstrap";
+import React, { useState, useEffect } from "react";
+import { Alert, ListGroup, Spinner, Card, Button, Form, Row, Col } from "react-bootstrap";
 import { AnimalReminder } from "../../types/reminder";
 import { useParams, useNavigate } from "react-router-dom";
-import { getRemindersByAnimal, getRemindersByUser } from "../../api/reminderApi";
+import { getReminders } from "../../api/reminderApi";
+import { ReminderType } from "../../types/reminder-type.enum";
+import { useUser } from "../../context/UserContext";
 
 export const ReminderList = () => {
   const [reminders, setReminders] = useState<AnimalReminder[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { id: animalId, userId } = useParams<{ id?: string; userId?: string }>();
+  const { id: animalId, userId: paramUserId } = useParams<{ id?: string; userId?: string }>();
+  const { userId: contextUserId } = useUser();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchReminders = async () => {
-      setIsLoading(true);
-      setError(null);
-      setReminders([]);
-      if (animalId) {
-        try {
-          const result = await getRemindersByAnimal(animalId);
-          if (result.status !== 200) {
-            throw new Error(result.data?.message || `Failed to fetch reminders: ${result.status}`);
-          }
-          setReminders(result.data as AnimalReminder[]);
-        } catch {
-          setError("An unexpected error occurred while fetching reminders.");
-        } finally {
-          setIsLoading(false);
-        }
-      } else if (userId) {
-        try {
-          // Use the correct fetcher for user reminders
-          const result = await getRemindersByUser(userId);
-          if (result.status !== 200) {
-            throw new Error(result.data?.message || `Failed to fetch reminders: ${result.status}`);
-          }
-          setReminders(result.data as AnimalReminder[]);
-        } catch {
-          setError("An unexpected error occurred while fetching reminders.");
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        setError("No animal or user ID provided.");
-        setIsLoading(false);
+  // Filter state
+  const [filters, setFilters] = useState({
+    userId: paramUserId || contextUserId || "",
+    animalId: animalId || "",
+    reminderType: "",
+    message: "",
+    remindAtFrom: "",
+    remindAtTo: ""
+  });
+
+  // Handle filter input changes
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Load reminders with filters
+  const loadReminders = async () => {
+    setIsLoading(true);
+    setError(null);
+    setReminders([]);
+    try {
+      // Only send non-empty filters
+      const activeFilters: any = {};
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) activeFilters[key] = value;
+      });
+      const result = await getReminders(activeFilters);
+      if (result.status !== 200) {
+        throw new Error(result.data?.message || `Failed to fetch reminders: ${result.status}`);
       }
-    };
-    fetchReminders();
-  }, [animalId, userId]);
+      setReminders(result.data as AnimalReminder[]);
+    } catch {
+      setError("An unexpected error occurred while fetching reminders.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReminders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.userId, filters.animalId]);
+
+  // Filter form submit
+  const handleFilterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loadReminders();
+  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -74,7 +89,7 @@ export const ReminderList = () => {
       return <Alert variant="danger">Error loading reminders: {error}</Alert>;
     }
     if (reminders.length === 0) {
-      return <Alert variant="info">No reminders found for this {animalId ? "animal" : "user"}.</Alert>;
+      return <Alert variant="info">No reminders found for the selected filters.</Alert>;
     }
     return (
       <ListGroup variant="flush">
@@ -117,18 +132,47 @@ export const ReminderList = () => {
   return (
     <div className="d-flex justify-content-center">
       <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
-        <Card.Header className="d-flex justify-content-between align-items-center">
-          <span>{animalId ? "Animal Reminders" : "User Reminders"}</span>
-          {animalId && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate(`/animals/${animalId}/create-reminder`)}
-              disabled={!animalId}
-            >
-              Create Reminder
-            </Button>
-          )}
+        <Card.Header className="d-flex flex-column align-items-center">
+          <span>Reminders</span>
+          {/* Filter Form */}
+          <Form className="w-100 mt-3" onSubmit={handleFilterSubmit}>
+            <Row className="g-2 align-items-end">
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Reminder Type</Form.Label>
+                  <Form.Select name="reminderType" value={filters.reminderType} onChange={handleFilterChange}>
+                    <option value="">All Types</option>
+                    {Object.values(ReminderType).map((type) => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Message Contains</Form.Label>
+                  <Form.Control type="text" name="message" value={filters.message} onChange={handleFilterChange} placeholder="Search message..." />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Remind At From</Form.Label>
+                  <Form.Control type="datetime-local" name="remindAtFrom" value={filters.remindAtFrom} onChange={handleFilterChange} />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Remind At To</Form.Label>
+                  <Form.Control type="datetime-local" name="remindAtTo" value={filters.remindAtTo} onChange={handleFilterChange} />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row className="mt-3">
+              <Col>
+                <Button type="submit" variant="primary" className="w-100">Apply Filters</Button>
+              </Col>
+            </Row>
+          </Form>
         </Card.Header>
         <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
           {renderContent()}
