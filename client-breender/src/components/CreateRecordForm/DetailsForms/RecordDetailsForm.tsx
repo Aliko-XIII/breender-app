@@ -40,6 +40,7 @@ interface RecordDetailsFormProps {
     onChange: (details: AnyAnimalRecordDetails | null) => void;
     onValidityChange: (isValid: boolean) => void;
     initialDetails?: AnyAnimalRecordDetails | null;
+    filterMode?: boolean; // NEW: disables required validation in detail forms
 }
 
 // Helper function to check if a component is implemented for a type
@@ -90,6 +91,7 @@ export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
     onChange,
     onValidityChange,
     initialDetails,
+    filterMode,
 }) => {
 
     // Effect to handle validity when recordType changes, especially for types without forms
@@ -124,67 +126,67 @@ export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
     // --- Component is configured, render the specific form ---
     switch (recordType) {
         case AnimalRecordType.CHECKUP:
-            return <CheckupDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').CheckupDetailsDto | undefined} />;
+            return <CheckupDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').CheckupDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.SURGERY:
-            return <SurgeryDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').SurgeryDetailsDto | undefined} />;
+            return <SurgeryDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').SurgeryDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.WEIGHT:
-            return <WeightDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').WeightDetailsDto | undefined} />;
+            return <WeightDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').WeightDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.DIAGNOSIS:
-            return <DiagnosisDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').DiagnosisDetailsDto | undefined} />;
+            return <DiagnosisDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').DiagnosisDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.PRESCRIPTION:
-            return <PrescriptionDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').PrescriptionDetailsDto | undefined} />;
+            return <PrescriptionDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').PrescriptionDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.MEDICATION:
-            return <MedicationDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').MedicationDetailsDto | undefined} />;
+            return <MedicationDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').MedicationDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.VACCINATION:
-            return <VaccinationDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').VaccinationDetailsDto | undefined} />;
+            return <VaccinationDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').VaccinationDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.DEWORMING:
-            return <DewormingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').DewormingDetailsDto | undefined} />;
+            return <DewormingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').DewormingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.DEFLEAING:
-            return <DefleaingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').DefleaingDetailsDto | undefined} />;
+            return <DefleaingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').DefleaingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.BATHING:
-            return <BathingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BathingDetailsDto | undefined} />;
+            return <BathingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BathingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.GROOMING:
-            return <GroomingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').GroomingDetailsDto | undefined} />;
+            return <GroomingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').GroomingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.NAILS:
-            return <NailsDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').NailsDetailsDto | undefined} />;
+            return <NailsDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').NailsDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.INJURY:
-            return <InjuryDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').InjuryDetailsDto | undefined} />;
+            return <InjuryDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').InjuryDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.TEMPERATURE:
-            return <TemperatureDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').TemperatureDetailsDto | undefined} />;
+            return <TemperatureDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').TemperatureDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.ILLNESS:
-            return <IllnessDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').IllnessDetailsDto | undefined} />;
+            return <IllnessDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').IllnessDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.BEHAVIOR:
-            return <BehaviorDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BehaviorDetailsDto | undefined} />;
+            return <BehaviorDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BehaviorDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.SLEEPING:
-            return <SleepingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').SleepingDetailsDto | undefined} />;
+            return <SleepingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').SleepingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.FECES:
-            return <FecesDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').FecesDetailsDto | undefined} />;
+            return <FecesDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').FecesDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.URINE:
-            return <UrineDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').UrineDetailsDto | undefined} />;
+            return <UrineDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').UrineDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.VOMIT:
-            return <VomitDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').VomitDetailsDto | undefined} />;
+            return <VomitDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').VomitDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.FOOD:
-            return <FoodDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').FoodDetailsDto | undefined} />;
+            return <FoodDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').FoodDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.WATER:
-            return <WaterDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').WaterDetailsDto | undefined} />;
+            return <WaterDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').WaterDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.HEAT:
-            return <HeatDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').HeatDetailsDto | undefined} />;
+            return <HeatDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').HeatDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.MATING:
-            return <MatingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').MatingDetailsDto | undefined} />;
+            return <MatingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').MatingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.PREGNANCY:
-            return <PregnancyDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').PregnancyDetailsDto | undefined} />;
+            return <PregnancyDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').PregnancyDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.BIRTH:
-            return <BirthDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BirthDetailsDto | undefined} />;
+            return <BirthDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BirthDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.ESTROUS:
-            return <EstrousDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').EstrousDetailsDto | undefined} />;
+            return <EstrousDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').EstrousDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.SELLING:
-            return <SellingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').SellingDetailsDto | undefined} />;
+            return <SellingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').SellingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.BUYING:
-            return <BuyingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BuyingDetailsDto | undefined} />;
+            return <BuyingDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').BuyingDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.NOTES:
-            return <NotesDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').NotesDetailsDto | undefined} />;
+            return <NotesDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').NotesDetailsDto | undefined} filterMode={filterMode} />;
         case AnimalRecordType.OTHER:
-            return <OtherDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').OtherDetailsDto | undefined} />;
+            return <OtherDetailsForm onChange={onChange} onValidityChange={onValidityChange} initialDetails={initialDetails as import('../../../types').OtherDetailsDto | undefined} filterMode={filterMode} />;
         default:
             // This case should ideally not be reached if hasDetailsComponent is correct.
             // It implies hasDetailsComponent returned true, but the case is missing/commented here.

@@ -1,9 +1,10 @@
 // src/components/RecordList/RecordList.tsx
 import { useState, useEffect } from 'react';
 import { Alert, ListGroup, Spinner, Card, Button } from 'react-bootstrap';
-import { AnimalRecord, AnimalRecordType } from '../../types'; // Adjust path as needed
+import { AnimalRecord, AnimalRecordType, AnyAnimalRecordDetails } from '../../types'; // Adjust path as needed
 import { useParams, useNavigate } from 'react-router-dom';
 import { getRecords } from '../../api/recordApi';
+import { RecordDetailsForm } from '../CreateRecordForm/DetailsForms/RecordDetailsForm';
 
 export const RecordList = () => {
     const [records, setRecords] = useState<AnimalRecord[]>([]);
@@ -12,6 +13,8 @@ export const RecordList = () => {
     const [recordType, setRecordType] = useState<string>('');
     const [dateFrom, setDateFrom] = useState<string>('');
     const [dateTo, setDateTo] = useState<string>('');
+    const [detailsFilter, setDetailsFilter] = useState<AnyAnimalRecordDetails | null>(null);
+    const [isDetailsValid, setIsDetailsValid] = useState(true);
     const { id: animalId, userId } = useParams<{ id?: string; userId?: string }>();
     const navigate = useNavigate();
 
@@ -27,12 +30,14 @@ export const RecordList = () => {
                 recordType?: string;
                 dateFrom?: string;
                 dateTo?: string;
+                details?: AnyAnimalRecordDetails;
             } = {};
             if (animalId) filters.animalId = animalId;
             if (userId) filters.userId = userId;
             if (recordType) filters.recordType = recordType;
             if (dateFrom) filters.dateFrom = dateFrom;
             if (dateTo) filters.dateTo = dateTo;
+            if (detailsFilter && Object.keys(detailsFilter).length > 0) filters.details = detailsFilter;
             const result = await getRecords(filters);
             if (result.status !== 200) {
                 throw new Error(`Failed to fetch records: ${result.status}`);
@@ -132,7 +137,7 @@ export const RecordList = () => {
                         <div className="row g-2 align-items-end">
                             <div className="col-md-4">
                                 <label className="form-label mb-0">Type</label>
-                                <select className="form-select" value={recordType} onChange={e => setRecordType(e.target.value)}>
+                                <select className="form-select" value={recordType} onChange={e => { setRecordType(e.target.value); setDetailsFilter(null); }}>
                                     <option value="">All Types</option>
                                     {Object.values(AnimalRecordType).map((type) => (
                                         <option key={type} value={type}>{type}</option>
@@ -151,6 +156,17 @@ export const RecordList = () => {
                                 <button type="submit" className="btn btn-primary w-100">Filter</button>
                             </div>
                         </div>
+                        {/* Details filter form, only show if a type is selected */}
+                        {recordType && (
+                            <div className="mt-3">
+                                <RecordDetailsForm
+                                    recordType={recordType as AnimalRecordType}
+                                    onChange={setDetailsFilter}
+                                    onValidityChange={setIsDetailsValid}
+                                    filterMode={true}
+                                />
+                            </div>
+                        )}
                     </form>
                     {isLoading || error || records.length === 0 ? (
                         renderContent()
