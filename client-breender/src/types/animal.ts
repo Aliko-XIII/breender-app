@@ -6,4 +6,5 @@ export interface AnimalMapInfo {
     species?: string; // Optional: Add more info if needed for display
     latitude: number;
     longitude: number;
-  }
+    canPartner?: boolean; // Indicates if the animal is partnerable
+}
