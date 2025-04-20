@@ -3,54 +3,59 @@ import { useState, useEffect } from 'react';
 import { Alert, ListGroup, Spinner, Card, Button } from 'react-bootstrap';
 import { AnimalRecord, AnimalRecordType } from '../../types'; // Adjust path as needed
 import { useParams, useNavigate } from 'react-router-dom';
-import { getRecordsByAnimal, getRecordsByUser } from '../../api/recordApi';
+import { getRecords } from '../../api/recordApi';
 
 export const RecordList = () => {
     const [records, setRecords] = useState<AnimalRecord[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [recordType, setRecordType] = useState<string>('');
+    const [dateFrom, setDateFrom] = useState<string>('');
+    const [dateTo, setDateTo] = useState<string>('');
     const { id: animalId, userId } = useParams<{ id?: string; userId?: string }>();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchRecords = async () => {
-            setIsLoading(true);
-            setError(null);
-            setRecords([]);
-
-            if (animalId) {
-                try {
-                    const result = await getRecordsByAnimal(animalId);
-                    if (result.status !== 200) {
-                        throw new Error(`Failed to fetch records: ${result.status}`);
-                    }
-                    setRecords(result.data as AnimalRecord[]);
-                } catch (err: any) {
-                    console.error("Error fetching records:", err);
-                    setError(err.message || "An unexpected error occurred while fetching records.");
-                } finally {
-                    setIsLoading(false);
-                }
-            } else if (userId) {
-                try {
-                    const result = await getRecordsByUser(userId);
-                    if (result.status !== 200) {
-                        throw new Error(`Failed to fetch records: ${result.status}`);
-                    }
-                    setRecords(result.data as AnimalRecord[]);
-                } catch (err: any) {
-                    console.error("Error fetching records:", err);
-                    setError(err.message || "An unexpected error occurred while fetching records.");
-                } finally {
-                    setIsLoading(false);
-                }
-            } else {
-                setError("No animal or user ID provided.");
-                setIsLoading(false);
+    // Fetch records with filters
+    const fetchRecords = async () => {
+        setIsLoading(true);
+        setError(null);
+        setRecords([]);
+        try {
+            const filters: {
+                animalId?: string;
+                userId?: string;
+                recordType?: string;
+                dateFrom?: string;
+                dateTo?: string;
+            } = {};
+            if (animalId) filters.animalId = animalId;
+            if (userId) filters.userId = userId;
+            if (recordType) filters.recordType = recordType;
+            if (dateFrom) filters.dateFrom = dateFrom;
+            if (dateTo) filters.dateTo = dateTo;
+            const result = await getRecords(filters);
+            if (result.status !== 200) {
+                throw new Error(`Failed to fetch records: ${result.status}`);
             }
-        };
+            setRecords(result.data as AnimalRecord[]);
+        } catch (err) {
+            console.error("Error fetching records:", err);
+            setError((err as Error).message || "An unexpected error occurred while fetching records.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchRecords();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [animalId, userId]);
+
+    // Filter form submit
+    const handleFilterSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchRecords();
+    };
 
     // Helper function to format date
     const formatDate = (dateString: string) => {
@@ -58,7 +63,7 @@ export const RecordList = () => {
             return new Date(dateString).toLocaleDateString(undefined, {
                 year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
             });
-        } catch (e) {
+        } catch {
             return dateString; // Fallback to original string if parsing fails
         }
     };
@@ -82,7 +87,6 @@ export const RecordList = () => {
 
         if (records.length === 0) {
             return <Alert variant="info">No records found for this animal.</Alert>;
-            // TODO: Adjust message based on whether animalId, userId or filters were active
         }
 
         return (
@@ -123,6 +127,31 @@ export const RecordList = () => {
                     </Button>
                 </Card.Header>
                 <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
+                    {/* Filter Form */}
+                    <form className="mb-3" onSubmit={handleFilterSubmit}>
+                        <div className="row g-2 align-items-end">
+                            <div className="col-md-4">
+                                <label className="form-label mb-0">Type</label>
+                                <select className="form-select" value={recordType} onChange={e => setRecordType(e.target.value)}>
+                                    <option value="">All Types</option>
+                                    {Object.values(AnimalRecordType).map((type) => (
+                                        <option key={type} value={type}>{type}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="col-md-3">
+                                <label className="form-label mb-0">From</label>
+                                <input type="date" className="form-control" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+                            </div>
+                            <div className="col-md-3">
+                                <label className="form-label mb-0">To</label>
+                                <input type="date" className="form-control" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+                            </div>
+                            <div className="col-md-2">
+                                <button type="submit" className="btn btn-primary w-100">Filter</button>
+                            </div>
+                        </div>
+                    </form>
                     {isLoading || error || records.length === 0 ? (
                         renderContent()
                     ) : (
