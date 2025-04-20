@@ -121,6 +121,9 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     mapContainerStyle={containerStyle}
                     center={mapCenter || initialCenter}
                     zoom={13} // Adjust zoom level as needed
+                    options={{
+                        streetViewControl: false, // Remove Pegman (Street View) button
+                    }}
                 >
                     {/* User's current location marker */}
                     {mapCenter && (
