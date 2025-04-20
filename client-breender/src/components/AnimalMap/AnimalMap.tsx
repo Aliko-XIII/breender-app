@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { AnimalMapInfo } from '../../types'; // Adjust path
+import { getAnimals } from '../../api/animalApi';
 
 // --- Component Props (Optional for now) ---
 interface AnimalMapProps {
@@ -30,24 +31,37 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     // !! IMPORTANT !! Replace with your actual key, preferably from environment variables
     const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g';
 
-    // --- Load Mock Data ---
+    // --- Load Data from API ---
     useEffect(() => {
         setIsLoading(true);
-        // Simulate fetching data
-        const timer = setTimeout(() => {
-            try {
-                setAnimals(mockMapAnimals);
-                setError(null);
-            } catch (err) {
-                setError("Failed to load animal data.");
+        getAnimals()
+            .then((response) => {
+                if (response.status === 200 && Array.isArray(response.data)) {
+                    // Only include animals with valid latitude and longitude
+                    setAnimals(
+                        response.data
+                            .filter((animal: any) => typeof animal.latitude === 'number' && typeof animal.longitude === 'number')
+                            .map((animal: any) => ({
+                                id: animal.id,
+                                name: animal.name,
+                                species: animal.species,
+                                latitude: animal.latitude,
+                                longitude: animal.longitude,
+                            }))
+                    );
+                    setError(null);
+                } else {
+                    setError('Failed to fetch animal data.');
+                }
+            })
+            .catch((err) => {
+                setError('Failed to load animal data.');
                 console.error(err);
-            } finally {
-                 setIsLoading(false);
-            }
-        }, 300); // Short delay to mimic loading
-
-        return () => clearTimeout(timer); // Cleanup timer
-    }, []); // Empty dependency array means run once on mount
+            })
+            .finally(() => {
+                setIsLoading(false);
+            });
+    }, []); // Fetch once on mount
 
     // --- Marker Click Handler ---
     const handleMarkerClick = useCallback((animal: AnimalMapInfo) => {
