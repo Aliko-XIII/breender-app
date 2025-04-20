@@ -30,6 +30,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [selectedAnimal, setSelectedAnimal] = useState<AnimalMapInfo | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false); // For future API loading
     const [error, setError] = useState<string | null>(null); // For future API errors
+    const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
 
     // --- Google Maps API Key ---
     // !! IMPORTANT !! Replace with your actual key, preferably from environment variables
@@ -67,6 +68,26 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
             });
     }, []); // Fetch once on mount
 
+    useEffect(() => {
+        // Try to get user's geolocation
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setMapCenter({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    });
+                },
+                (error) => {
+                    // If denied or failed, fallback to default
+                    setMapCenter(initialCenter);
+                }
+            );
+        } else {
+            setMapCenter(initialCenter);
+        }
+    }, []);
+
     // --- Marker Click Handler ---
     const handleMarkerClick = useCallback((animal: AnimalMapInfo) => {
         setSelectedAnimal(animal);
@@ -98,7 +119,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
             <LoadScript googleMapsApiKey={googleMapsApiKey}>
                 <GoogleMap
                     mapContainerStyle={containerStyle}
-                    center={initialCenter}
+                    center={mapCenter || initialCenter}
                     zoom={13} // Adjust zoom level as needed
                 >
                     {/* Render markers for each animal */}
