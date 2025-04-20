@@ -224,7 +224,21 @@ export class RecordsService {
             // Default: only allow records for animals owned by authUserId
             where.animal = { owners: { some: { owner: { userId: authUserId } } } };
         }
-
+        // Add details filtering if provided
+        if (filter.details && Object.keys(filter.details).length > 0) {
+            // Build AND array for each key in details
+            where.AND = where.AND || [];
+            for (const [key, value] of Object.entries(filter.details)) {
+                if (value !== undefined && value !== null && value !== '') {
+                    where.AND.push({
+                        details: {
+                            path: [key],
+                            equals: value
+                        }
+                    });
+                }
+            }
+        }
         return this.databaseService.animalRecord.findMany({
             where,
             orderBy: { createdAt: 'desc' },

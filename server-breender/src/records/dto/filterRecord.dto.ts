@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEnum, IsDateString } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsDateString, IsObject } from 'class-validator';
 import { AnimalRecordType } from '@prisma/client';
 
 export class FilterRecordDto {
@@ -21,4 +21,8 @@ export class FilterRecordDto {
     @IsOptional()
     @IsDateString()
     dateTo?: string;
+
+    @IsOptional()
+    @IsObject()
+    details?: Record<string, any>;
 }
