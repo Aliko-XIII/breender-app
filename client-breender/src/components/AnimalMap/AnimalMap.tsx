@@ -131,7 +131,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <Marker
                             position={mapCenter}
                             icon={{
-                                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><polygon points="16,10 26,20 6,20" fill="orange" stroke="%23333" stroke-width="2"/><rect x="10" y="20" width="12" height="8" fill="orange" stroke="%23333" stroke-width="2"/><line x1="6" y1="20" x2="26" y2="20" stroke="%23333" stroke-width="2"/><rect x="14" y="23" width="4" height="4" fill="blue"/></svg>',
+                                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><polygon points="16,10 26,20 6,20" fill="orange" stroke="%23724c1e" stroke-width="2"/><rect x="10" y="20" width="12" height="8" fill="orange" stroke="%23724c1e" stroke-width="2"/><line x1="6" y1="20" x2="26" y2="20" stroke="%23724c1e" stroke-width="2"/><rect x="14" y="23" width="4" height="4" fill="blue"/></svg>',
                                 scaledSize: new window.google.maps.Size(40, 40),
                                 anchor: new window.google.maps.Point(16, 28),
                             }}
@@ -179,7 +179,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ display: 'inline-block', width: 32, height: 32 }}>
                         <img
-                            src={`data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><polygon points='16,10 26,20 6,20' fill='orange' stroke='%23333' stroke-width='2'/><rect x='10' y='20' width='12' height='8' fill='orange' stroke='%23333' stroke-width='2'/><line x1='6' y1='20' x2='26' y2='20' stroke='%23333' stroke-width='2'/><rect x='14' y='23' width='4' height='4' fill='blue'/></svg>`}
+                            src={`data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><polygon points='16,10 26,20 6,20' fill='orange' stroke='%23724c1e' stroke-width='2'/><rect x='10' y='20' width='12' height='8' fill='orange' stroke='%23724c1e' stroke-width='2'/><line x1='6' y1='20' x2='26' y2='20' stroke='%23724c1e' stroke-width='2'/><rect x='14' y='23' width='4' height='4' fill='blue'/></svg>`}
                             alt="Your location"
                             width={32}
                             height={32}
