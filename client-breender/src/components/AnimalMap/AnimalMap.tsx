@@ -235,7 +235,9 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                 <h5>{selectedAnimal.name}</h5>
                                 {selectedAnimal.species && <p>Species: {selectedAnimal.species}</p>}
                                 <p><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
-                                {/* Add more details or a link to the animal's page */}
+                                <button className="btn btn-primary btn-sm mt-2" onClick={() => navigate(`/animals/${selectedAnimal.id}`)}>
+                                    View Profile
+                                </button>
                             </div>
                         </InfoWindow>
                     )}
