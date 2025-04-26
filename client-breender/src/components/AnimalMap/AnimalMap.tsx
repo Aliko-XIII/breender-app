@@ -195,6 +195,27 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     <span>Partnerable Animal</span>
                 </div>
             </div>
+            {/* Animal List below the map */}
+            <div style={{ width: '100%', maxWidth: 800, margin: '32px auto 0 auto' }}>
+                <h3 className="mb-3">Animals List</h3>
+                <ul className="list-group">
+                    {animals.length === 0 ? (
+                        <li className="list-group-item text-center">No animals found.</li>
+                    ) : (
+                        animals.map(animal => (
+                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <strong>{animal.name}</strong>
+                                    {animal.species ? <span className="text-muted"> ({animal.species})</span> : null}
+                                </span>
+                                <span style={{ fontSize: 12, color: '#888' }}>
+                                    Lat: {animal.latitude.toFixed(4)}, Lng: {animal.longitude.toFixed(4)}
+                                </span>
+                            </li>
+                        ))
+                    )}
+                </ul>
+            </div>
         </div>
     );
 };
