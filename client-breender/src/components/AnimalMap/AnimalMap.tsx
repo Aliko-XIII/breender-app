@@ -146,15 +146,11 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             position={{ lat: animal.latitude, lng: animal.longitude }}
                             title={animal.name}
                             onClick={() => handleMarkerClick(animal)}
-                            icon={
-                                animal.canPartner
-                                    ? {
-                                        url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 27C12 23 4 17.5 4 12.5C4 9 7 6 10.5 6C12.5 6 14.5 7.5 16 9.5C17.5 7.5 19.5 6 21.5 6C25 6 28 9 28 12.5C28 17.5 20 23 16 27Z" fill="%2300b86b" stroke="%23336644" stroke-width="2"/></svg>',
-                                        scaledSize: new window.google.maps.Size(32, 32),
-                                        anchor: new window.google.maps.Point(16, 28),
-                                    }
-                                    : undefined
-                            }
+                            icon={{
+                                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 27C12 23 4 17.5 4 12.5C4 9 7 6 10.5 6C12.5 6 14.5 7.5 16 9.5C17.5 7.5 19.5 6 21.5 6C25 6 28 9 28 12.5C28 17.5 20 23 16 27Z" fill="%23e53935" stroke="%238b1c1c" stroke-width="2"/></svg>',
+                                scaledSize: new window.google.maps.Size(32, 32),
+                                anchor: new window.google.maps.Point(16, 28),
+                            }}
                         />
                     ))}
 
@@ -190,7 +186,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ display: 'inline-block', width: 32, height: 32 }}>
                         <img
-                            src={`data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M16 27C12 23 4 17.5 4 12.5C4 9 7 6 10.5 6C12.5 6 14.5 7.5 16 9.5C17.5 7.5 19.5 6 21.5 6C25 6 28 9 28 12.5C28 17.5 20 23 16 27Z' fill='%2300b86b' stroke='%23336644' stroke-width='2'/></svg>`}
+                            src={`data:image/svg+xml;utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M16 27C12 23 4 17.5 4 12.5C4 9 7 6 10.5 6C12.5 6 14.5 7.5 16 9.5C17.5 7.5 19.5 6 21.5 6C25 6 28 9 28 12.5C28 17.5 20 23 16 27Z' fill='%23e53935' stroke='%238b1c1c' stroke-width='2'/></svg>`}
                             alt="Partnerable animal"
                             width={32}
                             height={32}
