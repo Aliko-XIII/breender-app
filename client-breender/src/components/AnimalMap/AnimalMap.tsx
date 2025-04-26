@@ -40,9 +40,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         sex: '',
         birthdateFrom: '',
         birthdateTo: '',
-        latitude: '',
-        longitude: '',
-        radius: ''
+        radius: '' // Only radius for location
     });
 
     // --- Handle filter input changes ---
@@ -54,12 +52,16 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     // --- Load Data from API (with filters) ---
     const loadAnimals = useCallback(() => {
         setIsLoading(true);
-        // Only send non-empty filters
         const activeFilters: any = {};
         Object.entries(filters).forEach(([key, value]) => {
             if (value !== '') {
-                if (["latitude", "longitude", "radius"].includes(key)) {
-                    activeFilters[key] = Number(value);
+                if (key === 'radius') {
+                    const num = Number(value);
+                    if (!isNaN(num) && value !== '' && mapCenter) {
+                        activeFilters.radius = num;
+                        activeFilters.latitude = mapCenter.lat;
+                        activeFilters.longitude = mapCenter.lng;
+                    }
                 } else {
                     activeFilters[key] = value;
                 }
@@ -92,7 +94,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, [filters]);
+    }, [filters, mapCenter]);
 
     useEffect(() => {
         loadAnimals();
@@ -168,12 +170,6 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     </div>
                     <div className="col-md-2">
                         <input type="date" className="form-control" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control" name="latitude" placeholder="Latitude" value={filters.latitude} onChange={handleFilterChange} step="any" />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control" name="longitude" placeholder="Longitude" value={filters.longitude} onChange={handleFilterChange} step="any" />
                     </div>
                     <div className="col-md-2">
                         <input type="number" className="form-control" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" />
