@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { AnimalMapInfo } from '../../types'; // Adjust path
 import { getAnimals } from '../../api/animalApi';
+import { useNavigate } from 'react-router-dom';
 
 // --- Component Props (Optional for now) ---
 interface AnimalMapProps {
@@ -42,6 +43,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         birthdateTo: '',
         radius: '' // Only radius for location
     });
+
+    const navigate = useNavigate();
 
     // --- Handle filter input changes ---
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -271,7 +274,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <li className="list-group-item text-center">No animals found.</li>
                     ) : (
                         animals.map(animal => (
-                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center">
+                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: 'pointer' }} onClick={() => navigate(`/animals/${animal.id}`)}>
                                 <span>
                                     <strong>{animal.name}</strong>
                                     {animal.species ? <span className="text-muted"> ({animal.species})</span> : null}
