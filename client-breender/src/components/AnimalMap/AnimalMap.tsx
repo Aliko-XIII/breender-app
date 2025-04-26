@@ -28,21 +28,46 @@ const initialCenter = {
 export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [animals, setAnimals] = useState<AnimalMapInfo[]>([]);
     const [selectedAnimal, setSelectedAnimal] = useState<AnimalMapInfo | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(false); // For future API loading
-    const [error, setError] = useState<string | null>(null); // For future API errors
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
 
-    // --- Google Maps API Key ---
-    // !! IMPORTANT !! Replace with your actual key, preferably from environment variables
-    const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g';
+    // --- Filter State ---
+    const [filters, setFilters] = useState({
+        name: '',
+        species: '',
+        breed: '',
+        sex: '',
+        birthdateFrom: '',
+        birthdateTo: '',
+        latitude: '',
+        longitude: '',
+        radius: ''
+    });
 
-    // --- Load Data from API ---
-    useEffect(() => {
+    // --- Handle filter input changes ---
+    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // --- Load Data from API (with filters) ---
+    const loadAnimals = useCallback(() => {
         setIsLoading(true);
-        getAnimals()
+        // Only send non-empty filters
+        const activeFilters: any = {};
+        Object.entries(filters).forEach(([key, value]) => {
+            if (value !== '') {
+                if (["latitude", "longitude", "radius"].includes(key)) {
+                    activeFilters[key] = Number(value);
+                } else {
+                    activeFilters[key] = value;
+                }
+            }
+        });
+        getAnimals(activeFilters)
             .then((response) => {
                 if (response.status === 200 && Array.isArray(response.data)) {
-                    // Only include animals with valid latitude and longitude
                     setAnimals(
                         response.data
                             .filter((animal: any) => typeof animal.latitude === 'number' && typeof animal.longitude === 'number')
@@ -52,7 +77,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                 species: animal.species,
                                 latitude: animal.latitude,
                                 longitude: animal.longitude,
-                                canPartner: animal.canPartner, // Added canPartner property
+                                canPartner: animal.canPartner,
                             }))
                     );
                     setError(null);
@@ -67,7 +92,11 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
             .finally(() => {
                 setIsLoading(false);
             });
-    }, []); // Fetch once on mount
+    }, [filters]);
+
+    useEffect(() => {
+        loadAnimals();
+    }, [loadAnimals]);
 
     useEffect(() => {
         // Try to get user's geolocation
@@ -99,6 +128,10 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         setSelectedAnimal(null);
     }, []);
 
+    // --- Google Maps API Key ---
+    // !! IMPORTANT !! Replace with your actual key, preferably from environment variables
+    const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g';
+
     // --- Check for API Key ---
     if (!googleMapsApiKey) {
         return (
@@ -111,8 +144,47 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     // --- Render Logic ---
     return (
         <div className="animal-map-container my-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-             {/* Consider adding filtering controls here later */}
-             <h2>Animal Locations</h2>
+            {/* Filter Form */}
+            <form className="mb-4" style={{ width: '100%', maxWidth: 800 }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
+                <div className="row g-2 align-items-end">
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="text" className="form-control" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} />
+                    </div>
+                    <div className="col-md-2">
+                        <select className="form-select" name="sex" value={filters.sex} onChange={handleFilterChange}>
+                            <option value="">Sex</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                        </select>
+                    </div>
+                    <div className="col-md-2">
+                        <input type="date" className="form-control" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="date" className="form-control" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="number" className="form-control" name="latitude" placeholder="Latitude" value={filters.latitude} onChange={handleFilterChange} step="any" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="number" className="form-control" name="longitude" placeholder="Longitude" value={filters.longitude} onChange={handleFilterChange} step="any" />
+                    </div>
+                    <div className="col-md-2">
+                        <input type="number" className="form-control" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" />
+                    </div>
+                    <div className="col-md-2">
+                        <button type="submit" className="btn btn-primary w-100">Apply Filters</button>
+                    </div>
+                </div>
+            </form>
+
+            <h2>Animal Locations</h2>
 
             {isLoading && <p>Loading map and animal data...</p>}
             {error && <div className="alert alert-warning">{error}</div>}
