@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
-import { Partnership } from '@prisma/client';
+import { Partnership, PartnershipStatus } from '@prisma/client';
 import { CreatePartnershipDto } from './dto/create-partnership.dto';
 import { UpdatePartnershipDto } from './dto/update-partnership.dto';
 
@@ -9,7 +9,14 @@ export class PartnershipsService {
     constructor(private databaseService: DatabaseService) { }
 
     async create(data: CreatePartnershipDto): Promise<Partnership> {
-        return this.databaseService.partnership.create({ data });
+        return this.databaseService.partnership.create({
+            data: {
+                requesterAnimalId: data.requesterAnimalId,
+                recipientAnimalId: data.recipientAnimalId,
+                status: PartnershipStatus.PENDING,
+                requestedAt: new Date(),
+            },
+        });
     }
 
     async findAll(): Promise<Partnership[]> {

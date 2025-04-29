@@ -1,5 +1,4 @@
-import { IsUUID, IsEnum, IsOptional, IsDateString } from 'class-validator';
-import { PartnershipStatus } from '@prisma/client';
+import { IsUUID } from 'class-validator';
 
 export class CreatePartnershipDto {
   @IsUUID()
@@ -7,16 +6,4 @@ export class CreatePartnershipDto {
 
   @IsUUID()
   recipientAnimalId: string;
-
-  @IsEnum(PartnershipStatus)
-  @IsOptional()
-  status?: PartnershipStatus;
-
-  @IsDateString()
-  @IsOptional()
-  requestedAt?: Date;
-
-  @IsDateString()
-  @IsOptional()
-  respondedAt?: Date;
 }
