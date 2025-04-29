@@ -4,6 +4,7 @@ import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/ap
 import { AnimalMapInfo } from '../../types'; // Adjust path
 import { getAnimals } from '../../api/animalApi';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 // --- Component Props (Optional for now) ---
 interface AnimalMapProps {
@@ -34,6 +35,10 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [userMarkerIcon, setUserMarkerIcon] = useState<any>(null);
     const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);
+
+    const [myAnimals, setMyAnimals] = useState<{ id: string; name: string; species?: string }[]>([]);
+    const [selectedMyAnimalId, setSelectedMyAnimalId] = useState<string>('');
+    const { userId } = useUser();
 
     // --- Filter State ---
     const [filters, setFilters] = useState({
@@ -125,10 +130,31 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         }
     }, []);
 
+    // --- Fetch user's animals for selection ---
+    useEffect(() => {
+        if (!userId) return;
+        getAnimals({ userId })
+            .then((response) => {
+                if (response.status === 200 && Array.isArray(response.data)) {
+                    setMyAnimals(
+                        response.data.map((animal: any) => ({
+                            id: animal.id,
+                            name: animal.name,
+                            species: animal.species,
+                        }))
+                    );
+                }
+            })
+            .catch((err) => {
+                setMyAnimals([]);
+            });
+    }, [userId]);
+
     // --- Marker Click Handler ---
     const handleMarkerClick = useCallback((animal: AnimalMapInfo) => {
+        if (!selectedMyAnimalId) return; // Prevent selection if not chosen
         setSelectedAnimal(animal);
-    }, []);
+    }, [selectedMyAnimalId]);
 
     // --- InfoWindow Close Handler ---
     const handleInfoWindowClose = useCallback(() => {
@@ -167,6 +193,29 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     // --- Render Logic ---
     return (
         <div className="animal-map-container my-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* My Animal Selection Dropdown */}
+            <div className="mb-3" style={{ width: '100%', maxWidth: 800 }}>
+                <label htmlFor="my-animal-select" className="form-label fw-bold">Choose your animal to find a partner for:</label>
+                <select
+                    id="my-animal-select"
+                    className="form-select"
+                    value={selectedMyAnimalId}
+                    onChange={e => setSelectedMyAnimalId(e.target.value)}
+                >
+                    <option value="">-- Select your animal --</option>
+                    {myAnimals.map(animal => (
+                        <option key={animal.id} value={animal.id}>
+                            {animal.name}{animal.species ? ` (${animal.species})` : ''}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            {!selectedMyAnimalId && (
+                <div className="alert alert-warning mb-3" style={{ width: '100%', maxWidth: 800 }}>
+                    Please select your animal before proceeding.
+                </div>
+            )}
+
             {/* Filter Form */}
             <form className="mb-4" style={{ width: '100%', maxWidth: 800 }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
                 <div className="row g-2 align-items-end">
@@ -233,6 +282,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             title={animal.name}
                             onClick={() => handleMarkerClick(animal)}
                             icon={animalMarkerIcon}
+                            clickable={!!selectedMyAnimalId}
                         />
                     ))}
 
@@ -287,7 +337,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <li className="list-group-item text-center">No animals found.</li>
                     ) : (
                         animals.map(animal => (
-                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: 'pointer' }} onClick={() => navigate(`/animals/${animal.id}`)}>
+                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: selectedMyAnimalId ? 'pointer' : 'not-allowed', opacity: selectedMyAnimalId ? 1 : 0.5 }} onClick={() => selectedMyAnimalId && navigate(`/animals/${animal.id}`)}>
                                 <span>
                                     <strong>{animal.name}</strong>
                                     {animal.species ? <span className="text-muted"> ({animal.species})</span> : null}
