@@ -33,16 +33,16 @@ export class AnimalFilterDto {
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'latitude must be a number', allowNaN: false, allowInfinity: false })
+  @IsNumber({}, { message: 'latitude must be a number', })
   latitude?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'longitude must be a number', allowNaN: false, allowInfinity: false })
+  @IsNumber({}, { message: 'longitude must be a number', })
   longitude?: number;
 
   @IsOptional()
   @Type(() => Number)
-  @IsNumber({}, { message: 'radius must be a number', allowNaN: false, allowInfinity: false })
+  @IsNumber({}, { message: 'radius must be a number', })
   radius?: number; // in kilometers
 }
