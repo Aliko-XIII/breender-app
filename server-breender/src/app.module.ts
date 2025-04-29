@@ -14,6 +14,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { PhotosModule } from './photos/photos.module';
 import { RecordsModule } from './records/records.module';
 import { RemindersModule } from './reminders/reminders.module';
+import { PartnershipsModule } from './partnerships/partnerships.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { RemindersModule } from './reminders/reminders.module';
     PhotosModule,
     RecordsModule,
     RemindersModule,
+    PartnershipsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
