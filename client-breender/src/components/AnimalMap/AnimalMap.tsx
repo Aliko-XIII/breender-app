@@ -32,6 +32,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+    const [userMarkerIcon, setUserMarkerIcon] = useState<any>(null);
+    const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);
 
     // --- Filter State ---
     const [filters, setFilters] = useState({
@@ -41,7 +43,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         sex: '',
         birthdateFrom: '',
         birthdateTo: '',
-        radius: '1.2' // Default radius to include the whole city (e.g., 10 km)
+        radius: '10' // Default radius to include the whole city (e.g., 10 km)
     });
 
     const navigate = useNavigate();
@@ -137,6 +139,22 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     // !! IMPORTANT !! Replace with your actual key, preferably from environment variables
     const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g';
 
+    // --- Map onLoad handler ---
+    const handleMapLoad = useCallback((mapInstance: google.maps.Map) => {
+        if (window.google && window.google.maps) {
+            setUserMarkerIcon({
+                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><polygon points="16,10 26,20 6,20" fill="orange" stroke="%23724c1e" stroke-width="2"/><rect x="10" y="20" width="12" height="8" fill="orange" stroke="%23724c1e" stroke-width="2"/><line x1="6" y1="20" x2="26" y2="20" stroke="%23724c1e" stroke-width="2"/><rect x="14" y="23" width="4" height="4" fill="blue"/></svg>',
+                scaledSize: new window.google.maps.Size(40, 40),
+                anchor: new window.google.maps.Point(16, 28),
+            });
+            setAnimalMarkerIcon({
+                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 27C12 23 4 17.5 4 12.5C4 9 7 6 10.5 6C12.5 6 14.5 7.5 16 9.5C17.5 7.5 19.5 6 21.5 6C25 6 28 9 28 12.5C28 17.5 20 23 16 27Z" fill="%23e53935" stroke="%238b1c1c" stroke-width="2"/></svg>',
+                scaledSize: new window.google.maps.Size(32, 32),
+                anchor: new window.google.maps.Point(16, 28),
+            });
+        }
+    }, []);
+
     // --- Check for API Key ---
     if (!googleMapsApiKey) {
         return (
@@ -196,32 +214,25 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     options={{
                         streetViewControl: false, // Remove Pegman (Street View) button
                     }}
+                    onLoad={handleMapLoad}
                 >
                     {/* User's current location marker */}
-                    {mapCenter && (
+                    {mapCenter && userMarkerIcon && (
                         <Marker
                             position={mapCenter}
-                            icon={{
-                                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><polygon points="16,10 26,20 6,20" fill="orange" stroke="%23724c1e" stroke-width="2"/><rect x="10" y="20" width="12" height="8" fill="orange" stroke="%23724c1e" stroke-width="2"/><line x1="6" y1="20" x2="26" y2="20" stroke="%23724c1e" stroke-width="2"/><rect x="14" y="23" width="4" height="4" fill="blue"/></svg>',
-                                scaledSize: new window.google.maps.Size(40, 40),
-                                anchor: new window.google.maps.Point(16, 28),
-                            }}
+                            icon={userMarkerIcon}
                             title="Your Location"
                             zIndex={999}
                         />
                     )}
                     {/* Render markers for each animal */}
-                    {!isLoading && animals.map((animal) => (
+                    {!isLoading && animalMarkerIcon && animals.map((animal) => (
                         <Marker
                             key={animal.id}
                             position={{ lat: animal.latitude, lng: animal.longitude }}
                             title={animal.name}
                             onClick={() => handleMarkerClick(animal)}
-                            icon={{
-                                url: 'data:image/svg+xml;utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path d="M16 27C12 23 4 17.5 4 12.5C4 9 7 6 10.5 6C12.5 6 14.5 7.5 16 9.5C17.5 7.5 19.5 6 21.5 6C25 6 28 9 28 12.5C28 17.5 20 23 16 27Z" fill="%23e53935" stroke="%238b1c1c" stroke-width="2"/></svg>',
-                                scaledSize: new window.google.maps.Size(32, 32),
-                                anchor: new window.google.maps.Point(16, 28),
-                            }}
+                            icon={animalMarkerIcon}
                         />
                     ))}
 
