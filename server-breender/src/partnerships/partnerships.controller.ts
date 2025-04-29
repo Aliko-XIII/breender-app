@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Body, Delete, Get, Param, Post } from '@nestjs/common';
+import { Controller, UseGuards, Body, Delete, Get, Param, Post, Patch, HttpCode } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { PartnershipsService } from './partnerships.service';
 import { Partnership } from '@prisma/client';
@@ -27,5 +27,17 @@ export class PartnershipsController {
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<Partnership> {
     return this.partnershipsService.remove(id);
+  }
+
+  @Patch(':id/accept')
+  @HttpCode(200)
+  async accept(@Param('id') id: string): Promise<Partnership> {
+    return this.partnershipsService.accept(id);
+  }
+
+  @Patch(':id/reject')
+  @HttpCode(200)
+  async reject(@Param('id') id: string): Promise<Partnership> {
+    return this.partnershipsService.reject(id);
   }
 }

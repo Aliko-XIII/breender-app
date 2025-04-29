@@ -29,4 +29,24 @@ export class PartnershipsService {
     async remove(id: string): Promise<Partnership> {
         return this.databaseService.partnership.delete({ where: { id } });
     }
+
+    async accept(id: string): Promise<Partnership> {
+        return this.databaseService.partnership.update({
+            where: { id },
+            data: {
+                status: PartnershipStatus.ACCEPTED,
+                respondedAt: new Date(),
+            },
+        });
+    }
+
+    async reject(id: string): Promise<Partnership> {
+        return this.databaseService.partnership.update({
+            where: { id },
+            data: {
+                status: PartnershipStatus.REJECTED,
+                respondedAt: new Date(),
+            },
+        });
+    }
 }
