@@ -250,7 +250,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                 </div>
             </form>
 
-            <h2>Animal Locations</h2>
+            <h2 className="text-start w-100" style={{ maxWidth: 800 }}>Animal Locations</h2>
 
             {isLoading && <p>Loading map and animal data...</p>}
             {error && <div className="alert alert-warning">{error}</div>}
