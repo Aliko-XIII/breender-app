@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService } from 'src/database/database.service';
 import { Partnership, PartnershipStatus } from '@prisma/client';
 import { CreatePartnershipDto } from './dto/create-partnership.dto';
-import { UpdatePartnershipDto } from './dto/update-partnership.dto';
 
 @Injectable()
 export class PartnershipsService {
@@ -25,10 +24,6 @@ export class PartnershipsService {
 
     async findOne(id: string): Promise<Partnership | null> {
         return this.databaseService.partnership.findUnique({ where: { id } });
-    }
-
-    async update(id: string, data: UpdatePartnershipDto): Promise<Partnership> {
-        return this.databaseService.partnership.update({ where: { id }, data });
     }
 
     async remove(id: string): Promise<Partnership> {
