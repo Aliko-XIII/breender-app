@@ -49,4 +49,14 @@ export class PartnershipsService {
             },
         });
     }
+
+    async cancel(id: string): Promise<Partnership> {
+        return this.databaseService.partnership.update({
+            where: { id },
+            data: {
+                status: PartnershipStatus.CANCELED,
+                respondedAt: new Date(),
+            },
+        });
+    }
 }

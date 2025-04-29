@@ -40,4 +40,10 @@ export class PartnershipsController {
   async reject(@Param('id') id: string): Promise<Partnership> {
     return this.partnershipsService.reject(id);
   }
+
+  @Patch(':id/cancel')
+  @HttpCode(200)
+  async cancel(@Param('id') id: string): Promise<Partnership> {
+    return this.partnershipsService.cancel(id);
+  }
 }

@@ -51,6 +51,7 @@ enum PartnershipStatus {
   PENDING
   ACCEPTED
   REJECTED
+  CANCELED
 }
 
 model Partnership {
