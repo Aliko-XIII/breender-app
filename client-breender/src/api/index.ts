@@ -5,3 +5,4 @@ export * from './photoApi';
 export * from './documentApi';
 export * from './recordApi';
 export * from './reminderApi';
+export * from './partnershipApi';
