@@ -43,8 +43,6 @@ model Owner {
   userId               String             @unique @map("user_id")
   user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   animals              AnimalOwner[]
-  sentPartnerships     OwnerPartnership[] @relation("Requester")
-  receivedPartnerships OwnerPartnership[] @relation("Recipient")
 
   @@map("owners")
 }
@@ -55,19 +53,19 @@ enum PartnershipStatus {
   REJECTED
 }
 
-model OwnerPartnership {
-  id          String            @id @default(uuid())
-  requesterId String            @map("requester_id")
-  recipientId String            @map("recipient_id")
-  status      PartnershipStatus @default(PENDING)
-  requestedAt DateTime          @default(now()) @map("requested_at")
-  respondedAt DateTime?         @map("responded_at")
+model Partnership {
+  id                  String            @id @default(uuid())
+  requesterAnimalId   String            @map("requester_animal_id")
+  recipientAnimalId   String            @map("recipient_animal_id")
+  status              PartnershipStatus @default(PENDING)
+  requestedAt         DateTime          @default(now()) @map("requested_at")
+  respondedAt         DateTime?         @map("responded_at")
 
-  requester Owner @relation("Requester", fields: [requesterId], references: [id], onDelete: Cascade)
-  recipient Owner @relation("Recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  requesterAnimal     Animal            @relation("RequesterAnimal", fields: [requesterAnimalId], references: [id], onDelete: Cascade)
+  recipientAnimal     Animal            @relation("RecipientAnimal", fields: [recipientAnimalId], references: [id], onDelete: Cascade)
 
-  @@unique([requesterId, recipientId])
-  @@map("owner_partnerships")
+  @@unique([requesterAnimalId, recipientAnimalId])
+  @@map("partnerships")
 }
 
 model Animal {
@@ -87,6 +85,9 @@ model Animal {
   animalRecords     AnimalRecord[]
   reminders         Reminder[]
   animalPermissions AnimalPermission[]
+
+  requesterPartnerships Partnership[] @relation("RequesterAnimal")
+  recipientPartnerships Partnership[] @relation("RecipientAnimal")
 
   @@map("animals")
 }
