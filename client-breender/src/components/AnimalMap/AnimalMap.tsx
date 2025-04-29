@@ -41,7 +41,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         sex: '',
         birthdateFrom: '',
         birthdateTo: '',
-        radius: '' // Only radius for location
+        radius: '1.2' // Default radius to include the whole city (e.g., 10 km)
     });
 
     const navigate = useNavigate();
