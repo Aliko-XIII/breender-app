@@ -79,3 +79,13 @@ export const deletePartnership = async (id: string) => {
     return { status: error.response?.status || 500, data: error.response?.data || {} };
   }
 };
+
+export const requestPartnership = async ({ requesterAnimalId, recipientAnimalId }: { requesterAnimalId: string, recipientAnimalId: string }) => {
+  try {
+    const response = await axiosInstance.post('/partnerships', { requesterAnimalId, recipientAnimalId });
+    return { status: response.status, data: response.data };
+  } catch (error: any) {
+    console.error(error);
+    return { status: error.response?.status || 500, data: error.response?.data || {} };
+  }
+};

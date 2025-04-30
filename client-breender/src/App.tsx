@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useParams, useSearchParams } from "react-router-dom";
 import { Login } from './components/Login/Login';
 import { Register } from './components/Register/Register';
 import { WelcomePage } from './components/WelcomePage/WelcomePage';
@@ -22,8 +22,17 @@ import { RecordView } from "./components/RecordView/RecordView";
 import * as api from "./api";
 import { ReminderList } from "./components/ReminderList/ReminderList";
 import { ReminderView } from "./components/ReminderView/ReminderView";
+import { AnimalPreview } from "./components/AnimalMap/AnimalPreview";
+import { PartnershipsPage } from "./components/PartnershipsPage";
 
 type Api = typeof api;
+
+const AnimalPreviewWrapper = () => {
+  const { id } = useParams();
+  const [searchParams] = useSearchParams();
+  const myAnimalId = searchParams.get("myAnimalId") || "";
+  return id ? <AnimalPreview animalId={id} myAnimalId={myAnimalId} /> : null;
+};
 
 function App({ api }: { api: Api }) {
   return (
@@ -56,6 +65,8 @@ function App({ api }: { api: Api }) {
           <Route path='/reminders/:reminderId' element={<ReminderView />} />
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
           <Route path='/map' element={<AnimalMap />} />
+          <Route path='/animals/:id/preview' element={<AnimalPreviewWrapper />} />
+          <Route path='/partnerships' element={<PartnershipsPage />} />
         </Routes>
         <ScrollToTopButton />
       </UserProvider>

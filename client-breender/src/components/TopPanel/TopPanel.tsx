@@ -34,7 +34,8 @@ export const TopPanel = () => {
             {userId && <Nav.Link as={Link} to={`/users/${userId}/records`}>My Records</Nav.Link>}
             {userId && <Nav.Link as={Link} to={`/users/${userId}/reminders`}>My Reminders</Nav.Link>}
             {userId && <Nav.Link as={Link} to="/map">Map</Nav.Link>}
-            </Nav>
+            {userId && <Nav.Link as={Link} to="/partnerships">Partnerships</Nav.Link>}
+          </Nav>
 
           {/* Logout button aligned right */}
           {userId && (
