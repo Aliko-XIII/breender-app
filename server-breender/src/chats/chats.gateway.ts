@@ -3,7 +3,7 @@ import { Server, Socket } from 'socket.io';
 import { CreateMessageDto } from 'src/messages/dto/create-message.dto';
 import { MessagesService } from 'src/messages/messages.service';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class ChatsGateway {
   @WebSocketServer()
   server: Server;
@@ -11,22 +11,21 @@ export class ChatsGateway {
   constructor(private readonly messageService: MessagesService) {}
 
   handleConnection(client: Socket) {
-    console.log('Client connected:', client.id);
+    console.log('WebSocket client connected:', client.id);
   }
 
   handleDisconnect(client: Socket) {
-    console.log('Client disconnected:', client.id);
+    console.log('WebSocket client disconnected:', client.id);
   }
 
-  @SubscribeMessage('joinTeam')
-  handleJoinTeam(
+  @SubscribeMessage('joinChat')
+  handleJoinChat(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { roomId: string; teamId: string },
+    @MessageBody() data: { chatId: string },
   ) {
-    const { roomId, teamId } = data;
-    const teamRoom = `${roomId}-${teamId}`;
-    client.join(teamRoom);
-    console.log(`Client ${client.id} joined room ${teamRoom}`);
+    const { chatId } = data;
+    client.join(chatId);
+    console.log(`Client ${client.id} joined chat ${chatId}`);
   }
 
   @SubscribeMessage('sendMessage')
@@ -35,6 +34,7 @@ export class ChatsGateway {
     @MessageBody()
     data: CreateMessageDto,
   ) {
+    console.log('Received sendMessage:', data);
     const message = await this.messageService.saveMessage(data);
     this.server.to(data.chatId).emit('receiveMessage', message);
   }
