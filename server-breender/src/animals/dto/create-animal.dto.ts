@@ -33,5 +33,5 @@ export class CreateAnimalDto {
   bio?: string;
 
   @IsDateString()
-  birthDate: Date;
+  birthDate: string;
 }

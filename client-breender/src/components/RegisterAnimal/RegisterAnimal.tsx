@@ -33,7 +33,9 @@ export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await createAnimal({ ...formData, bio: formData.bio ?? "" });
+            // Convert birthDate to ISO string for backend compatibility
+            const isoBirthDate = formData.birthDate ? new Date(formData.birthDate).toISOString() : "";
+            await createAnimal({ ...formData, bio: formData.bio ?? "", birthDate: isoBirthDate });
             alert("Animal created successfully!");
             navigate("/animals");
         } catch (error) {
