@@ -18,6 +18,8 @@ interface OwnerInfo {
 interface AnimalInfo {
   id: string;
   name: string;
+  species?: string;
+  breed?: string;
   owners: OwnerInfo[];
 }
 
@@ -59,6 +61,8 @@ export const PartnershipsPage: React.FC = () => {
               animalMap[animal.id] = {
                 id: animal.id,
                 name: animal.name,
+                species: animal.species,
+                breed: animal.breed,
                 owners: (animal.owners || []).map((ownerRel: any) => {
                   const user = ownerRel?.owner?.user;
                   const profile = user?.userProfile;
@@ -171,6 +175,14 @@ export const PartnershipsPage: React.FC = () => {
                       {p.requesterAnimal ? (
                         <>
                           <Link to={`/animals/${p.requesterAnimal.id}`}>{p.requesterAnimal.name}</Link>
+                          {(p.requesterAnimal.species || p.requesterAnimal.breed) && (
+                            <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                              {p.requesterAnimal.species ? `(${p.requesterAnimal.species}` : ''}
+                              {p.requesterAnimal.species && p.requesterAnimal.breed ? ', ' : ''}
+                              {p.requesterAnimal.breed ? p.requesterAnimal.breed : ''}
+                              {p.requesterAnimal.species ? ')' : ''}
+                            </span>
+                          )}
                           {p.requesterAnimal.owners.length > 0 && (
                             <>
                               {' '}<span> owned by </span>
@@ -192,6 +204,14 @@ export const PartnershipsPage: React.FC = () => {
                       {p.recipientAnimal ? (
                         <>
                           <Link to={`/animals/${p.recipientAnimal.id}`}>{p.recipientAnimal.name}</Link>
+                          {(p.recipientAnimal.species || p.recipientAnimal.breed) && (
+                            <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                              {p.recipientAnimal.species ? `(${p.recipientAnimal.species}` : ''}
+                              {p.recipientAnimal.species && p.recipientAnimal.breed ? ', ' : ''}
+                              {p.recipientAnimal.breed ? p.recipientAnimal.breed : ''}
+                              {p.recipientAnimal.species ? ')' : ''}
+                            </span>
+                          )}
                           {p.recipientAnimal.owners.length > 0 && (
                             <>
                               {' '}<span> owned by </span>
