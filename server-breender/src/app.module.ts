@@ -15,6 +15,8 @@ import { PhotosModule } from './photos/photos.module';
 import { RecordsModule } from './records/records.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { PartnershipsModule } from './partnerships/partnerships.module';
+import { MessagesModule } from './messages/messages.module';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { PartnershipsModule } from './partnerships/partnerships.module';
     RecordsModule,
     RemindersModule,
     PartnershipsModule,
+    MessagesModule,
+    ChatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
