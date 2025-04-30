@@ -46,4 +46,10 @@ export class PartnershipsController {
   async cancel(@Param('id') id: string): Promise<Partnership> {
     return this.partnershipsService.cancel(id);
   }
+
+  @Patch(':id/reopen')
+  @HttpCode(200)
+  async reopen(@Param('id') id: string): Promise<Partnership> {
+    return this.partnershipsService.reopen(id);
+  }
 }

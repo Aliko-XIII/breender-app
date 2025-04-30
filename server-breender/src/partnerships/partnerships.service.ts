@@ -59,4 +59,14 @@ export class PartnershipsService {
             },
         });
     }
+
+    async reopen(id: string): Promise<Partnership> {
+        return this.databaseService.partnership.update({
+            where: { id },
+            data: {
+                status: PartnershipStatus.PENDING,
+                respondedAt: null,
+            },
+        });
+    }
 }

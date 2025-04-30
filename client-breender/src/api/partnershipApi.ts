@@ -89,3 +89,13 @@ export const requestPartnership = async ({ requesterAnimalId, recipientAnimalId 
     return { status: error.response?.status || 500, data: error.response?.data || {} };
   }
 };
+
+export const reopenPartnership = async (id: string) => {
+  try {
+    const response = await axiosInstance.patch(`/partnerships/${id}/reopen`);
+    return { status: response.status, data: response.data };
+  } catch (error: any) {
+    console.error(error);
+    return { status: error.response?.status || 500, data: error.response?.data || {} };
+  }
+};
