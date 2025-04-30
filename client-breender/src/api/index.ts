@@ -6,3 +6,5 @@ export * from './documentApi';
 export * from './recordApi';
 export * from './reminderApi';
 export * from './partnershipApi';
+export * from './chatApi';
+export * from './messageApi';

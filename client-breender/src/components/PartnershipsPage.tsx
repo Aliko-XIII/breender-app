@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { getPartnerships, acceptPartnership, rejectPartnership, cancelPartnership, reopenPartnership } from "../api/partnershipApi";
 import { getAnimal } from "../api/animalApi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { UserMention } from "./UserMention/UserMention";
 import { useUser } from "../context/UserContext";
+import { getChats, createChat } from "../api/chatApi";
 
 const TABS = ["PENDING", "ACCEPTED", "REJECTED", "CANCELED"] as const;
 type TabType = typeof TABS[number];
@@ -40,6 +41,7 @@ export const PartnershipsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { userId: currentUserId } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -111,6 +113,28 @@ export const PartnershipsPage: React.FC = () => {
     window.location.reload();
   };
 
+  const handleChat = async (otherUserId: string) => {
+    if (!currentUserId || !otherUserId) return;
+    const chatsRes = await getChats();
+    let chat = null;
+    if (chatsRes.status === 200 && Array.isArray(chatsRes.data)) {
+      chat = chatsRes.data.find((c: any) =>
+        c.participants &&
+        c.participants.some((p: any) => p.userId === currentUserId) &&
+        c.participants.some((p: any) => p.userId === otherUserId)
+      );
+    }
+    if (!chat) {
+      const createRes = await createChat([currentUserId, otherUserId]);
+      if (createRes.status === 200 || createRes.status === 201) {
+        chat = createRes.data;
+      }
+    }
+    if (chat) {
+      navigate(`/chat/${otherUserId}`);
+    }
+  };
+
   const filtered = partnerships.filter((p) => p.status === activeTab);
 
   return (
@@ -139,6 +163,7 @@ export const PartnershipsPage: React.FC = () => {
         <ul className="list-group">
           {filtered.map((p) => {
             let actionButtons = null;
+            const showChatBtn = (activeTab === "PENDING" || activeTab === "ACCEPTED") && p.requesterAnimal && p.recipientAnimal && p.requesterAnimal.owners.length > 0 && p.recipientAnimal.owners.length > 0;
             if (activeTab === "PENDING" && p.requesterAnimal && p.requesterAnimal.owners.length > 0) {
               const isMine = p.requesterAnimal.owners.some((o) => o.id === currentUserId);
               if (isMine) {
@@ -163,6 +188,18 @@ export const PartnershipsPage: React.FC = () => {
               actionButtons = (
                 <button className="btn btn-outline-primary btn-sm ms-2" onClick={() => handleReopen(p.id)}>
                   Reopen
+                </button>
+              );
+            }
+            let chatBtn = null;
+            if (showChatBtn) {
+              const myOwnerId = currentUserId;
+              const otherOwnerId = p.requesterAnimal.owners.some((o) => o.id === myOwnerId)
+                ? p.recipientAnimal.owners[0].id
+                : p.requesterAnimal.owners[0].id;
+              chatBtn = (
+                <button className="btn btn-outline-secondary btn-sm ms-2" onClick={() => handleChat(otherOwnerId)}>
+                  Chat
                 </button>
               );
             }
@@ -231,6 +268,7 @@ export const PartnershipsPage: React.FC = () => {
                   </div>
                   <span className="badge bg-secondary">{p.status}</span>
                   {actionButtons}
+                  {chatBtn}
                 </div>
                 <div className="text-muted" style={{ fontSize: 12 }}>
                   Requested: {p.requestedAt ? new Date(p.requestedAt).toLocaleString() : "-"}

@@ -24,6 +24,7 @@ import { ReminderList } from "./components/ReminderList/ReminderList";
 import { ReminderView } from "./components/ReminderView/ReminderView";
 import { AnimalPreview } from "./components/AnimalMap/AnimalPreview";
 import { PartnershipsPage } from "./components/PartnershipsPage";
+import { ChatWindow } from "./components/ChatWindow/ChatWindow";
 
 type Api = typeof api;
 
@@ -32,6 +33,12 @@ const AnimalPreviewWrapper = () => {
   const [searchParams] = useSearchParams();
   const myAnimalId = searchParams.get("myAnimalId") || "";
   return id ? <AnimalPreview animalId={id} myAnimalId={myAnimalId} /> : null;
+};
+
+const ChatWindowRoute = () => {
+  const { otherUserId } = useParams();
+  if (!otherUserId) return null;
+  return <ChatWindow otherUserId={otherUserId} />;
 };
 
 function App({ api }: { api: Api }) {
@@ -67,6 +74,7 @@ function App({ api }: { api: Api }) {
           <Route path='/map' element={<AnimalMap />} />
           <Route path='/animals/:id/preview' element={<AnimalPreviewWrapper />} />
           <Route path='/partnerships' element={<PartnershipsPage />} />
+          <Route path='/chat/:otherUserId' element={<ChatWindowRoute />} />
         </Routes>
         <ScrollToTopButton />
       </UserProvider>
