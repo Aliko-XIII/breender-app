@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { ApiResponse } from '../../types'; // Verify the path is correct
 import { getReminders } from '../../api/reminderApi';
 import { AnimalReminder } from '../../types/reminder';
+import { getPartnerships } from '../../api/partnershipApi';
+import { getAnimals } from '../../api/animalApi';
 import './HomePage.css';
 
 // Interface for the profile data we want to display on the home page
@@ -25,6 +27,9 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
     const [reminders, setReminders] = useState<AnimalReminder[]>([]);
     const [remindersLoading, setRemindersLoading] = useState(false);
     const [remindersError, setRemindersError] = useState<string | null>(null);
+    const [pendingRequests, setPendingRequests] = useState<any[]>([]);
+    const [pendingRequestsLoading, setPendingRequestsLoading] = useState(false);
+    const [pendingRequestsError, setPendingRequestsError] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -90,6 +95,40 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
             }
         };
         if (userId) fetchReminders();
+    }, [userId]);
+
+    useEffect(() => {
+        // Fetch pending partnership requests for my animals
+        const fetchPendingRequests = async () => {
+            if (!userId) return;
+            setPendingRequestsLoading(true);
+            setPendingRequestsError(null);
+            try {
+                const animalsRes = await getAnimals({ userId });
+                if (animalsRes.status !== 200 || !Array.isArray(animalsRes.data)) {
+                    setPendingRequestsError('Could not load your animals.');
+                    setPendingRequests([]);
+                    return;
+                }
+                const myAnimalIds = animalsRes.data.map((a: any) => a.id);
+                if (myAnimalIds.length === 0) {
+                    setPendingRequests([]);
+                    return;
+                }
+                const reqRes = await getPartnerships({ recipientAnimalId: myAnimalIds.join(','), status: 'PENDING' });
+                if (reqRes.status === 200 && Array.isArray(reqRes.data)) {
+                    // Only show requests where requester is not the current user
+                    setPendingRequests(reqRes.data.filter((r: any) => r.requesterAnimalId && !myAnimalIds.includes(r.requesterAnimalId)));
+                } else {
+                    setPendingRequestsError('Could not load requests.');
+                }
+            } catch (e) {
+                setPendingRequestsError('Could not load requests.');
+            } finally {
+                setPendingRequestsLoading(false);
+            }
+        };
+        if (userId) fetchPendingRequests();
     }, [userId]);
 
     // Helper to group reminders
@@ -231,14 +270,32 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                     </div>
                 </div>
 
-                {/* Section: Requests & Messages (Placeholder) */}
+                {/* Section: Requests & Messages */}
                 <div className="col-md-6 mb-4">
                     <div className="card placeholder-card h-100">
                         <div className="card-body">
                             <h5 className="card-title">Requests & Messages</h5>
-                            <p className="card-text"><i>[Requests and messages component from other owners will go here]</i></p>
-                             {/* Optional: Add a button or link */}
-                             {/* <a href="#" className="btn btn-primary mt-auto">View All</a> */}
+                            <div className="mt-3">
+                                <h6>Pending Partnership Requests</h6>
+                                {pendingRequestsLoading ? (
+                                    <div className="text-muted">Loading requests...</div>
+                                ) : pendingRequestsError ? (
+                                    <div className="alert alert-danger">{pendingRequestsError}</div>
+                                ) : pendingRequests.length === 0 ? (
+                                    <div className="text-muted">No pending requests from other users.</div>
+                                ) : (
+                                    <ul className="list-group">
+                                        {pendingRequests.map((req) => (
+                                            <li className="list-group-item" key={req.id}>
+                                                <div>
+                                                    <b>{req.requesterAnimal?.name || req.requesterAnimalId}</b> → <b>{req.recipientAnimal?.name || req.recipientAnimalId}</b>
+                                                </div>
+                                                <div className="small text-muted">Requested at: {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '-'}</div>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
