@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAnimalPhotos, fetchUserPhotos } from '../api/photoApi';
 import axiosInstance from '../api/axiosInstance';
+import { getAnimal } from '../api/animalApi';
 
 interface Photo {
   id: string;
@@ -22,6 +23,7 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [animalInfos, setAnimalInfos] = useState<Record<string, any>>({});
 
   useEffect(() => {
     const loadPhotos = async () => {
@@ -39,6 +41,22 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
       }
       if (result.status === 200) {
         setPhotos(result.data);
+        // Fetch animal info for all unique animalIds
+        const ids = Array.from(new Set(result.data.map((p: Photo) => p.animalId).filter(Boolean)));
+        if (ids.length) {
+          const entries = await Promise.all(
+            ids.map(async (id) => {
+              const res = await getAnimal(id);
+              if (res.status === 200) {
+                return [id, res.data];
+              }
+              return [id, null];
+            })
+          );
+          setAnimalInfos(Object.fromEntries(entries));
+        } else {
+          setAnimalInfos({});
+        }
       } else {
         setError('Failed to load photos.');
       }
@@ -103,6 +121,18 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
               <div className="card-body p-2">
                 {photo.title && <div className="card-title small text-center">{photo.title}</div>}
                 {photo.uploadedAt && <div className="text-muted small text-center">Uploaded: {new Date(photo.uploadedAt).toLocaleString()}</div>}
+                {/* Minimal animal profile info, very small, one row, replaces button link */}
+                {photo.animalId && animalInfos[photo.animalId] && (
+                  <div className="d-flex justify-content-center align-items-center gap-1 small text-muted" style={{ fontSize: '0.8em', minHeight: 22 }}>
+                    <span><strong>{animalInfos[photo.animalId].name}</strong></span>
+                    <span>|</span>
+                    <span>{animalInfos[photo.animalId].species}</span>
+                    {animalInfos[photo.animalId].breed && <><span>|</span><span>{animalInfos[photo.animalId].breed}</span></>}
+                    <span>|</span>
+                    <span>{animalInfos[photo.animalId].sex}</span>
+                    <a href={`/animals/${photo.animalId}`} className="ms-1 text-decoration-none" style={{ fontSize: '0.8em' }} title="View animal profile">🔗</a>
+                  </div>
+                )}
                 {photo.animalId && !animalId && (
                   <div className="text-center mt-1">
                     <a href={`/animals/${photo.animalId}/photos`} className="btn btn-link btn-sm">View Animal Photos</a>
