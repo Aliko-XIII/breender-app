@@ -28,7 +28,6 @@ export const TopPanel = () => {
             {!userId && <Nav.Link as={Link} to="/signup">Register</Nav.Link>}
 
             {/* After auth */}
-            {userId && <Nav.Link as={Link} to="/home">Home</Nav.Link>}
             {userId && <Nav.Link as={Link} to="/user-profile">Profile</Nav.Link>}
             {userId && <Nav.Link as={Link} to="/animals">My Animals</Nav.Link>}
             {userId && <Nav.Link as={Link} to={`/users/${userId}/records`}>My Records</Nav.Link>}
