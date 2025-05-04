@@ -3,6 +3,7 @@ import { ApiResponse } from '../../types';
 import { Link, useParams } from 'react-router-dom';
 import { UserMention } from '../UserMention/UserMention';
 import { useUser } from '../../context/UserContext';
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 
 interface AnimalProfileProps {
   getAnimal: (animalId: string) => Promise<ApiResponse>;
@@ -36,6 +37,8 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const { userId: currentUserId } = useUser();
+  const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
+  const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g'; // Consider moving to env
 
   useEffect(() => {
     const fetchAnimalProfile = async () => {
@@ -96,6 +99,24 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
     fetchAnimalProfile();
   }, [animalId, getAnimal]);
 
+  useEffect(() => {
+    if (animalData && animalData.latitude && animalData.longitude) {
+      setMapCenter({ lat: animalData.latitude, lng: animalData.longitude });
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setMapCenter({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        () => setMapCenter({ lat: 45.35, lng: 28.83 })
+      );
+    } else {
+      setMapCenter({ lat: 45.35, lng: 28.83 });
+    }
+  }, [animalData]);
+
   const isOwner = animalData?.owners.some(owner => owner.id === currentUserId);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -114,6 +135,13 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleMapClick = (e: google.maps.MapMouseEvent) => {
+    if (!isEditing || !e.latLng) return;
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    setFormData({ ...formData, latitude: lat, longitude: lng });
   };
 
   const displaySex = (sex: 'MALE' | 'FEMALE'): string => {
@@ -270,32 +298,65 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
         <div className="mb-3">
           <label><strong>Location:</strong></label>
           {isEditing ? (
-            <div className="row">
-              <div className="col">
-                <input
-                  type="number"
-                  name="latitude"
-                  value={formData.latitude ?? ""}
-                  onChange={handleChange}
-                  className="form-control"
-                  placeholder="Latitude"
-                  step="any"
-                />
+            <>
+              <div className="row mb-2">
+                <div className="col">
+                  <input
+                    type="number"
+                    name="latitude"
+                    value={formData.latitude ?? ""}
+                    onChange={handleChange}
+                    className="form-control"
+                    placeholder="Latitude"
+                    step="any"
+                  />
+                </div>
+                <div className="col">
+                  <input
+                    type="number"
+                    name="longitude"
+                    value={formData.longitude ?? ""}
+                    onChange={handleChange}
+                    className="form-control"
+                    placeholder="Longitude"
+                    step="any"
+                  />
+                </div>
               </div>
-              <div className="col">
-                <input
-                  type="number"
-                  name="longitude"
-                  value={formData.longitude ?? ""}
-                  onChange={handleChange}
-                  className="form-control"
-                  placeholder="Longitude"
-                  step="any"
-                />
+              <div style={{ height: 300, width: '100%', marginBottom: 8 }}>
+                <LoadScript googleMapsApiKey={googleMapsApiKey}>
+                  <GoogleMap
+                    mapContainerStyle={{ height: '100%', width: '100%' }}
+                    center={formData.latitude && formData.longitude ? { lat: Number(formData.latitude), lng: Number(formData.longitude) } : mapCenter || { lat: 45.35, lng: 28.83 }}
+                    zoom={13}
+                    onClick={handleMapClick}
+                  >
+                    {formData.latitude && formData.longitude && (
+                      <Marker position={{ lat: Number(formData.latitude), lng: Number(formData.longitude) }} />
+                    )}
+                  </GoogleMap>
+                </LoadScript>
               </div>
-            </div>
+              <small>Click on the map to set the animal's location.</small>
+            </>
           ) : (
-            <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
+            <>
+              <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
+              {animalData.latitude && animalData.longitude && (
+                <div style={{ height: 300, width: '100%' }}>
+                  <LoadScript googleMapsApiKey={googleMapsApiKey}>
+                    <GoogleMap
+                      mapContainerStyle={{ height: '100%', width: '100%' }}
+                      center={{ lat: animalData.latitude, lng: animalData.longitude }}
+                      zoom={13}
+                      options={{ streetViewControl: false }}
+                    >
+                      <Marker position={{ lat: animalData.latitude, lng: animalData.longitude }} />
+                    </GoogleMap>
+                  </LoadScript>
+                </div>
+              )}
+            </>
           )}
         </div>
 
