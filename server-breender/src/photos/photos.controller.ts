@@ -29,12 +29,14 @@ export class PhotosController {
   async uploadPhoto(
     @Request() req,
     @UploadedFile() file: Express.Multer.File,
-    @Body() createPhotoDto: UploadPhotoDto,
+    @Body() body: any, // changed from UploadPhotoDto to any
   ) {
+    console.log('uploadPhoto body:', body);
+    console.log('uploadPhoto file:', file);
     const authUserId = req.authUserId;
     const fileUrl = `/uploads/photos/${file.filename}`;
     return this.photosService.createPhoto(
-      { ...createPhotoDto, url: fileUrl },
+      { animalId: body.animalId, url: fileUrl},
       authUserId
     );
   }

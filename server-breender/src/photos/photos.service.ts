@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'; // Added NotFoundException
+import { ForbiddenException, Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'; // Added BadRequestException, Logger
 import { DatabaseService } from 'src/database/database.service'; // Assuming same path
 // Assuming DTOs exist in a ./dto subfolder relative to this service
 import { UploadPhotoDto } from './dto/createPhoto.dto';
@@ -7,6 +7,7 @@ import { UploadPhotoDto } from './dto/createPhoto.dto';
 
 @Injectable()
 export class PhotosService {
+    private readonly logger = new Logger(PhotosService.name);
     constructor(private readonly databaseService: DatabaseService) { }
 
     /**
@@ -16,6 +17,15 @@ export class PhotosService {
      * @param userId - The ID of the user uploading/creating the photo record.
      */
     async createPhoto(createPhotoDto: UploadPhotoDto, userId: string) {
+        this.logger.log(`createPhoto called with DTO: ${JSON.stringify(createPhotoDto)}`);
+        if (!createPhotoDto.animalId) {
+            this.logger.error('animalId is missing in createPhotoDto');
+            throw new BadRequestException('animalId is required to upload a photo.');
+        }
+        if (!createPhotoDto.url) {
+            this.logger.error('photo url is missing in createPhotoDto');
+            throw new BadRequestException('Photo URL is required.');
+        }
         return this.databaseService.animalPhoto.create({
             data: {
                 photoUrl: createPhotoDto.url,
