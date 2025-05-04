@@ -5,7 +5,6 @@ import { uploadPhoto } from '../../api';
 
 const PhotoUploadForm = () => {
     const [file, setFile] = useState<File | null>(null);
-    const [title, setTitle] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [isUploading, setIsUploading] = useState(false);
@@ -14,8 +13,8 @@ const PhotoUploadForm = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!file || !title.trim()) {
-            setErrorMessage('Please provide both a title and a file.');
+        if (!file) {
+            setErrorMessage('Please select a file.');
             return;
         }
 
@@ -23,7 +22,6 @@ const PhotoUploadForm = () => {
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('title', title);
         formData.append('animalId', animalId);
 
         try {
@@ -35,7 +33,6 @@ const PhotoUploadForm = () => {
 
             setSuccessMessage('Photo uploaded successfully!');
             setFile(null);
-            setTitle('');
         } catch (error: any) {
             setErrorMessage(error?.response?.data?.message || 'Failed to upload photo.');
         } finally {
@@ -49,16 +46,6 @@ const PhotoUploadForm = () => {
 
             {successMessage && <Alert variant="success">{successMessage}</Alert>}
             {errorMessage && <Alert variant="danger">{errorMessage}</Alert>}
-
-            <Form.Group controlId="photoTitle" className="mb-3">
-                <Form.Label>Title</Form.Label>
-                <Form.Control
-                    type="text"
-                    placeholder="Enter title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
-            </Form.Group>
 
             <Form.Group controlId="photoFile" className="mb-3">
                 <Form.Label>Photo</Form.Label>

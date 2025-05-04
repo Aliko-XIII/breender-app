@@ -67,7 +67,14 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
 
   if (loading) return <div>Loading photos...</div>;
   if (error) return <div className="text-danger">{error}</div>;
-  if (!photos.length) return <div>No photos found.</div>;
+  if (!photos.length) return (
+    <div className="container-fluid px-4 mt-4 d-flex justify-content-center align-items-center" style={{ minHeight: '30vh' }}>
+      <div className="alert alert-info text-center w-100" style={{ maxWidth: 500, margin: '0 auto' }}>
+        <div className="fs-4 mb-2">No photos uploaded yet</div>
+        <div className="small">You haven't uploaded any photos for this animal or user.</div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="container-fluid px-4 mt-4">
