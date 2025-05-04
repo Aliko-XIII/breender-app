@@ -14,3 +14,23 @@ export const uploadPhoto = async (data: FormData) => {
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
+
+export const fetchAnimalPhotos = async (animalId: string) => {
+    try {
+        const response = await axiosInstance.get(`/photos/animal/${animalId}`);
+        return { status: response.status, data: response.data };
+    } catch (error: any) {
+        console.error(error);
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};
+
+export const fetchUserPhotos = async (userId: string) => {
+    try {
+        const response = await axiosInstance.get(`/photos/user/${userId}`);
+        return { status: response.status, data: response.data };
+    } catch (error: any) {
+        console.error(error);
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};

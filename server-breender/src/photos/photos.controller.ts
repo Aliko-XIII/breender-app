@@ -80,6 +80,19 @@ export class PhotosController {
   }
 
   /**
+   * GET /photos/animal/:animalId
+   * Fetches all photos for a specific animal.
+   */
+  @Get('/animal/:animalId')
+  async findByAnimal(
+    @Request() req,
+    @Param('animalId') animalId: string
+  ) {
+    const authUserId = req.authUserId;
+    return this.photosService.findAllPhotosByAnimalId(animalId, authUserId);
+  }
+
+  /**
    * DELETE /photos/:id
    * Removes a photo by its ID.
    * Requires authorization check using the authenticated user's ID.
