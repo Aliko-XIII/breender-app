@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { AnimalMapInfo } from '../../types'; // Adjust path
-import { getAnimals } from '../../api/animalApi';
+import { getAnimals, getAnimalsForMap } from '../../api/animalApi';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 
@@ -55,6 +55,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         setFilters((prev) => ({ ...prev, [name]: value }));
     };
 
+    // Fetch animals for map (not owned by user)
     const loadAnimals = useCallback(() => {
         setIsLoading(true);
         const activeFilters: any = {};
@@ -72,7 +73,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                 }
             }
         });
-        getAnimals(activeFilters)
+        getAnimalsForMap(activeFilters)
             .then((response) => {
                 if (response.status === 200 && Array.isArray(response.data)) {
                     setAnimals(
@@ -123,6 +124,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         }
     }, []);
 
+    // Fetch user's own animals for dropdown
     useEffect(() => {
         if (!userId) return;
         getAnimals({ userId })
@@ -137,7 +139,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     );
                 }
             })
-            .catch((err) => {
+            .catch(() => {
                 setMyAnimals([]);
             });
     }, [userId]);

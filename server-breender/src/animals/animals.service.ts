@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { DatabaseService } from 'src/database/database.service';
@@ -225,6 +225,63 @@ export class AnimalsService {
     return animals;
   }
 
+  async findAnimalsNotOwnedByUser(authUserId: string, filter?: AnimalFilterDto) {
+    // Get all animal IDs owned by the user
+    const owner = await this.databaseService.owner.findUnique({ where: { userId: authUserId } });
+    let ownedAnimalIds: string[] = [];
+    if (owner) {
+      const animalOwnerRecords = await this.databaseService.animalOwner.findMany({
+        where: { ownerId: owner.id },
+        select: { animalId: true },
+      });
+      ownedAnimalIds = animalOwnerRecords.map((ao) => ao.animalId);
+    }
+    // Build filter for animals NOT owned by user
+    const where: any = { id: { notIn: ownedAnimalIds } };
+    if (filter) {
+      if (filter.name) where.name = { contains: filter.name, mode: 'insensitive' };
+      if (filter.species) where.species = { contains: filter.species, mode: 'insensitive' };
+      if (filter.breed) where.breed = { contains: filter.breed, mode: 'insensitive' };
+      if (filter.sex) where.sex = filter.sex;
+      if (filter.birthdateFrom || filter.birthdateTo) {
+        where.birthDate = {};
+        if (filter.birthdateFrom) {
+          where.birthDate.gte = new Date(filter.birthdateFrom);
+        }
+        if (filter.birthdateTo) {
+          where.birthDate.lte = new Date(filter.birthdateTo);
+        }
+      }
+      if (
+        typeof filter.latitude === 'number' &&
+        typeof filter.longitude === 'number' &&
+        typeof filter.radius === 'number'
+      ) {
+        // We'll filter by location after fetching
+      }
+    }
+    let animals = await this.databaseService.animal.findMany({ where });
+    // Location filter (if needed)
+    if (filter && typeof filter.latitude === 'number' && typeof filter.longitude === 'number' && typeof filter.radius === 'number') {
+      const toRad = (value: number) => (value * Math.PI) / 180;
+      animals = animals.filter((animal) => {
+        if (typeof animal.latitude !== 'number' || typeof animal.longitude !== 'number') return false;
+        const R = 6371;
+        const dLat = toRad(animal.latitude - filter.latitude);
+        const dLon = toRad(animal.longitude - filter.longitude);
+        const lat1 = toRad(filter.latitude);
+        const lat2 = toRad(animal.latitude);
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c;
+        return distance <= filter.radius;
+      });
+    }
+    return animals;
+  }
+
   async findAnimalById(id: string, authUserId: string) {
     const animal = await this.databaseService.animal.findUnique(
       {
@@ -250,18 +307,21 @@ export class AnimalsService {
   }
 
   async updateAnimal(id: string, updateAnimalDto: UpdateAnimalDto, authUserId: string) {
-
     const animal = await this.databaseService.animal.findUnique({
       where: { id },
       include: { owners: true },
     });
-
     if (!animal) {
       throw new NotFoundException(`Animal with ID ${id} not found.`);
     }
-    const ownerIds = animal.owners.map((owner) => owner.id);
-
-    if (!ownerIds.includes(authUserId) && !(await this.isAdmin(authUserId))) {
+    const ownerIds = animal.owners.map((owner) => owner.ownerId);
+    const owner = await this.databaseService.owner.findUnique({
+      where: { userId: authUserId },
+    });
+    if (!owner) {
+      throw new NotFoundException(`Owner with user ID ${authUserId} not found.`);
+    }
+    if (!ownerIds.includes(owner.id) && !(await this.isAdmin(authUserId))) {
       throw new ForbiddenException("You do not have permission to update this animal.");
     }
 
@@ -284,6 +344,12 @@ export class AnimalsService {
     }
     if (updateAnimalDto.birthDate) {
       updatedAnimal.birthDate = updateAnimalDto.birthDate;
+    }
+    if (updateAnimalDto.latitude !== undefined) {
+      updatedAnimal.latitude = updateAnimalDto.latitude;
+    }
+    if (updateAnimalDto.longitude !== undefined) {
+      updatedAnimal.longitude = updateAnimalDto.longitude;
     }
 
     try {

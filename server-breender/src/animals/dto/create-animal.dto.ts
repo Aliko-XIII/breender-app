@@ -34,4 +34,10 @@ export class CreateAnimalDto {
 
   @IsDateString()
   birthDate: string;
+
+  @IsOptional()
+  latitude?: number;
+
+  @IsOptional()
+  longitude?: number;
 }

@@ -59,6 +59,12 @@ export class AnimalsController {
     return this.animalsService.findAllAnimals(authUserId, filter);
   }
 
+  @Get('for-map')
+  getAnimalsForMap(@Request() req, @Query() filter: AnimalFilterDto) {
+    const authUserId = req.authUserId;
+    return this.animalsService.findAnimalsNotOwnedByUser(authUserId, filter);
+  }
+
   @Get(':id')
   findOne(@Request() req, @Param('id') id: string) {
     const authUserId = req.authUserId;

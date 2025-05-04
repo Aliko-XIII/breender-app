@@ -127,8 +127,17 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
     if (!animalId || !isOwner) return;
     try {
       setIsLoading(true);
-      await updateAnimal(animalId, formData);
-      setAnimalData({ ...animalData!, ...formData });
+      // Remove owners from data sent to backend
+      const { owners, ...dataToSendRaw } = formData;
+      const dataToSend = { ...dataToSendRaw };
+      if (dataToSend.latitude !== undefined && dataToSend.latitude !== "") {
+        dataToSend.latitude = Number(dataToSend.latitude);
+      }
+      if (dataToSend.longitude !== undefined && dataToSend.longitude !== "") {
+        dataToSend.longitude = Number(dataToSend.longitude);
+      }
+      await updateAnimal(animalId, dataToSend);
+      setAnimalData({ ...animalData!, ...dataToSend });
       setIsEditing(false);
     } catch (err) {
       alert("Failed to update animal profile.");
