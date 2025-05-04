@@ -34,3 +34,13 @@ export const fetchUserPhotos = async (userId: string) => {
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
+
+export const deletePhoto = async (photoId: string) => {
+    try {
+        const response = await axiosInstance.delete(`/photos/${photoId}`);
+        return { status: response.status, data: response.data };
+    } catch (error: any) {
+        console.error(error);
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};

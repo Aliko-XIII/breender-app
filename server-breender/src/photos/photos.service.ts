@@ -1,5 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common'; // Added BadRequestException, Logger
 import { DatabaseService } from 'src/database/database.service'; // Assuming same path
+import * as fs from 'fs';
+import { join } from 'path';
 // Assuming DTOs exist in a ./dto subfolder relative to this service
 import { UploadPhotoDto } from './dto/createPhoto.dto';
 // Prisma might be needed if you directly use its types
@@ -96,6 +98,17 @@ export class PhotosService {
         authUserId: string) {
         const photo = await this.databaseService.animalPhoto.findUnique({ where: { id } });
         if (!photo) throw new NotFoundException(`Record with ID ${id} not found`);
+        // Remove file from filesystem
+        if (photo.photoUrl) {
+            const filePath = join(process.cwd(), photo.photoUrl);
+            fs.unlink(filePath, (err) => {
+                if (err) {
+                    this.logger.warn(`Failed to delete photo file: ${filePath} - ${err.message}`);
+                } else {
+                    this.logger.log(`Deleted photo file: ${filePath}`);
+                }
+            });
+        }
         await this.databaseService.animalPhoto.delete({ where: { id } });
     }
 }

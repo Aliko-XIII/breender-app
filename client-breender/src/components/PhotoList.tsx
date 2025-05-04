@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAnimalPhotos, fetchUserPhotos } from '../api/photoApi';
+import axiosInstance from '../api/axiosInstance';
 
 interface Photo {
   id: string;
@@ -54,6 +55,16 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
     setSelectedPhoto(null);
   };
 
+  const handleDeletePhoto = async (photoId: string) => {
+    if (!window.confirm('Are you sure you want to delete this photo?')) return;
+    try {
+      await axiosInstance.delete(`/photos/${photoId}`);
+      setPhotos(photos => photos.filter(p => p.id !== photoId));
+    } catch (err) {
+      alert('Failed to delete photo.');
+    }
+  };
+
   if (loading) return <div>Loading photos...</div>;
   if (error) return <div className="text-danger">{error}</div>;
   if (!photos.length) return <div>No photos found.</div>;
@@ -63,7 +74,16 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
       <div className="row g-3 justify-content-center">
         {photos.map(photo => (
           <div className="col-6 col-md-4 col-lg-3" key={photo.id}>
-            <div className="card h-100 photo-card" style={{ cursor: 'pointer' }} onClick={() => handlePhotoClick(photo)}>
+            <div className="card h-100 photo-card" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => handlePhotoClick(photo)}>
+              <button
+                type="button"
+                className="btn btn-danger btn-sm position-absolute end-0 m-2"
+                style={{ zIndex: 2 }}
+                onClick={e => { e.stopPropagation(); handleDeletePhoto(photo.id); }}
+                title="Delete photo"
+              >
+                &times;
+              </button>
               <img
                 src={API_BASE_URL + photo.photoUrl}
                 alt={photo.title || 'Animal photo'}
