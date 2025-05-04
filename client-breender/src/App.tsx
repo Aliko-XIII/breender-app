@@ -49,6 +49,13 @@ const AnimalPhotoListRoute = () => {
   return <PhotoList animalId={id} />;
 };
 
+// Wrapper for user photo list route
+const UserPhotoListRoute = () => {
+  const { userId } = useParams<{ userId: string }>();
+  if (!userId) return <div>User ID is missing.</div>;
+  return <PhotoList userId={userId} />;
+};
+
 function App({ api }: { api: Api }) {
   return (
     <AuthProvider api={api}>
@@ -82,6 +89,7 @@ function App({ api }: { api: Api }) {
           <Route path='/map' element={<AnimalMap />} />
           <Route path='/animals/:id/preview' element={<AnimalPreviewWrapper />} />
           <Route path='/animals/:id/photos' element={<AnimalPhotoListRoute />} />
+          <Route path='/users/:userId/photos' element={<UserPhotoListRoute />} />
           <Route path='/partnerships' element={<PartnershipsPage />} />
           <Route path='/chat/:otherUserId' element={<ChatWindowRoute />} />
         </Routes>

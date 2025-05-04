@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAnimalPhotos } from '../api/photoApi';
+import { fetchAnimalPhotos, fetchUserPhotos } from '../api/photoApi';
 
 interface Photo {
   id: string;
@@ -8,12 +8,13 @@ interface Photo {
 }
 
 interface PhotoListProps {
-  animalId: string;
+  animalId?: string;
+  userId?: string;
 }
 
 const API_BASE_URL = "http://localhost:3000";
 
-const PhotoList: React.FC<PhotoListProps> = ({ animalId }) => {
+const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -22,7 +23,16 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId }) => {
     const loadPhotos = async () => {
       setLoading(true);
       setError('');
-      const result = await fetchAnimalPhotos(animalId);
+      let result;
+      if (userId) {
+        result = await fetchUserPhotos(userId);
+      } else if (animalId) {
+        result = await fetchAnimalPhotos(animalId);
+      } else {
+        setError('No animal or user specified.');
+        setLoading(false);
+        return;
+      }
       if (result.status === 200) {
         setPhotos(result.data);
       } else {
@@ -30,8 +40,8 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId }) => {
       }
       setLoading(false);
     };
-    if (animalId) loadPhotos();
-  }, [animalId]);
+    if (userId || animalId) loadPhotos();
+  }, [animalId, userId]);
 
   if (loading) return <div>Loading photos...</div>;
   if (error) return <div className="text-danger">{error}</div>;
