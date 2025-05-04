@@ -25,6 +25,7 @@ import { ReminderView } from "./components/ReminderView/ReminderView";
 import { AnimalPreview } from "./components/AnimalMap/AnimalPreview";
 import { PartnershipsPage } from "./components/PartnershipsPage";
 import { ChatWindow } from "./components/ChatWindow/ChatWindow";
+import PhotoList from "./components/PhotoList";
 
 type Api = typeof api;
 
@@ -39,6 +40,13 @@ const ChatWindowRoute = () => {
   const { otherUserId } = useParams();
   if (!otherUserId) return null;
   return <ChatWindow otherUserId={otherUserId} />;
+};
+
+// Wrapper for animal photo list route
+const AnimalPhotoListRoute = () => {
+  const { id } = useParams<{ id: string }>();
+  if (!id) return <div>Animal ID is missing.</div>;
+  return <PhotoList animalId={id} />;
 };
 
 function App({ api }: { api: Api }) {
@@ -73,6 +81,7 @@ function App({ api }: { api: Api }) {
           <Route path='/setup-profile' element={<UserSetup updateUser={api.updateUser} />} />
           <Route path='/map' element={<AnimalMap />} />
           <Route path='/animals/:id/preview' element={<AnimalPreviewWrapper />} />
+          <Route path='/animals/:id/photos' element={<AnimalPhotoListRoute />} />
           <Route path='/partnerships' element={<PartnershipsPage />} />
           <Route path='/chat/:otherUserId' element={<ChatWindowRoute />} />
         </Routes>

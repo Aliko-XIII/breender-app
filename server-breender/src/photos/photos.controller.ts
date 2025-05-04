@@ -4,7 +4,7 @@ import { diskStorage } from 'multer';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { PhotosService } from './photos.service';
 import { UploadPhotoDto } from './dto/createPhoto.dto';
-import { extname } from 'path';
+import { extname, join } from 'path';
 
 @UseGuards(AuthGuard) // Apply authentication guard to all routes in this controller
 @Controller('photos') // Base path for routes is '/photos'
@@ -19,7 +19,7 @@ export class PhotosController {
   @Post()
   @UseInterceptors(FileInterceptor('file', {
     storage: diskStorage({
-      destination: './uploads/photos',
+      destination: join(__dirname, '..', '..', 'uploads', 'photos'),
       filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
         cb(null, `${uniqueSuffix}${extname(file.originalname)}`);

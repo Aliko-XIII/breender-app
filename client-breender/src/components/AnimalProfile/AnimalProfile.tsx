@@ -186,6 +186,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             <span className="fw-bold">Uploads:</span>
             <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary">Upload Photo</Link>
             <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">Upload Document</Link>
+            <Link to={`/animals/${animalId}/photos`} className="btn btn-outline-primary">View Photos</Link>
           </div>
         </div>
       </div>
