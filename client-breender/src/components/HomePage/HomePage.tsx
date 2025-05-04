@@ -305,11 +305,13 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                     </div>
                 </div>
 
-                {/* Section: Requests & Messages */}
+                {/* Section: Requests */}
                 <div className="col-md-6 mb-4">
-                    <div className="card placeholder-card h-100">
+                    <div className="card h-100">
                         <div className="card-body">
-                            <h5 className="card-title">Requests & Messages</h5>
+                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                <h5 className="card-title mb-0">Requests</h5>
+                            </div>
                             <div className="mt-3">
                                 <h6>Pending Partnership Requests</h6>
                                 {pendingRequestsLoading ? (
