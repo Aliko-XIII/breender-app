@@ -205,72 +205,76 @@ export const PartnershipsPage: React.FC = () => {
             }
             return (
               <li className="list-group-item" key={p.id}>
-                <div className="d-flex justify-content-between align-items-center">
+                <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
                   <div style={{ width: '100%' }}>
-                    <div className="mb-1">
-                      <strong>From:</strong>{' '}
-                      {p.requesterAnimal ? (
-                        <>
-                          <Link to={`/animals/${p.requesterAnimal.id}`}>{p.requesterAnimal.name}</Link>
-                          {(p.requesterAnimal.species || p.requesterAnimal.breed) && (
-                            <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
-                              {p.requesterAnimal.species ? `(${p.requesterAnimal.species}` : ''}
-                              {p.requesterAnimal.species && p.requesterAnimal.breed ? ', ' : ''}
-                              {p.requesterAnimal.breed ? p.requesterAnimal.breed : ''}
-                              {p.requesterAnimal.species ? ')' : ''}
-                            </span>
-                          )}
-                          {p.requesterAnimal.owners.length > 0 && (
-                            <>
-                              {' '}<span> owned by </span>
-                              <UserMention
-                                userId={p.requesterAnimal.owners[0].id}
-                                userName={p.requesterAnimal.owners[0].name}
-                                userEmail={p.requesterAnimal.owners[0].email}
-                                userPictureUrl={p.requesterAnimal.owners[0].pictureUrl}
-                              />
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        p.requesterAnimalId
-                      )}
-                    </div>
-                    <div>
-                      <strong>To:</strong>{' '}
-                      {p.recipientAnimal ? (
-                        <>
-                          <Link to={`/animals/${p.recipientAnimal.id}`}>{p.recipientAnimal.name}</Link>
-                          {(p.recipientAnimal.species || p.recipientAnimal.breed) && (
-                            <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
-                              {p.recipientAnimal.species ? `(${p.recipientAnimal.species}` : ''}
-                              {p.recipientAnimal.species && p.recipientAnimal.breed ? ', ' : ''}
-                              {p.recipientAnimal.breed ? p.recipientAnimal.breed : ''}
-                              {p.recipientAnimal.species ? ')' : ''}
-                            </span>
-                          )}
-                          {p.recipientAnimal.owners.length > 0 && (
-                            <>
-                              {' '}<span> owned by </span>
-                              <UserMention
-                                userId={p.recipientAnimal.owners[0].id}
-                                userName={p.recipientAnimal.owners[0].name}
-                                userEmail={p.recipientAnimal.owners[0].email}
-                                userPictureUrl={p.recipientAnimal.owners[0].pictureUrl}
-                              />
-                            </>
-                          )}
-                        </>
-                      ) : (
-                        p.recipientAnimalId
-                      )}
+                    <div className="row">
+                      <div className="col-md-6 mb-2 mb-md-0">
+                        <div className="fw-bold">From:</div>
+                        {p.requesterAnimal ? (
+                          <>
+                            <Link to={`/animals/${p.requesterAnimal.id}`}>{p.requesterAnimal.name}</Link>
+                            {(p.requesterAnimal.species || p.requesterAnimal.breed) && (
+                              <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                                {p.requesterAnimal.species ? `(${p.requesterAnimal.species}` : ''}
+                                {p.requesterAnimal.species && p.requesterAnimal.breed ? ', ' : ''}
+                                {p.requesterAnimal.breed ? p.requesterAnimal.breed : ''}
+                                {p.requesterAnimal.species ? ')' : ''}
+                              </span>
+                            )}
+                            {p.requesterAnimal.owners.length > 0 && (
+                              <>
+                                {' '}<span> owned by </span>
+                                <UserMention
+                                  userId={p.requesterAnimal.owners[0].id}
+                                  userName={p.requesterAnimal.owners[0].name}
+                                  userEmail={p.requesterAnimal.owners[0].email}
+                                  userPictureUrl={p.requesterAnimal.owners[0].pictureUrl}
+                                />
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          p.requesterAnimalId
+                        )}
+                      </div>
+                      <div className="col-md-6">
+                        <div className="fw-bold">To:</div>
+                        {p.recipientAnimal ? (
+                          <>
+                            <Link to={`/animals/${p.recipientAnimal.id}`}>{p.recipientAnimal.name}</Link>
+                            {(p.recipientAnimal.species || p.recipientAnimal.breed) && (
+                              <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                                {p.recipientAnimal.species ? `(${p.recipientAnimal.species}` : ''}
+                                {p.recipientAnimal.species && p.recipientAnimal.breed ? ', ' : ''}
+                                {p.recipientAnimal.breed ? p.recipientAnimal.breed : ''}
+                                {p.recipientAnimal.species ? ')' : ''}
+                              </span>
+                            )}
+                            {p.recipientAnimal.owners.length > 0 && (
+                              <>
+                                {' '}<span> owned by </span>
+                                <UserMention
+                                  userId={p.recipientAnimal.owners[0].id}
+                                  userName={p.recipientAnimal.owners[0].name}
+                                  userEmail={p.recipientAnimal.owners[0].email}
+                                  userPictureUrl={p.recipientAnimal.owners[0].pictureUrl}
+                                />
+                              </>
+                            )}
+                          </>
+                        ) : (
+                          p.recipientAnimalId
+                        )}
+                      </div>
                     </div>
                   </div>
-                  <span className="badge bg-secondary">{p.status}</span>
-                  {actionButtons}
-                  {chatBtn}
+                  <div className="d-flex align-items-center mt-2 mt-md-0">
+                    <span className="badge bg-secondary me-2">{p.status}</span>
+                    {actionButtons}
+                    {chatBtn}
+                  </div>
                 </div>
-                <div className="text-muted" style={{ fontSize: 12 }}>
+                <div className="text-muted mt-2" style={{ fontSize: 12 }}>
                   Requested: {p.requestedAt ? new Date(p.requestedAt).toLocaleString() : "-"}
                   {p.respondedAt && (
                     <>

@@ -5,7 +5,8 @@ import { ApiResponse } from '../../types'; // Verify the path is correct
 import { getReminders } from '../../api/reminderApi';
 import { AnimalReminder } from '../../types/reminder';
 import { getPartnerships } from '../../api/partnershipApi';
-import { getAnimals } from '../../api/animalApi';
+import { getAnimals, getAnimal } from '../../api/animalApi';
+import { UserMention } from '../UserMention/UserMention';
 import './HomePage.css';
 
 // Interface for the profile data we want to display on the home page
@@ -118,7 +119,41 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                 const reqRes = await getPartnerships({ recipientAnimalId: myAnimalIds.join(','), status: 'PENDING' });
                 if (reqRes.status === 200 && Array.isArray(reqRes.data)) {
                     // Only show requests where requester is not the current user
-                    setPendingRequests(reqRes.data.filter((r: any) => r.requesterAnimalId && !myAnimalIds.includes(r.requesterAnimalId)));
+                    const filtered = reqRes.data.filter((r: any) => r.requesterAnimalId && !myAnimalIds.includes(r.requesterAnimalId));
+                    // Fetch animal details for both requester and recipient
+                    const animalIds = Array.from(new Set([
+                        ...filtered.map((p: any) => p.requesterAnimalId),
+                        ...filtered.map((p: any) => p.recipientAnimalId),
+                    ]));
+                    const animalResults = await Promise.all(animalIds.map((id) => getAnimal(id)));
+                    const animalMap: Record<string, any> = {};
+                    animalResults.forEach((result, idx) => {
+                        if (result.status === 200 && result.data) {
+                            const animal = result.data;
+                            animalMap[animal.id] = {
+                                id: animal.id,
+                                name: animal.name,
+                                species: animal.species,
+                                breed: animal.breed,
+                                owners: (animal.owners || []).map((ownerRel: any) => {
+                                    const user = ownerRel?.owner?.user;
+                                    const profile = user?.userProfile;
+                                    return {
+                                        id: user?.id,
+                                        name: profile?.name || user?.email || 'Unknown',
+                                        email: user?.email || '',
+                                        pictureUrl: profile?.pictureUrl || null,
+                                    };
+                                }).filter((o: any) => o.id && o.name && o.email),
+                            };
+                        }
+                    });
+                    const requestsWithDetails = filtered.map((p: any) => ({
+                        ...p,
+                        requesterAnimal: animalMap[p.requesterAnimalId],
+                        recipientAnimal: animalMap[p.recipientAnimalId],
+                    }));
+                    setPendingRequests(requestsWithDetails);
                 } else {
                     setPendingRequestsError('Could not load requests.');
                 }
@@ -287,10 +322,67 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                                     <ul className="list-group">
                                         {pendingRequests.map((req) => (
                                             <li className="list-group-item" key={req.id}>
-                                                <div>
-                                                    <b>{req.requesterAnimal?.name || req.requesterAnimalId}</b> → <b>{req.recipientAnimal?.name || req.recipientAnimalId}</b>
+                                                <div className="row">
+                                                    <div className="col-md-6 mb-2 mb-md-0">
+                                                        <div className="fw-bold">From:</div>
+                                                        {req.requesterAnimal ? (
+                                                            <>
+                                                                <a href={`/animals/${req.requesterAnimal.id}`}>{req.requesterAnimal.name}</a>
+                                                                {(req.requesterAnimal.species || req.requesterAnimal.breed) && (
+                                                                    <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                                                                        {req.requesterAnimal.species ? `(${req.requesterAnimal.species}` : ''}
+                                                                        {req.requesterAnimal.species && req.requesterAnimal.breed ? ', ' : ''}
+                                                                        {req.requesterAnimal.breed ? req.requesterAnimal.breed : ''}
+                                                                        {req.requesterAnimal.species ? ')' : ''}
+                                                                    </span>
+                                                                )}
+                                                                {req.requesterAnimal.owners?.length > 0 && (
+                                                                    <>
+                                                                        {' '}<span> owned by </span>
+                                                                        <UserMention
+                                                                            userId={req.requesterAnimal.owners[0].id}
+                                                                            userName={req.requesterAnimal.owners[0].name}
+                                                                            userEmail={req.requesterAnimal.owners[0].email}
+                                                                            userPictureUrl={req.requesterAnimal.owners[0].pictureUrl}
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            req.requesterAnimalId
+                                                        )}
+                                                    </div>
+                                                    <div className="col-md-6">
+                                                        <div className="fw-bold">To:</div>
+                                                        {req.recipientAnimal ? (
+                                                            <>
+                                                                <a href={`/animals/${req.recipientAnimal.id}`}>{req.recipientAnimal.name}</a>
+                                                                {(req.recipientAnimal.species || req.recipientAnimal.breed) && (
+                                                                    <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                                                                        {req.recipientAnimal.species ? `(${req.recipientAnimal.species}` : ''}
+                                                                        {req.recipientAnimal.species && req.recipientAnimal.breed ? ', ' : ''}
+                                                                        {req.recipientAnimal.breed ? req.recipientAnimal.breed : ''}
+                                                                        {req.recipientAnimal.species ? ')' : ''}
+                                                                    </span>
+                                                                )}
+                                                                {req.recipientAnimal.owners?.length > 0 && (
+                                                                    <>
+                                                                        {' '}<span> owned by </span>
+                                                                        <UserMention
+                                                                            userId={req.recipientAnimal.owners[0].id}
+                                                                            userName={req.recipientAnimal.owners[0].name}
+                                                                            userEmail={req.recipientAnimal.owners[0].email}
+                                                                            userPictureUrl={req.recipientAnimal.owners[0].pictureUrl}
+                                                                        />
+                                                                    </>
+                                                                )}
+                                                            </>
+                                                        ) : (
+                                                            req.recipientAnimalId
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="small text-muted">Requested at: {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '-'}</div>
+                                                <div className="small text-muted mt-2">Requested at: {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '-'}</div>
                                             </li>
                                         ))}
                                     </ul>
