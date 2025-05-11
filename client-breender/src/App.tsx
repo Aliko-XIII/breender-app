@@ -26,6 +26,7 @@ import { AnimalPreview } from "./components/AnimalMap/AnimalPreview";
 import { PartnershipsPage } from "./components/PartnershipsPage";
 import { ChatWindow } from "./components/ChatWindow/ChatWindow";
 import PhotoList from "./components/PhotoList";
+import DocumentList from "./components/DocumentList";
 
 type Api = typeof api;
 
@@ -54,6 +55,20 @@ const UserPhotoListRoute = () => {
   const { userId } = useParams<{ userId: string }>();
   if (!userId) return <div>User ID is missing.</div>;
   return <PhotoList userId={userId} />;
+};
+
+// Wrapper for animal document list route
+const AnimalDocumentListRoute = () => {
+  const { id } = useParams<{ id: string }>();
+  if (!id) return <div>Animal ID is missing.</div>;
+  return <DocumentList animalId={id} />;
+};
+
+// Wrapper for user document list route
+const UserDocumentListRoute = () => {
+  const { userId } = useParams<{ userId: string }>();
+  if (!userId) return <div>User ID is missing.</div>;
+  return <DocumentList userId={userId} />;
 };
 
 function App({ api }: { api: Api }) {
@@ -90,6 +105,8 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/:id/preview' element={<AnimalPreviewWrapper />} />
           <Route path='/animals/:id/photos' element={<AnimalPhotoListRoute />} />
           <Route path='/users/:userId/photos' element={<UserPhotoListRoute />} />
+          <Route path='/animals/:id/documents' element={<AnimalDocumentListRoute />} />
+          <Route path='/users/:userId/documents' element={<UserDocumentListRoute />} />
           <Route path='/partnerships' element={<PartnershipsPage />} />
           <Route path='/chat/:otherUserId' element={<ChatWindowRoute />} />
         </Routes>

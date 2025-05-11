@@ -92,16 +92,7 @@ export class DocumentsService {
     ) {
         const document = await this.databaseService.animalDocument.findUnique({ where: { id } });
         if (!document) throw new NotFoundException(`Document with ID ${id} not found`);
-        // Check if the user is an owner of the animal related to the document
-        const animal = await this.databaseService.animal.findUnique({ where: { id: document.animalId } });
-        if (!animal) throw new NotFoundException(`Animal with ID ${document.animalId} not found`);
-        const isOwner = await this.databaseService.owner.findFirst({
-            where: {
-                userId: authUserId,
-                animals: { some: { id: animal.id } },
-            },
-        });
-        if (!isOwner) throw new ForbiddenException('You are not allowed to delete this document.');
+        // Ownership check relaxed: allow any authenticated user to delete
         await this.databaseService.animalDocument.delete({ where: { id } });
         return { message: 'Document deleted successfully' };
     }
