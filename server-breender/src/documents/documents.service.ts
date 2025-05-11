@@ -10,6 +10,7 @@ export class DocumentsService {
         uploadDocumentDto: UploadDocumentDto,
         authUserId: string
     ) {
+        // Optionally, check if user is allowed to add document for this animal
         return this.databaseService.animalDocument.create({
             data: {
                 documentUrl: uploadDocumentDto.url,
@@ -23,12 +24,25 @@ export class DocumentsService {
         userId: string,
         authUserId: string,
     ) {
-        const documents = this.databaseService.animalDocument.findMany({
+        // Only allow if authUserId === userId or is an owner of at least one animal owned by userId
+        if (authUserId !== userId) {
+            const sharedAnimal = await this.databaseService.animal.findFirst({
+                where: {
+                    AND: [
+                        { owners: { some: { owner: { userId: userId } } } },
+                        { owners: { some: { owner: { userId: authUserId } } } }
+                    ]
+                }
+            });
+            if (!sharedAnimal) {
+                throw new ForbiddenException('You are not allowed to access these documents.');
+            }
+        }
+        return this.databaseService.animalDocument.findMany({
             where: {
                 animal: { owners: { some: { owner: { userId: userId } } } },
             }
         });
-        return documents;
     }
 
     async findAllDocumentsByAnimalId(
@@ -41,36 +55,54 @@ export class DocumentsService {
         if (!animal) {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
-
-        const ownerAssignment = await this.databaseService.owner.findUnique({
+        // Check if the user is an owner of the animal
+        const isOwner = await this.databaseService.owner.findFirst({
             where: {
                 userId: authUserId,
-            },
-            include: {
-                animals: true,
+                animals: { some: { id: animalId } },
             },
         });
-
-        if (!ownerAssignment) {
-            throw new ForbiddenException("You are not assigned to this animal.");
+        if (!isOwner) {
+            throw new ForbiddenException('You are not assigned to this animal.');
         }
-        const documents = await this.databaseService.animalDocument.findMany({
+        return this.databaseService.animalDocument.findMany({
             where: { animalId },
         });
-        return documents;
     }
 
-    async findDocumentById(id: string, authUserId: any) {
-        return await this.databaseService.animalDocument.findUnique({ where: { id } });
+    async findDocumentById(id: string, authUserId: string) {
+        const document = await this.databaseService.animalDocument.findUnique({ where: { id } });
+        if (!document) throw new NotFoundException(`Document with ID ${id} not found`);
+        // Check if the user is an owner of the animal related to the document
+        const animal = await this.databaseService.animal.findUnique({ where: { id: document.animalId } });
+        if (!animal) throw new NotFoundException(`Animal with ID ${document.animalId} not found`);
+        const isOwner = await this.databaseService.owner.findFirst({
+            where: {
+                userId: authUserId,
+                animals: { some: { id: animal.id } },
+            },
+        });
+        if (!isOwner) throw new ForbiddenException('You are not allowed to access this document.');
+        return document;
     }
 
     async removeDocument(
         id: string,
-        authUserId: string) {
+        authUserId: string
+    ) {
         const document = await this.databaseService.animalDocument.findUnique({ where: { id } });
-        if (!document) throw new NotFoundException(`Record with ID ${id} not found`);
+        if (!document) throw new NotFoundException(`Document with ID ${id} not found`);
+        // Check if the user is an owner of the animal related to the document
+        const animal = await this.databaseService.animal.findUnique({ where: { id: document.animalId } });
+        if (!animal) throw new NotFoundException(`Animal with ID ${document.animalId} not found`);
+        const isOwner = await this.databaseService.owner.findFirst({
+            where: {
+                userId: authUserId,
+                animals: { some: { id: animal.id } },
+            },
+        });
+        if (!isOwner) throw new ForbiddenException('You are not allowed to delete this document.');
         await this.databaseService.animalDocument.delete({ where: { id } });
+        return { message: 'Document deleted successfully' };
     }
-
-
 }
