@@ -112,7 +112,9 @@ const DocumentList: React.FC<DocumentListProps> = ({ animalId, userId }) => {
                 </svg>
               </button>
               <div className="card-body p-3" style={{ cursor: 'pointer' }} onClick={() => handleDocumentClick(document)}>
-                <div className="card-title fw-bold text-center mb-2">{document.documentName || 'Document'}</div>
+                <div className="card-title fw-bold text-center mb-2">
+                  {document.documentName ? document.documentName : 'Document'}
+                </div>
                 {document.uploadedAt && <div className="text-muted small text-center">Uploaded: {new Date(document.uploadedAt).toLocaleString()}</div>}
                 {document.animalId && animalInfos[document.animalId] && (
                   <div className="d-flex justify-content-center align-items-center gap-1 small text-muted" style={{ fontSize: '0.8em', minHeight: 22 }}>
