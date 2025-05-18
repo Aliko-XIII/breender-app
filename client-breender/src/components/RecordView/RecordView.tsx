@@ -57,6 +57,21 @@ export const RecordView: React.FC = () => {
     );
   }
 
+  // Helper to export record as JSON and trigger download
+  const handleExportJson = () => {
+    if (!record) return;
+    const json = JSON.stringify(record, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `record-${record.id || 'export'}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleSave = async () => {
     if (!record || !recordId) return;
     setIsSaving(true);
@@ -127,6 +142,7 @@ export const RecordView: React.FC = () => {
           </div>
           <div className="mt-3 d-flex gap-2">
             <Button variant="secondary" onClick={() => navigate(-1)} disabled={isSaving}>Back</Button>
+            <Button variant="outline-primary" onClick={handleExportJson} disabled={!record}>Export as JSON</Button>
             {isOwner && !isEditing && (
               <Button variant="primary" onClick={() => setIsEditing(true)}>Edit</Button>
             )}

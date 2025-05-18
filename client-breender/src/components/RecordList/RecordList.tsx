@@ -73,6 +73,21 @@ export const RecordList = () => {
         }
     };
 
+    // Export filtered records as JSON
+    const handleExportFilteredJson = () => {
+        if (!records || records.length === 0) return;
+        const json = JSON.stringify(records, null, 2);
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `animal-records-export.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     // --- Render Logic ---
     const renderContent = () => {
         if (isLoading) {
@@ -122,14 +137,24 @@ export const RecordList = () => {
             <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
                 <Card.Header className="d-flex justify-content-between align-items-center">
                     <span>Animal Records</span>
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => navigate(`/animals/${animalId}/create-record`)}
-                        disabled={!animalId}
-                    >
-                        Create Record
-                    </Button>
+                    <div className="d-flex gap-2">
+                        <Button
+                            variant="outline-primary"
+                            size="sm"
+                            onClick={handleExportFilteredJson}
+                            disabled={records.length === 0}
+                        >
+                            Export Filtered as JSON
+                        </Button>
+                        <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => navigate(`/animals/${animalId}/create-record`)}
+                            disabled={!animalId}
+                        >
+                            Create Record
+                        </Button>
+                    </div>
                 </Card.Header>
                 <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
                     {/* Filter Form */}
