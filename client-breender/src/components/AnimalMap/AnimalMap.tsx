@@ -24,6 +24,19 @@ const initialCenter = {
   lng: 28.83
 };
 
+// Helper to resolve animal profile picture URL
+const resolveAnimalPictureUrl = (animal: AnimalMapInfo & { pictureUrl?: string; profilePicUrl?: string; photo?: string }) => {
+    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    // Try all possible fields for backward compatibility
+    const url = animal.pictureUrl || animal.profilePicUrl || animal.photo;
+    if (url) {
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads/')) return apiBase + url;
+        return url;
+    }
+    return '/animal-placeholder.png';
+};
+
 export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [animals, setAnimals] = useState<AnimalMapInfo[]>([]);
     const [selectedAnimal, setSelectedAnimal] = useState<AnimalMapInfo | null>(null);
@@ -280,10 +293,20 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             position={{ lat: selectedAnimal.latitude, lng: selectedAnimal.longitude }}
                             onCloseClick={handleInfoWindowClose}
                         >
-                            <div>
-                                <h5>{selectedAnimal.name}</h5>
-                                {selectedAnimal.species && <p>Species: {selectedAnimal.species}</p>}
-                                <p><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
+                            <div style={{ minWidth: 180 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                                    <img
+                                        src={resolveAnimalPictureUrl(selectedAnimal)}
+                                        alt={selectedAnimal.name}
+                                        style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: '50%', border: '1px solid #eee' }}
+                                        onError={e => { (e.target as HTMLImageElement).src = '/animal-placeholder.png'; }}
+                                    />
+                                    <div>
+                                        <h5 style={{ margin: 0 }}>{selectedAnimal.name}</h5>
+                                        {selectedAnimal.species && <div style={{ fontSize: 13, color: '#666' }}>Species: {selectedAnimal.species}</div>}
+                                    </div>
+                                </div>
+                                <p style={{ fontSize: 12, margin: 0 }}><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
                                 <button className="btn btn-primary btn-sm mt-2" onClick={() => handleAnimalSelect(selectedAnimal)} disabled={!selectedMyAnimalId}>
                                     Preview & Partner
                                 </button>
@@ -324,7 +347,13 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     ) : (
                         animals.map(animal => (
                             <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: selectedMyAnimalId ? 'pointer' : 'not-allowed', opacity: selectedMyAnimalId ? 1 : 0.5 }} onClick={() => selectedMyAnimalId && handleAnimalSelect(animal)}>
-                                <span>
+                                <span className="d-flex align-items-center" style={{ gap: 8 }}>
+                                    <img
+                                        src={resolveAnimalPictureUrl(animal)}
+                                        alt={animal.name}
+                                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%', marginRight: 8, border: '1px solid #eee' }}
+                                        onError={e => { (e.target as HTMLImageElement).src = '/animal-placeholder.png'; }}
+                                    />
                                     <strong>{animal.name}</strong>
                                     {animal.species ? <span className="text-muted"> ({animal.species})</span> : null}
                                 </span>
