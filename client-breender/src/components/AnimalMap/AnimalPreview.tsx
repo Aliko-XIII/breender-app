@@ -11,6 +11,8 @@ interface AnimalPreviewProps {
 
 export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimalId, onClose }) => {
   const [animal, setAnimal] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [myAnimal, setMyAnimal] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(false);
@@ -33,6 +35,19 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
       .finally(() => setLoading(false));
   }, [animalId]);
 
+  useEffect(() => {
+    if (!myAnimalId) return;
+    getAnimal(myAnimalId)
+      .then((res) => {
+        if (res.status === 200) {
+          setMyAnimal(res.data);
+        } else {
+          setMyAnimal(null);
+        }
+      })
+      .catch(() => setMyAnimal(null));
+  }, [myAnimalId]);
+
   const handleRequestPartnership = async () => {
     setRequesting(true);
     setRequestError(null);
@@ -43,60 +58,94 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
       } else {
         setRequestError("Failed to request partnership.");
       }
-    } catch (e) {
+    } catch {
       setRequestError("Failed to request partnership.");
     } finally {
       setRequesting(false);
     }
   };
 
-  if (loading) return <div className="text-center p-4">Loading...</div>;
-  if (error) return <div className="alert alert-danger">{error}</div>;
+  if (loading) return <div className="d-flex justify-content-center align-items-center p-5" style={{ minHeight: 300 }}><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div></div>;
+  if (error) return <div className="alert alert-danger d-flex align-items-center"><span className="me-2">❌</span>{error}</div>;
   if (!animal) return null;
 
-  return (
-    <div className="card shadow p-3 mt-4" style={{ maxWidth: 400, margin: "0 auto" }}>
-      <div className="d-flex justify-content-between align-items-center mb-2">
-        <h4 className="mb-0">Animal Info</h4>
-        {onClose && (
-          <button className="btn btn-sm btn-outline-secondary" onClick={onClose}>&times;</button>
-        )}
-      </div>
-      {animal.photo && (
-        <img src={animal.photo} alt={animal.name} className="mb-3 rounded" style={{ width: 120, height: 120, objectFit: "cover" }} />
-      )}
-      <div>
-        <strong>Name:</strong> {animal.name}
-      </div>
-      <div>
-        <strong>Species:</strong> {animal.species}
-      </div>
-      <div>
-        <strong>Breed:</strong> {animal.breed}
-      </div>
-      <div>
-        <strong>Sex:</strong> {animal.sex}
-      </div>
-      <div>
-        <strong>Birth Date:</strong> {animal.birthDate ? new Date(animal.birthDate).toLocaleDateString() : "-"}
-      </div>
-      {animal.bio && (
-        <div className="mt-2">
-          <strong>Bio:</strong> <span className="text-muted">{animal.bio}</span>
+  const sexBadge = (sex: string) => sex === "MALE"
+    ? <span className="badge bg-primary">♂ Male</span>
+    : sex === "FEMALE"
+      ? <span className="badge bg-pink" style={{ backgroundColor: '#e83e8c' }}>♀ Female</span>
+      : null;
+
+  // Comparison section
+  const comparisonSection = myAnimal && (
+    <div className="mb-4">
+      <h4 className="text-center mb-4">Animal Comparison</h4>
+      <div className="row g-4 justify-content-center" style={{ maxWidth: 700, margin: '0 auto' }}>
+        {/* Your Animal Profile */}
+        <div className="col-12 col-md-5">
+          <div className="card h-100 shadow border-primary border-2">
+            <div className="card-body text-center">
+              <img src={myAnimal.photo || "/animal-placeholder.png"} alt={myAnimal.name} className="rounded-circle border mb-3" style={{ width: 120, height: 120, objectFit: 'cover', background: '#f8f9fa', borderWidth: 3, borderColor: '#0d6efd' }} />
+              <h5 className="card-title mb-1">{myAnimal.name}</h5>
+              <div className="mb-2">{sexBadge(myAnimal.sex)}</div>
+              <div className="mb-2">
+                <span className="badge bg-secondary me-1">{myAnimal.species || '-'}</span>
+                <span className="badge bg-light text-dark border">{myAnimal.breed || '-'}</span>
+              </div>
+              <div className="mb-2"><strong>Birth Date:</strong> {myAnimal.birthDate ? new Date(myAnimal.birthDate).toLocaleDateString() : '-'}</div>
+              {myAnimal.bio && <div className="mt-2 small text-muted" style={{ whiteSpace: 'pre-line' }}>{myAnimal.bio}</div>}
+              <div className="mt-2 text-primary fw-bold">Your Animal</div>
+            </div>
+          </div>
         </div>
-      )}
-      {requestSuccess ? (
-        <div className="alert alert-success mt-3">Partnership request sent!</div>
-      ) : (
+        {/* Partnerable Animal Profile */}
+        <div className="col-12 col-md-5">
+          <div className="card h-100 shadow border-danger border-2">
+            <div className="card-body text-center">
+              <img src={animal.photo || "/animal-placeholder.png"} alt={animal.name} className="rounded-circle border mb-3" style={{ width: 120, height: 120, objectFit: 'cover', background: '#f8f9fa', borderWidth: 3, borderColor: '#dc3545' }} />
+              <h5 className="card-title mb-1">{animal.name}</h5>
+              <div className="mb-2">{sexBadge(animal.sex)}</div>
+              <div className="mb-2">
+                <span className="badge bg-secondary me-1">{animal.species || '-'}</span>
+                <span className="badge bg-light text-dark border">{animal.breed || '-'}</span>
+              </div>
+              <div className="mb-2"><strong>Birth Date:</strong> {animal.birthDate ? new Date(animal.birthDate).toLocaleDateString() : '-'}</div>
+              {animal.bio && <div className="mt-2 small text-muted" style={{ whiteSpace: 'pre-line' }}>{animal.bio}</div>}
+              <div className="mt-2 text-danger fw-bold">Partnerable</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="card shadow p-4 mt-4" style={{ maxWidth: 900, margin: "0 auto", position: 'relative' }}>
+      {/* Back button in top left */}
+      {!onClose && (
         <button
-          className="btn btn-primary mt-3 w-100"
-          onClick={handleRequestPartnership}
-          disabled={requesting || !myAnimalId}
+          className="btn btn-sm btn-outline-secondary position-absolute"
+          style={{ top: 16, left: 16, zIndex: 2 }}
+          onClick={() => navigate(-1)}
         >
-          {requesting ? "Requesting..." : "Request Partnership"}
+          &larr; Back
         </button>
       )}
-      {requestError && <div className="alert alert-danger mt-2">{requestError}</div>}
+      {comparisonSection}
+      {requestSuccess ? (
+        <div className="alert alert-success mt-3 d-flex align-items-center justify-content-center"><span className="me-2">✅</span>Partnership request sent!</div>
+      ) : (
+        <div className="d-flex justify-content-center mt-3">
+          <button
+            className="btn btn-primary px-4"
+            style={{ minWidth: 220 }}
+            onClick={handleRequestPartnership}
+            disabled={requesting || !myAnimalId}
+          >
+            {requesting ? <span><span className="spinner-border spinner-border-sm me-2" role="status" />Requesting...</span> : "Request Partnership"}
+          </button>
+        </div>
+      )}
+      {requestError && <div className="alert alert-danger mt-2 d-flex align-items-center"><span className="me-2">❌</span>{requestError}</div>}
     </div>
   );
 };
