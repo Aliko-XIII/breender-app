@@ -33,6 +33,15 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
     const [pendingRequestsError, setPendingRequestsError] = useState<string | null>(null);
     const navigate = useNavigate();
 
+    // Helper to get absolute URL for profile picture
+    const getProfilePicUrl = (url?: string) => {
+        if (!url) return '/avatar-placeholder.png';
+        if (url.startsWith('/uploads/')) {
+            return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
+        }
+        return url;
+    };
+
     useEffect(() => {
         const fetchUserProfileSummary = async () => {
             // Wait until UserContext has loaded the userId
@@ -229,7 +238,7 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                 </div>
                 <div className="card-body d-flex align-items-center">
                     <img
-                        src={profileSummary.pictureUrl || '/avatar-placeholder.png'} // Use placeholder if no picture
+                        src={getProfilePicUrl(profileSummary.pictureUrl)}
                         alt="User Avatar"
                         className="rounded-circle me-3"
                         style={{ width: '80px', height: '80px', objectFit: 'cover' }}

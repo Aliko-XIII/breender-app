@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ApiResponse } from "../../types";
 import { useUser } from "../../context/UserContext";
 import { useNavigate, useParams } from "react-router-dom";
+import { uploadUserProfilePic } from "../../api/userApi";
 
 interface UserProfileData {
   name: string;
@@ -21,12 +22,24 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [formData, setFormData] = useState<Partial<UserProfileData>>({});
   const [isEditing, setIsEditing] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   const { userId: currentUserId, isLoading } = useUser();
   const { id: routeUserId } = useParams();
   const navigate = useNavigate();
 
   const isOwnProfile = !routeUserId || routeUserId === currentUserId;
   const userIdToLoad = routeUserId || currentUserId;
+
+  // Helper to get absolute URL for profile picture
+  const getProfilePicUrl = (url?: string) => {
+    if (!url) return "/avatar-placeholder.png";
+    if (url.startsWith("/uploads/")) {
+      // You may want to use an environment variable for API base URL
+      return `${import.meta.env.VITE_API_BASE_URL || "http://localhost:3000"}${url}`;
+    }
+    return url;
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -61,6 +74,32 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUploadPic = async () => {
+    if (!selectedFile || !currentUserId) return;
+    setUploading(true);
+    try {
+      const res = await uploadUserProfilePic(currentUserId, selectedFile);
+      if ((res.status === 200 || res.status === 201) && res.data.url) {
+        setUserProfile((prev) => prev ? { ...prev, pictureUrl: res.data.url } : prev);
+        setFormData((prev) => ({ ...prev, pictureUrl: res.data.url }));
+        setSelectedFile(null);
+        alert("Profile picture updated!");
+      } else {
+        alert("Failed to upload profile picture.");
+      }
+    } catch {
+      alert("Error uploading profile picture.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (isOwnProfile && currentUserId && formData) {
       try {
@@ -89,11 +128,23 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
 
         <div className="text-center mb-3">
           <img
-            src={userProfile.pictureUrl || "/avatar-placeholder.png"}
+            src={getProfilePicUrl(userProfile.pictureUrl)}
             alt="User Avatar"
             className="rounded-circle"
             style={{ width: "100px", height: "100px", objectFit: "cover" }}
           />
+          {isEditing && isOwnProfile && (
+            <div className="mt-2">
+              <input type="file" accept="image/*" onChange={handleFileChange} />
+              <button
+                className="btn btn-outline-primary btn-sm ms-2"
+                onClick={handleUploadPic}
+                disabled={!selectedFile || uploading}
+              >
+                {uploading ? "Uploading..." : "Upload"}
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="mb-3">

@@ -11,6 +11,8 @@ import { Animal, Prisma, User, UserProfile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { ResponseUserDto } from './dto/response-user.dto';
 import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
@@ -132,6 +134,7 @@ export class UsersService {
   async updateUser(id: string, authUserId: string, updateUserDto: UpdateUserDto) {
     const user = await this.databaseService.user.findUnique({
       where: { id },
+      include: { userProfile: true }, // Include profile to get old pictureUrl
     });
 
     if (!user) {
@@ -141,6 +144,16 @@ export class UsersService {
     // Check if the authorized user is the one being updated, or if the user is an admin
     if (user.id !== authUserId && !(await this.isAdmin(authUserId))) {
       throw new ForbiddenException('You are not authorized to update this user');
+    }
+
+    // Remove old profile picture if a new one is being set and it's different
+    if (updateUserDto.pictureUrl && user.userProfile?.pictureUrl && updateUserDto.pictureUrl !== user.userProfile.pictureUrl) {
+      if (user.userProfile.pictureUrl.startsWith('/uploads/profile-pics/')) {
+        const oldPicPath = join(process.cwd(), user.userProfile.pictureUrl);
+        fs.unlink(oldPicPath, (err) => {
+          // Ignore error if file doesn't exist
+        });
+      }
     }
 
     const updatedUser: Prisma.UserUpdateInput = {};

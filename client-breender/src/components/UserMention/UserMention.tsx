@@ -12,6 +12,15 @@ interface UserMentionProps {
     userPictureUrl?: string | null; // Add optional picture URL prop
 }
 
+// Helper to get absolute URL for profile picture
+const getProfilePicUrl = (url?: string | null) => {
+    if (!url) return '/avatar-placeholder.png';
+    if (url.startsWith('/uploads/')) {
+        return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
+    }
+    return url;
+};
+
 /**
  * Renders a user mention with profile picture, name (linkable if self), and email.
  */
@@ -50,7 +59,7 @@ export const UserMention: React.FC<UserMentionProps> = ({
             {/* Profile Picture */}
             <img
                 // Use provided picture URL or fallback to a placeholder
-                src={userPictureUrl || '/avatar-placeholder.png'}
+                src={getProfilePicUrl(userPictureUrl)}
                 alt={`${userName}'s avatar`}
                 className={styles.avatar}
                 // Add basic error handling for images

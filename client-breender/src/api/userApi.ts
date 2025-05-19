@@ -37,3 +37,26 @@ export const updateUser = async (
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
+
+export const uploadUserProfilePic = async (
+    userId: string,
+    file: File
+) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await axiosInstance.post(
+            `users/${userId}/profile-pic`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return { status: response.status, data: response.data };
+    } catch (error: any) {
+        console.error(error);
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};
