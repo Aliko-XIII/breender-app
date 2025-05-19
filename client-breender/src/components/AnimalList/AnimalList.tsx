@@ -4,7 +4,7 @@ import { getAnimals } from "../../api/animalApi";
 import { useUser } from "../../context/UserContext";
 
 export const AnimalList: React.FC = () => {
-    const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string }[]>([]);
+    const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string; pictureUrl?: string | null }[]>([]);
     const [loading, setLoading] = useState(true);
     const { userId, isLoading } = useUser();
     const navigate = useNavigate();
@@ -26,6 +26,14 @@ export const AnimalList: React.FC = () => {
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const getProfilePicUrl = (url?: string | null) => {
+        if (!url) return '/animal-placeholder.png';
+        if (url.startsWith('/uploads/')) {
+            return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
+        }
+        return url;
     };
 
     // Load animals with filters
@@ -53,7 +61,7 @@ export const AnimalList: React.FC = () => {
                 id: animal.id,
                 name: animal.name,
                 species: animal.species,
-                photoUrl: animal.photoUrl,
+                pictureUrl: animal.pictureUrl || animal.profilePicUrl || null,
             })));
         } catch (error) {
             console.error("Failed to fetch animals:", error);
@@ -145,7 +153,7 @@ export const AnimalList: React.FC = () => {
                                     }}
                                 >
                                     <img
-                                        src={animal.photoUrl || "/animal-placeholder.png"}
+                                        src={getProfilePicUrl(animal.pictureUrl)}
                                         alt={animal.name}
                                         className="card-img-top"
                                         style={{

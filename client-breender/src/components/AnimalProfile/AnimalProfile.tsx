@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom';
 import { UserMention } from '../UserMention/UserMention';
 import { useUser } from '../../context/UserContext';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import { uploadAnimalProfilePic } from '../../api/animalApi';
 
 interface AnimalProfileProps {
   getAnimal: (animalId: string) => Promise<ApiResponse>;
@@ -27,6 +28,7 @@ interface AnimalProfileData {
   latitude?: number;
   longitude?: number;
   owners: OwnerInfo[];
+  pictureUrl?: string | null;
 }
 
 export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateAnimal }) => {
@@ -39,6 +41,16 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
   const { userId: currentUserId } = useUser();
   const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
   const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g'; // Consider moving to env
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  const getProfilePicUrl = (url?: string | null) => {
+    if (!url) return '/animal-placeholder.png';
+    if (url.startsWith('/uploads/')) {
+      return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
+    }
+    return url;
+  };
 
   useEffect(() => {
     const fetchAnimalProfile = async () => {
@@ -83,6 +95,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             latitude: response.data.latitude,
             longitude: response.data.longitude,
             owners: mappedOwners,
+            pictureUrl: response.data.pictureUrl,
           };
           setAnimalData(data);
           setFormData(data);
@@ -153,6 +166,32 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
     setFormData({ ...formData, latitude: lat, longitude: lng });
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleUploadPic = async () => {
+    if (!selectedFile || !animalId) return;
+    setUploading(true);
+    try {
+      const res = await uploadAnimalProfilePic(animalId, selectedFile);
+      if ((res.status === 200 || res.status === 201) && res.data.url) {
+        setAnimalData(prev => prev ? { ...prev, pictureUrl: res.data.url } : prev);
+        setFormData(prev => ({ ...prev, pictureUrl: res.data.url }));
+        setSelectedFile(null);
+        alert('Profile picture updated!');
+      } else {
+        alert('Failed to upload profile picture.');
+      }
+    } catch {
+      alert('Error uploading profile picture.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const displaySex = (sex: 'MALE' | 'FEMALE'): string => {
     switch (sex) {
       case 'MALE': return 'Male';
@@ -201,6 +240,26 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
       </div>
 
       <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
+        <div className="text-center mb-3">
+          <img
+            src={getProfilePicUrl(animalData.pictureUrl)}
+            alt="Animal Avatar"
+            className="rounded-circle"
+            style={{ width: "120px", height: "120px", objectFit: "cover" }}
+          />
+          {isEditing && isOwner && (
+            <div className="mt-2">
+              <input type="file" accept="image/*" onChange={handleFileChange} />
+              <button
+                className="btn btn-outline-primary btn-sm ms-2"
+                onClick={handleUploadPic}
+                disabled={!selectedFile || uploading}
+              >
+                {uploading ? 'Uploading...' : 'Upload'}
+              </button>
+            </div>
+          )}
+        </div>
         <h1 className="text-center mb-4">
           {isEditing ? (
             <input

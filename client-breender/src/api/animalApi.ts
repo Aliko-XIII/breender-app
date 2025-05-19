@@ -21,8 +21,9 @@ export const getAnimal = async (
             `animals/${animalId}`,
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
+        // @ts-expect-error: error may not have response property
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
@@ -37,8 +38,9 @@ export const getAnimals = async (
             { params }
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
+        // @ts-expect-error: error may not have response property
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
@@ -53,8 +55,9 @@ export const getAnimalsForMap = async (
             { params }
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
+        // @ts-expect-error: error may not have response property
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
@@ -75,8 +78,9 @@ export const createAnimal = async (
             animalData
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
+        // @ts-expect-error: error may not have response property
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };
@@ -100,8 +104,33 @@ export const updateAnimal = async (
             animalData
         );
         return { status: response.status, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
+        // @ts-expect-error: error may not have response property
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};
+
+export const uploadAnimalProfilePic = async (
+    animalId: string,
+    file: File | Blob
+) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await axiosInstance.post(
+            `/animals/${animalId}/profile-pic`,
+            formData,
+            {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return { status: response.status, data: response.data };
+    } catch (error) {
+        console.error(error);
+        // @ts-expect-error: error may not have response property
         return { status: error.response?.status || 500, data: error.response?.data || {} };
     }
 };

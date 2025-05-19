@@ -9,6 +9,8 @@ import {
   UseGuards,
   Request,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AnimalsService } from './animals.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
@@ -17,6 +19,9 @@ import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateAnimalDocumentDto } from './dto/create-animal-doc.dto';
 import { UpdateAnimalDocumentDto } from './dto/update-animal-doc.dto';
 import { AnimalFilterDto } from './dto/animal-filter.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
 
 @UseGuards(AuthGuard)
 @Controller('animals')
@@ -54,9 +59,14 @@ export class AnimalsController {
   }
 
   @Get()
-  findAll(@Request() req, @Query() filter: AnimalFilterDto) {
+  async findAll(@Request() req, @Query() filter: AnimalFilterDto) {
     const authUserId = req.authUserId;
-    return this.animalsService.findAllAnimals(authUserId, filter);
+    const animals = await this.animalsService.findAllAnimals(authUserId, filter);
+    // Map profilePicUrl to pictureUrl for each animal
+    return animals.map((animal: any) => ({
+      ...animal,
+      pictureUrl: animal.profilePicUrl ?? null,
+    }));
   }
 
   @Get('for-map')
@@ -66,9 +76,14 @@ export class AnimalsController {
   }
 
   @Get(':id')
-  findOne(@Request() req, @Param('id') id: string) {
+  async findOne(@Request() req, @Param('id') id: string) {
     const authUserId = req.authUserId;
-    return this.animalsService.findAnimalById(id, authUserId);
+    const animal = await this.animalsService.findAnimalById(id, authUserId);
+    // Map profilePicUrl to pictureUrl for frontend compatibility
+    return {
+      ...animal,
+      pictureUrl: animal.profilePicUrl ?? null,
+    };
   }
 
   @Patch(':id')
@@ -81,5 +96,29 @@ export class AnimalsController {
   remove(@Request() req, @Param('id') id: string) {
     const authUserId = req.authUserId;
     return this.animalsService.removeAnimal(id, authUserId);
+  }
+
+  @Post(':id/profile-pic')
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination: join(process.cwd(), 'uploads', 'profile-pics'),
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
+      },
+    }),
+  }))
+  async uploadAnimalProfilePic(
+    @Param('id') id: string,
+    @Request() req,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const authUserId = req.authUserId;
+    if (!file) {
+      throw new Error('No file uploaded');
+    }
+    const fileUrl = `/uploads/profile-pics/${file.filename}`;
+    await this.animalsService.updateAnimalProfilePic(id, authUserId, fileUrl);
+    return { url: fileUrl };
   }
 }

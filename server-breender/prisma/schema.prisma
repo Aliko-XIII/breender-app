@@ -39,10 +39,10 @@ model User {
 }
 
 model Owner {
-  id                   String             @id @default(uuid()) @map("owner_id")
-  userId               String             @unique @map("user_id")
-  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  animals              AnimalOwner[]
+  id      String        @id @default(uuid()) @map("owner_id")
+  userId  String        @unique @map("user_id")
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animals AnimalOwner[]
 
   @@map("owners")
 }
@@ -55,30 +55,31 @@ enum PartnershipStatus {
 }
 
 model Partnership {
-  id                  String            @id @default(uuid())
-  requesterAnimalId   String            @map("requester_animal_id")
-  recipientAnimalId   String            @map("recipient_animal_id")
-  status              PartnershipStatus @default(PENDING)
-  requestedAt         DateTime          @default(now()) @map("requested_at")
-  respondedAt         DateTime?         @map("responded_at")
+  id                String            @id @default(uuid())
+  requesterAnimalId String            @map("requester_animal_id")
+  recipientAnimalId String            @map("recipient_animal_id")
+  status            PartnershipStatus @default(PENDING)
+  requestedAt       DateTime          @default(now()) @map("requested_at")
+  respondedAt       DateTime?         @map("responded_at")
 
-  requesterAnimal     Animal            @relation("RequesterAnimal", fields: [requesterAnimalId], references: [id], onDelete: Cascade)
-  recipientAnimal     Animal            @relation("RecipientAnimal", fields: [recipientAnimalId], references: [id], onDelete: Cascade)
+  requesterAnimal Animal @relation("RequesterAnimal", fields: [requesterAnimalId], references: [id], onDelete: Cascade)
+  recipientAnimal Animal @relation("RecipientAnimal", fields: [recipientAnimalId], references: [id], onDelete: Cascade)
 
   @@unique([requesterAnimalId, recipientAnimalId])
   @@map("partnerships")
 }
 
 model Animal {
-  id        String   @id @default(uuid()) @map("animal_id")
-  name      String   @map("animal_name")
-  sex       Sex      @map("animal_sex")
-  breed     String   @map("animal_breed")
-  species   String   @map("animal_species")
-  bio       String?  @map("animal_bio")
-  birthDate DateTime @map("date_of_birth")
-  latitude  Float?   @map("latitude")
-  longitude Float?   @map("longitude")
+  id            String   @id @default(uuid()) @map("animal_id")
+  name          String   @map("animal_name")
+  sex           Sex      @map("animal_sex")
+  breed         String   @map("animal_breed")
+  species       String   @map("animal_species")
+  bio           String?  @map("animal_bio")
+  birthDate     DateTime @map("date_of_birth")
+  latitude      Float?   @map("latitude")
+  longitude     Float?   @map("longitude")
+  profilePicUrl String?  @map("profile_pic_url")
 
   owners            AnimalOwner[]
   animalDocuments   AnimalDocument[]
@@ -153,11 +154,11 @@ model RefreshToken {
 }
 
 model AnimalPhoto {
-  id                 String              @id @default(uuid()) @map("photo_id")
-  photoUrl           String              @map("photo_url")
-  animalId           String              @map("animal_id")
-  uploadedAt         DateTime            @default(now()) @map("uploaded_at")
-  
+  id         String   @id @default(uuid()) @map("photo_id")
+  photoUrl   String   @map("photo_url")
+  animalId   String   @map("animal_id")
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+
   animal             Animal              @relation(fields: [animalId], references: [id], onDelete: Cascade)
   animalRecordPhotos AnimalRecordPhoto[]
 

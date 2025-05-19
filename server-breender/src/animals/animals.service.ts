@@ -6,6 +6,8 @@ import { Prisma } from '@prisma/client';
 import { CreateAnimalDocumentDto } from './dto/create-animal-doc.dto';
 import { UpdateAnimalDocumentDto } from './dto/update-animal-doc.dto';
 import { AnimalFilterDto } from './dto/animal-filter.dto';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class AnimalsService {
@@ -361,6 +363,31 @@ export class AnimalsService {
       console.error(`Failed to update animal with ID ${id}:`, error);
       throw new Error(`Could not update animal.`);
     }
+  }
+
+  async updateAnimalProfilePic(animalId: string, authUserId: string, fileUrl: string) {
+    const animal = await this.databaseService.animal.findUnique({
+      where: { id: animalId },
+      include: { owners: true },
+    });
+    if (!animal) {
+      throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+    }
+    // Check ownership or admin
+    const owner = await this.databaseService.owner.findUnique({ where: { userId: authUserId } });
+    const ownerIds = animal.owners.map((o) => o.ownerId);
+    if (!owner || (!ownerIds.includes(owner.id) && !(await this.isAdmin(authUserId)))) {
+      throw new ForbiddenException('You do not have permission to update this animal.');
+    }
+    // Remove old profile pic if exists and is different
+    if (animal.profilePicUrl && animal.profilePicUrl.startsWith('/uploads/profile-pics/') && animal.profilePicUrl !== fileUrl) {
+      const oldPicPath = join(process.cwd(), animal.profilePicUrl);
+      fs.unlink(oldPicPath, () => {});
+    }
+    await this.databaseService.animal.update({
+      where: { id: animalId },
+      data: { profilePicUrl: fileUrl },
+    });
   }
 
   async removeAnimal(id: string, authUserId: string) {

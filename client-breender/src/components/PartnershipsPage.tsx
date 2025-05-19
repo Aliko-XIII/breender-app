@@ -21,6 +21,7 @@ interface AnimalInfo {
   name: string;
   species?: string;
   breed?: string;
+  pictureUrl?: string | null;
   owners: OwnerInfo[];
 }
 
@@ -34,6 +35,15 @@ interface PartnershipWithDetails {
   requesterAnimal?: AnimalInfo;
   recipientAnimal?: AnimalInfo;
 }
+
+// Helper to get animal profile pic URL
+const getAnimalProfilePicUrl = (url?: string | null) => {
+  if (!url) return '/animal-placeholder.png';
+  if (url.startsWith('/uploads/')) {
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
+  }
+  return url;
+};
 
 export const PartnershipsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabType>("PENDING");
@@ -65,6 +75,7 @@ export const PartnershipsPage: React.FC = () => {
                 name: animal.name,
                 species: animal.species,
                 breed: animal.breed,
+                pictureUrl: animal.pictureUrl,
                 owners: (animal.owners || []).map((ownerRel: any) => {
                   const user = ownerRel?.owner?.user;
                   const profile = user?.userProfile;
@@ -212,7 +223,14 @@ export const PartnershipsPage: React.FC = () => {
                         <div className="fw-bold">From:</div>
                         {p.requesterAnimal ? (
                           <>
-                            <Link to={`/animals/${p.requesterAnimal.id}`}>{p.requesterAnimal.name}</Link>
+                            <div className="d-flex align-items-center gap-2 mb-1">
+                              <img
+                                src={getAnimalProfilePicUrl(p.requesterAnimal.pictureUrl)}
+                                alt={p.requesterAnimal.name}
+                                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee' }}
+                              />
+                              <Link to={`/animals/${p.requesterAnimal.id}`}>{p.requesterAnimal.name}</Link>
+                            </div>
                             {(p.requesterAnimal.species || p.requesterAnimal.breed) && (
                               <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
                                 {p.requesterAnimal.species ? `(${p.requesterAnimal.species}` : ''}
@@ -241,7 +259,14 @@ export const PartnershipsPage: React.FC = () => {
                         <div className="fw-bold">To:</div>
                         {p.recipientAnimal ? (
                           <>
-                            <Link to={`/animals/${p.recipientAnimal.id}`}>{p.recipientAnimal.name}</Link>
+                            <div className="d-flex align-items-center gap-2 mb-1">
+                              <img
+                                src={getAnimalProfilePicUrl(p.recipientAnimal.pictureUrl)}
+                                alt={p.recipientAnimal.name}
+                                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee' }}
+                              />
+                              <Link to={`/animals/${p.recipientAnimal.id}`}>{p.recipientAnimal.name}</Link>
+                            </div>
                             {(p.recipientAnimal.species || p.recipientAnimal.breed) && (
                               <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
                                 {p.recipientAnimal.species ? `(${p.recipientAnimal.species}` : ''}
