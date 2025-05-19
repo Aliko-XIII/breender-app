@@ -269,7 +269,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             key={animal.id}
                             position={{ lat: animal.latitude, lng: animal.longitude }}
                             title={animal.name}
-                            onClick={() => handleAnimalSelect(animal)}
+                            onClick={() => setSelectedAnimal(animal)}
                             icon={animalMarkerIcon}
                             clickable={!!selectedMyAnimalId}
                         />
@@ -284,8 +284,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                 <h5>{selectedAnimal.name}</h5>
                                 {selectedAnimal.species && <p>Species: {selectedAnimal.species}</p>}
                                 <p><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
-                                <button className="btn btn-primary btn-sm mt-2" onClick={() => navigate(`/animals/${selectedAnimal.id}`)}>
-                                    View Profile
+                                <button className="btn btn-primary btn-sm mt-2" onClick={() => handleAnimalSelect(selectedAnimal)} disabled={!selectedMyAnimalId}>
+                                    Preview & Partner
                                 </button>
                             </div>
                         </InfoWindow>
