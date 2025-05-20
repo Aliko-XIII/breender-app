@@ -6,7 +6,7 @@ import { UserMention } from "./UserMention/UserMention";
 import { useUser } from "../context/UserContext";
 import { getChats, createChat } from "../api/chatApi";
 
-const TABS = ["PENDING", "ACCEPTED", "REJECTED", "CANCELED"] as const;
+const TABS = ["ACCEPTED", "PENDING", "REJECTED", "CANCELED"] as const;
 type TabType = typeof TABS[number];
 
 interface OwnerInfo {
@@ -46,7 +46,7 @@ const getAnimalProfilePicUrl = (url?: string | null) => {
 };
 
 export const PartnershipsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("PENDING");
+  const [activeTab, setActiveTab] = useState<TabType>("ACCEPTED");
   const [partnerships, setPartnerships] = useState<PartnershipWithDetails[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +146,14 @@ export const PartnershipsPage: React.FC = () => {
     }
   };
 
+  // Count partnerships by status for tab counters
+  const tabCounts: Record<TabType, number> = {
+    ACCEPTED: partnerships.filter((p) => p.status === "ACCEPTED").length,
+    PENDING: partnerships.filter((p) => p.status === "PENDING").length,
+    REJECTED: partnerships.filter((p) => p.status === "REJECTED").length,
+    CANCELED: partnerships.filter((p) => p.status === "CANCELED").length,
+  };
+
   const filtered = partnerships.filter((p) => p.status === activeTab);
 
   return (
@@ -159,7 +167,7 @@ export const PartnershipsPage: React.FC = () => {
               onClick={() => setActiveTab(tab)}
               type="button"
             >
-              {tab.charAt(0) + tab.slice(1).toLowerCase()}
+              {tab.charAt(0) + tab.slice(1).toLowerCase()} <span className="badge bg-light text-dark ms-1">{tabCounts[tab]}</span>
             </button>
           </li>
         ))}
@@ -195,6 +203,16 @@ export const PartnershipsPage: React.FC = () => {
                   </>
                 );
               }
+            } else if (activeTab === "ACCEPTED" && p.requesterAnimal && p.requesterAnimal.owners.length > 0) {
+              // Allow cancel for accepted partnerships if current user is requester owner
+              const isMine = p.requesterAnimal.owners.some((o) => o.id === currentUserId);
+              if (isMine) {
+                actionButtons = (
+                  <button className="btn btn-outline-danger btn-sm ms-2" onClick={() => handleCancel(p.id)}>
+                    Cancel
+                  </button>
+                );
+              }
             } else if (activeTab === "CANCELED") {
               actionButtons = (
                 <button className="btn btn-outline-primary btn-sm ms-2" onClick={() => handleReopen(p.id)}>
@@ -203,16 +221,18 @@ export const PartnershipsPage: React.FC = () => {
               );
             }
             let chatBtn = null;
-            if (showChatBtn) {
+            if (showChatBtn && p.requesterAnimal && p.recipientAnimal) {
               const myOwnerId = currentUserId;
               const otherOwnerId = p.requesterAnimal.owners.some((o) => o.id === myOwnerId)
-                ? p.recipientAnimal.owners[0].id
-                : p.requesterAnimal.owners[0].id;
-              chatBtn = (
-                <button className="btn btn-outline-secondary btn-sm ms-2" onClick={() => handleChat(otherOwnerId)}>
-                  Chat
-                </button>
-              );
+                ? p.recipientAnimal.owners[0]?.id
+                : p.requesterAnimal.owners[0]?.id;
+              if (otherOwnerId) {
+                chatBtn = (
+                  <button className="btn btn-outline-secondary btn-sm ms-2" onClick={() => handleChat(otherOwnerId)}>
+                    Chat
+                  </button>
+                );
+              }
             }
             return (
               <li className="list-group-item" key={p.id}>
