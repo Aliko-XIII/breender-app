@@ -264,76 +264,83 @@ export const PartnershipsPage: React.FC = () => {
   const { userId: currentUserId } = useUser();
   const navigate = useNavigate();
 
-  useEffect(() => {
+  // Helper to refresh partnerships without resetting tab state
+  const refreshPartnerships = async () => {
     if (!currentUserId) return;
     setLoading(true);
-    getPartnerships({ userId: currentUserId })
-      .then(async (res) => {
-        if (res.status === 200) {
-          const rawPartnerships: PartnershipWithDetails[] = res.data;
-          const animalIds = Array.from(new Set([
-            ...rawPartnerships.map((p) => p.requesterAnimalId),
-            ...rawPartnerships.map((p) => p.recipientAnimalId),
-          ]));
-          const animalResults = await Promise.all(
-            animalIds.map((id) => getAnimal(id))
-          );
-          const animalMap: Record<string, AnimalInfo> = {};
-          animalResults.forEach((result) => {
-            if (result.status === 200 && result.data) {
-              const animal = result.data;
-              animalMap[animal.id] = {
-                id: animal.id,
-                name: animal.name,
-                species: animal.species,
-                breed: animal.breed,
-                pictureUrl: animal.pictureUrl,
-                owners: (animal.owners || []).map((ownerRel: { owner: { user: { id: string; email: string; userProfile?: { name?: string; pictureUrl?: string | null } } } }) => {
-                  const user = ownerRel?.owner?.user;
-                  const profile = user?.userProfile;
-                  return {
-                    id: user?.id,
-                    name: profile?.name || user?.email || "Unknown",
-                    email: user?.email || "",
-                    pictureUrl: profile?.pictureUrl || null,
-                  };
-                }).filter((o: OwnerInfo) => o.id && o.name && o.email),
-              };
-            }
-          });
-          const partnershipsWithDetails: PartnershipWithDetails[] = rawPartnerships.map((p) => ({
-            ...p,
-            requesterAnimal: animalMap[p.requesterAnimalId],
-            recipientAnimal: animalMap[p.recipientAnimalId],
-          }));
-          setPartnerships(partnershipsWithDetails);
-          setError(null);
-        } else {
-          setError("Failed to load partnership requests.");
-        }
-      })
-      .catch(() => setError("Failed to load partnership requests."))
-      .finally(() => setLoading(false));
+    try {
+      const res = await getPartnerships({ userId: currentUserId });
+      if (res.status === 200) {
+        const rawPartnerships: PartnershipWithDetails[] = res.data;
+        const animalIds = Array.from(new Set([
+          ...rawPartnerships.map((p) => p.requesterAnimalId),
+          ...rawPartnerships.map((p) => p.recipientAnimalId),
+        ]));
+        const animalResults = await Promise.all(
+          animalIds.map((id) => getAnimal(id))
+        );
+        const animalMap: Record<string, AnimalInfo> = {};
+        animalResults.forEach((result) => {
+          if (result.status === 200 && result.data) {
+            const animal = result.data;
+            animalMap[animal.id] = {
+              id: animal.id,
+              name: animal.name,
+              species: animal.species,
+              breed: animal.breed,
+              pictureUrl: animal.pictureUrl,
+              owners: (animal.owners || []).map((ownerRel: { owner: { user: { id: string; email: string; userProfile?: { name?: string; pictureUrl?: string | null } } } }) => {
+                const user = ownerRel?.owner?.user;
+                const profile = user?.userProfile;
+                return {
+                  id: user?.id,
+                  name: profile?.name || user?.email || "Unknown",
+                  email: user?.email || "",
+                  pictureUrl: profile?.pictureUrl || null,
+                };
+              }).filter((o: OwnerInfo) => o.id && o.name && o.email),
+            };
+          }
+        });
+        const partnershipsWithDetails: PartnershipWithDetails[] = rawPartnerships.map((p) => ({
+          ...p,
+          requesterAnimal: animalMap[p.requesterAnimalId],
+          recipientAnimal: animalMap[p.recipientAnimalId],
+        }));
+        setPartnerships(partnershipsWithDetails);
+        setError(null);
+      } else {
+        setError("Failed to load partnership requests.");
+      }
+    } catch {
+      setError("Failed to load partnership requests.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshPartnerships();
   }, [currentUserId]);
 
   const handleAccept = async (id: string) => {
     await acceptPartnership(id);
-    window.location.reload();
+    refreshPartnerships();
   };
 
   const handleReject = async (id: string) => {
     await rejectPartnership(id);
-    window.location.reload();
+    refreshPartnerships();
   };
 
   const handleCancel = async (id: string) => {
     await cancelPartnership(id);
-    window.location.reload();
+    refreshPartnerships();
   };
 
   const handleReopen = async (id: string) => {
     await reopenPartnership(id);
-    window.location.reload();
+    refreshPartnerships();
   };
 
   const handleChat = async (otherUserId: string) => {
