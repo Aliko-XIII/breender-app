@@ -5,6 +5,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getReminders } from "../../api/reminderApi";
 import { ReminderType } from "../../types/reminder-type.enum";
 import { useUser } from "../../context/UserContext";
+import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import { format, parse, startOfWeek } from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 export const ReminderList = () => {
   const [reminders, setReminders] = useState<AnimalReminder[]>([]);
@@ -13,6 +17,19 @@ export const ReminderList = () => {
   const { id: animalId, userId: paramUserId } = useParams<{ id?: string; userId?: string }>();
   const { userId: contextUserId } = useUser();
   const navigate = useNavigate();
+  const [view, setView] = useState<'list' | 'calendar'>('list');
+
+  // Calendar localizer setup
+  const locales = {
+    'en-US': enUS,
+  };
+  const localizer = dateFnsLocalizer({
+    format,
+    parse,
+    startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+    getDay: (date: Date) => date.getDay(),
+    locales,
+  });
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -25,7 +42,7 @@ export const ReminderList = () => {
   });
 
   // Handle filter input changes
-  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
@@ -37,7 +54,7 @@ export const ReminderList = () => {
     setReminders([]);
     try {
       // Only send non-empty filters
-      const activeFilters: any = {};
+      const activeFilters: Record<string, string> = {};
       Object.entries(filters).forEach(([key, value]) => {
         if (value) activeFilters[key] = value;
       });
@@ -73,6 +90,16 @@ export const ReminderList = () => {
       return dateString;
     }
   };
+
+  // Transform reminders to calendar events
+  const calendarEvents = reminders.map((reminder) => ({
+    id: reminder.id,
+    title: reminder.reminderType + (reminder.animal ? ` (${reminder.animal.name})` : ''),
+    start: new Date(reminder.remindAt),
+    end: new Date(reminder.remindAt),
+    allDay: false,
+    resource: reminder,
+  }));
 
   const renderContent = () => {
     if (isLoading) {
@@ -134,6 +161,24 @@ export const ReminderList = () => {
       <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
         <Card.Header className="d-flex flex-column align-items-center">
           <span>Reminders</span>
+          {/* View Toggle */}
+          <div className="mb-2 mt-2">
+            <Button
+              variant={view === 'list' ? 'primary' : 'outline-primary'}
+              size="sm"
+              className="me-2"
+              onClick={() => setView('list')}
+            >
+              List View
+            </Button>
+            <Button
+              variant={view === 'calendar' ? 'primary' : 'outline-primary'}
+              size="sm"
+              onClick={() => setView('calendar')}
+            >
+              Calendar View
+            </Button>
+          </div>
           {/* Filter Form */}
           <Form className="w-100 mt-3" onSubmit={handleFilterSubmit}>
             <Row className="g-2 align-items-end">
@@ -175,7 +220,20 @@ export const ReminderList = () => {
           </Form>
         </Card.Header>
         <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
-          {renderContent()}
+          {view === 'list' ? renderContent() : (
+            <div style={{ height: 500 }}>
+              <Calendar
+                localizer={localizer}
+                events={calendarEvents}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: 500 }}
+                popup
+                tooltipAccessor={event => event.resource?.message || ''}
+                onSelectEvent={event => navigate(`/reminders/${event.id}`)}
+              />
+            </div>
+          )}
         </div>
       </Card>
     </div>
