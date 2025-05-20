@@ -18,8 +18,34 @@ export class PartnershipsService {
         });
     }
 
+
     async findAll(): Promise<Partnership[]> {
         return this.databaseService.partnership.findMany();
+    }
+
+    async findAllForUser(userId: string): Promise<Partnership[]> {
+        // Step 1: Find the Owner record for this user
+        const owner = await this.databaseService.owner.findUnique({
+            where: { userId },
+            select: { id: true },
+        });
+        if (!owner) return [];
+        // Step 2: Get all animal IDs for this owner
+        const animalOwners = await this.databaseService.animalOwner.findMany({
+            where: { ownerId: owner.id },
+            select: { animalId: true },
+        });
+        const animalIds = animalOwners.map((ao) => ao.animalId);
+        if (animalIds.length === 0) return [];
+        // Step 3: Return partnerships where user is owner of either animal
+        return this.databaseService.partnership.findMany({
+            where: {
+                OR: [
+                    { requesterAnimalId: { in: animalIds } },
+                    { recipientAnimalId: { in: animalIds } },
+                ],
+            },
+        });
     }
 
     async findOne(id: string): Promise<Partnership | null> {

@@ -17,6 +17,7 @@ export const getPartnerships = async (filters: {
   requesterAnimalId?: string,
   recipientAnimalId?: string,
   status?: string,
+  userId?: string,
 } = {}) => {
   try {
     const params = Object.fromEntries(

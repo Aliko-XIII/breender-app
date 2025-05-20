@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Body, Delete, Get, Param, Post, Patch, HttpCode } from '@nestjs/common';
+import { Controller, UseGuards, Body, Delete, Get, Param, Post, Patch, HttpCode, Query, Req, Request } from '@nestjs/common';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { PartnershipsService } from './partnerships.service';
 import { Partnership } from '@prisma/client';
@@ -15,8 +15,12 @@ export class PartnershipsController {
   }
 
   @Get()
-  async findAll(): Promise<Partnership[]> {
-    return this.partnershipsService.findAll();
+  async findAll(@Request() req): Promise<Partnership[]> {
+    const authUserId = req.authUserId;
+    if (authUserId) {
+      return this.partnershipsService.findAllForUser(authUserId);
+    }
+    return [];
   }
 
   @Get(':id')

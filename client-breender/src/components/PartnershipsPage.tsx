@@ -265,8 +265,9 @@ export const PartnershipsPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (!currentUserId) return;
     setLoading(true);
-    getPartnerships()
+    getPartnerships({ userId: currentUserId })
       .then(async (res) => {
         if (res.status === 200) {
           const rawPartnerships: PartnershipWithDetails[] = res.data;
@@ -313,7 +314,7 @@ export const PartnershipsPage: React.FC = () => {
       })
       .catch(() => setError("Failed to load partnership requests."))
       .finally(() => setLoading(false));
-  }, []);
+  }, [currentUserId]);
 
   const handleAccept = async (id: string) => {
     await acceptPartnership(id);
