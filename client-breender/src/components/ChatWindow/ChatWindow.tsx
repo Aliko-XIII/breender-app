@@ -37,6 +37,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ otherUserId }) => {
   const [sidebarLoading, setSidebarLoading] = useState(true);
   const [sidebarUsers, setSidebarUsers] = useState<Record<string, { id: string; name: string; email: string; pictureUrl?: string | null }>>({});
   const [lastMessages, setLastMessages] = useState<Record<string, { content: string; sentAt: string }>>({});
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch all chats for sidebar
@@ -212,53 +213,75 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({ otherUserId }) => {
   return (
     <div className="d-flex" style={{ height: '80vh', maxWidth: 900, margin: '32px auto 0 auto' }}>
       {/* Sidebar */}
-      <div className="chat-sidebar bg-white border-end p-2" style={{ width: 260, overflowY: 'auto' }}>
-        <h6 className="mb-3">Chats</h6>
-        {sidebarLoading ? (
-          <div className="spinner-border spinner-border-sm" role="status" />
-        ) : (
-          <ul className="list-unstyled mb-0">
-            {chats
-              .filter(chat => chat.participants.some(p => p.userId === userId))
-              .map((chat) => {
-                const other = chat.participants.find((p) => p.userId !== userId);
-                const user = other ? sidebarUsers[other.userId] : null;
-                const lastMsg = lastMessages[chat.id];
-                return (
-                  <li key={chat.id}>
-                    <button
-                      className={`btn btn-sm w-100 text-start mb-1 d-flex align-items-center ${selectedChat && selectedChat.id === chat.id ? 'btn-primary text-white' : 'btn-light'}`}
-                      onClick={() => handleSelectChat(chat)}
-                      style={{ minHeight: 64 }}
-                    >
-                      <img
-                        src={user?.pictureUrl && user.pictureUrl !== ''
-                          ? (user.pictureUrl.startsWith('http')
-                              ? user.pictureUrl
-                              : `${import.meta.env.VITE_SERVER_URL}${user.pictureUrl}`)
-                          : '/avatar-placeholder.png'}
-                        alt={user?.name || 'User'}
-                        style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', marginRight: 12, border: '1px solid #ccc', background: '#fff' }}
-                      />
-                      <div className="flex-grow-1 text-start" style={{ minWidth: 0 }}>
-                        <div className="fw-bold text-truncate" style={{ maxWidth: 140 }}>{user?.name || `User ${other?.userId}`}</div>
-                        <div className="small text-muted text-truncate" style={{ maxWidth: 140 }}>{user?.email}</div>
-                        {lastMsg && (
-                          <div className="small text-truncate" style={{ maxWidth: 140 }}>
-                            <span className="text-secondary">{lastMsg.content}</span>
-                            <span className="ms-2 text-muted" style={{ fontSize: '0.75em' }}>{new Date(lastMsg.sentAt).toLocaleTimeString()}</span>
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
-          </ul>
-        )}
-      </div>
+      {sidebarVisible && (
+        <div className="chat-sidebar bg-white border-end p-2" style={{ width: 260, overflowY: 'auto', transition: 'width 0.3s' }}>
+          <div className="d-flex justify-content-between align-items-center mb-2">
+            <h6 className="mb-0">Chats</h6>
+            <button
+              className="btn btn-sm btn-outline-secondary ms-2"
+              title="Hide sidebar"
+              onClick={() => setSidebarVisible(false)}
+              style={{ padding: '2px 8px', fontSize: '1.1em' }}
+            >
+              &laquo;
+            </button>
+          </div>
+          {sidebarLoading ? (
+            <div className="spinner-border spinner-border-sm" role="status" />
+          ) : (
+            <ul className="list-unstyled mb-0">
+              {chats
+                .filter(chat => chat.participants.some(p => p.userId === userId))
+                .map((chat) => {
+                  const other = chat.participants.find((p) => p.userId !== userId);
+                  const user = other ? sidebarUsers[other.userId] : null;
+                  const lastMsg = lastMessages[chat.id];
+                  return (
+                    <li key={chat.id}>
+                      <button
+                        className={`btn btn-sm w-100 text-start mb-1 d-flex align-items-center ${selectedChat && selectedChat.id === chat.id ? 'btn-primary text-white' : 'btn-light'}`}
+                        onClick={() => handleSelectChat(chat)}
+                        style={{ minHeight: 64 }}
+                      >
+                        <img
+                          src={user?.pictureUrl && user.pictureUrl !== ''
+                            ? (user.pictureUrl.startsWith('http')
+                                ? user.pictureUrl
+                                : `${import.meta.env.VITE_SERVER_URL}${user.pictureUrl}`)
+                            : '/avatar-placeholder.png'}
+                          alt={user?.name || 'User'}
+                          style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', marginRight: 12, border: '1px solid #ccc', background: '#fff' }}
+                        />
+                        <div className="flex-grow-1 text-start" style={{ minWidth: 0 }}>
+                          <div className="fw-bold text-truncate" style={{ maxWidth: 140 }}>{user?.name || `User ${other?.userId}`}</div>
+                          <div className="small text-muted text-truncate" style={{ maxWidth: 140 }}>{user?.email}</div>
+                          {lastMsg && (
+                            <div className="small text-truncate" style={{ maxWidth: 140 }}>
+                              <span className="text-secondary">{lastMsg.content}</span>
+                              <span className="ms-2 text-muted" style={{ fontSize: '0.75em' }}>{new Date(lastMsg.sentAt).toLocaleTimeString()}</span>
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    </li>
+                  );
+                })}
+            </ul>
+          )}
+        </div>
+      )}
       {/* Main chat area */}
-      <div className="chat-window card shadow p-3 flex-grow-1 d-flex flex-column" style={{ backgroundColor: '#f8f9fa' }}>
+      <div className="chat-window card shadow p-3 flex-grow-1 d-flex flex-column" style={{ backgroundColor: '#f8f9fa', transition: 'margin-left 0.3s', marginLeft: sidebarVisible ? 0 : 0 }}>
+        {!sidebarVisible && (
+          <button
+            className="btn btn-sm btn-outline-secondary mb-2 align-self-start"
+            title="Show sidebar"
+            onClick={() => setSidebarVisible(true)}
+            style={{ position: 'absolute', left: 0, top: 10, zIndex: 2, padding: '2px 8px', fontSize: '1.1em' }}
+          >
+            &raquo;
+          </button>
+        )}
         <div className="chat-header bg-light text-dark p-2 rounded mb-3 d-flex align-items-center" style={{ minHeight: 56, border: '1px solid #e0e0e0' }}>
           {profileLoading ? (
             <span className="spinner-border spinner-border-sm me-2" role="status" />
