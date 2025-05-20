@@ -10,6 +10,13 @@ interface AnimalMapProps {
     // Props for filtering or API fetching can be added later
 }
 
+// Extend AnimalMapInfo for UI display
+interface AnimalMapListInfo extends AnimalMapInfo {
+    breed?: string;
+    sex?: string;
+    birthdate?: string;
+}
+
 const containerStyle = {
   width: '100%',
   height: '400px',
@@ -25,7 +32,7 @@ const initialCenter = {
 };
 
 // Helper to resolve animal profile picture URL
-const resolveAnimalPictureUrl = (animal: AnimalMapInfo & { pictureUrl?: string; profilePicUrl?: string; photo?: string }) => {
+const resolveAnimalPictureUrl = (animal: AnimalMapListInfo & { pictureUrl?: string; profilePicUrl?: string; photo?: string }) => {
     const apiBase = import.meta.env.VITE_API_BASE_URL || '';
     // Try all possible fields for backward compatibility
     const url = animal.pictureUrl || animal.profilePicUrl || animal.photo;
@@ -37,9 +44,36 @@ const resolveAnimalPictureUrl = (animal: AnimalMapInfo & { pictureUrl?: string; 
     return '/animal-placeholder.png';
 };
 
+// Helper to calculate age from birthdate
+function getAge(birthdate: string) {
+    const birth = new Date(birthdate);
+    if (isNaN(birth.getTime())) return '';
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+    return age + ' yrs';
+}
+
+// Helper to calculate distance in meters between two lat/lng points
+function getDistanceInMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const toRad = (value: number) => (value * Math.PI) / 180;
+    const R = 6371000; // meters
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round(R * c);
+}
+
 export const AnimalMap: React.FC<AnimalMapProps> = () => {
-    const [animals, setAnimals] = useState<AnimalMapInfo[]>([]);
-    const [selectedAnimal, setSelectedAnimal] = useState<AnimalMapInfo | null>(null);
+    const [animals, setAnimals] = useState<AnimalMapListInfo[]>([]);
+    const [selectedAnimal, setSelectedAnimal] = useState<AnimalMapListInfo | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
@@ -99,6 +133,9 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                 latitude: animal.latitude,
                                 longitude: animal.longitude,
                                 canPartner: animal.canPartner,
+                                breed: animal.breed,
+                                sex: animal.sex,
+                                birthdate: animal.birthdate,
                             }))
                     );
                     setError(null);
@@ -157,8 +194,11 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
             });
     }, [userId]);
 
-    const handleMarkerClick = useCallback((animal: AnimalMapInfo) => {
-        if (!selectedMyAnimalId) return;
+    const handleMarkerClick = useCallback((animal: AnimalMapListInfo) => {
+        if (!selectedMyAnimalId) {
+            alert('Please select your animal before previewing or partnering with another animal.');
+            return;
+        }
         setSelectedAnimal(animal);
     }, [selectedMyAnimalId]);
 
@@ -166,8 +206,11 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         setSelectedAnimal(null);
     }, []);
 
-    const handleAnimalSelect = (animal: AnimalMapInfo) => {
-        if (!selectedMyAnimalId) return;
+    const handleAnimalSelect = (animal: AnimalMapListInfo) => {
+        if (!selectedMyAnimalId) {
+            alert('Please select your animal before previewing or partnering with another animal.');
+            return;
+        }
         setPreviewAnimalId(animal.id);
         navigate(`/animals/${animal.id}/preview?myAnimalId=${selectedMyAnimalId}`);
     };
@@ -282,9 +325,9 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             key={animal.id}
                             position={{ lat: animal.latitude, lng: animal.longitude }}
                             title={animal.name}
-                            onClick={() => setSelectedAnimal(animal)}
+                            onClick={() => handleMarkerClick(animal)}
                             icon={animalMarkerIcon}
-                            clickable={!!selectedMyAnimalId}
+                            clickable={true}
                         />
                     ))}
 
@@ -346,7 +389,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <li className="list-group-item text-center">No animals found.</li>
                     ) : (
                         animals.map(animal => (
-                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: selectedMyAnimalId ? 'pointer' : 'not-allowed', opacity: selectedMyAnimalId ? 1 : 0.5 }} onClick={() => selectedMyAnimalId && handleAnimalSelect(animal)}>
+                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: selectedMyAnimalId ? 'pointer' : 'not-allowed', opacity: selectedMyAnimalId ? 1 : 0.5 }} onClick={() => handleAnimalSelect(animal)}>
                                 <span className="d-flex align-items-center" style={{ gap: 8 }}>
                                     <img
                                         src={resolveAnimalPictureUrl(animal)}
@@ -354,11 +397,23 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                         style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%', marginRight: 8, border: '1px solid #eee' }}
                                         onError={e => { (e.target as HTMLImageElement).src = '/animal-placeholder.png'; }}
                                     />
-                                    <strong>{animal.name}</strong>
-                                    {animal.species ? <span className="text-muted"> ({animal.species})</span> : null}
+                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <strong>{animal.name}</strong>
+                                        {animal.species ? <span className="text-muted">({animal.species})</span> : null}
+                                        <span style={{ fontSize: 12, color: '#888' }}>
+                                            {animal.breed && <span>Breed: {animal.breed} </span>}
+                                            {animal.sex && <span>Sex: {animal.sex} </span>}
+                                            {animal.birthdate && <span>Age: {getAge(animal.birthdate)} </span>}
+                                        </span>
+                                    </div>
                                 </span>
                                 <span style={{ fontSize: 12, color: '#888' }}>
                                     Lat: {animal.latitude.toFixed(4)}, Lng: {animal.longitude.toFixed(4)}
+                                    {mapCenter && (
+                                        <>
+                                            {' | '}<b>{getDistanceInMeters(mapCenter.lat, mapCenter.lng, animal.latitude, animal.longitude)} m</b>
+                                        </>
+                                    )}
                                 </span>
                             </li>
                         ))

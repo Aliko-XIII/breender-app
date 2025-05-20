@@ -9,6 +9,20 @@ interface AnimalPreviewProps {
   onClose?: () => void;
 }
 
+// Helper to calculate distance in meters between two lat/lng points
+function getDistanceInMeters(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+  const R = 6371000; // meters
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c);
+}
+
 export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimalId, onClose }) => {
   const [animal, setAnimal] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,10 +106,26 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                 <span className="badge bg-light text-dark border">{myAnimal.breed || '-'}</span>
               </div>
               <div className="mb-2"><strong>Birth Date:</strong> {myAnimal.birthDate ? new Date(myAnimal.birthDate).toLocaleDateString() : '-'}</div>
+              {myAnimal.latitude && myAnimal.longitude && (
+                <div className="mb-2"><strong>Location:</strong> Lat: {myAnimal.latitude.toFixed(4)}, Lng: {myAnimal.longitude.toFixed(4)}</div>
+              )}
               {myAnimal.bio && <div className="mt-2 small text-muted" style={{ whiteSpace: 'pre-line' }}>{myAnimal.bio}</div>}
               <div className="mt-2 text-primary fw-bold">Your Animal</div>
             </div>
           </div>
+        </div>
+        {/* Distance and location info in the middle */}
+        <div className="col-12 col-md-2 d-flex flex-column align-items-center justify-content-center">
+          {myAnimal && animal && myAnimal.latitude && myAnimal.longitude && animal.latitude && animal.longitude && (
+            <>
+              <div className="mb-2 text-center">
+                <strong>Distance</strong>
+                <div style={{ fontSize: 20, fontWeight: 'bold', color: '#0d6efd' }}>
+                  {getDistanceInMeters(myAnimal.latitude, myAnimal.longitude, animal.latitude, animal.longitude)} m
+                </div>
+              </div>
+            </>
+          )}
         </div>
         {/* Partnerable Animal Profile */}
         <div className="col-12 col-md-5">
@@ -109,6 +139,9 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                 <span className="badge bg-light text-dark border">{animal.breed || '-'}</span>
               </div>
               <div className="mb-2"><strong>Birth Date:</strong> {animal.birthDate ? new Date(animal.birthDate).toLocaleDateString() : '-'}</div>
+              {animal.latitude && animal.longitude && (
+                <div className="mb-2"><strong>Location:</strong> Lat: {animal.latitude.toFixed(4)}, Lng: {animal.longitude.toFixed(4)}</div>
+              )}
               {animal.bio && <div className="mt-2 small text-muted" style={{ whiteSpace: 'pre-line' }}>{animal.bio}</div>}
               <div className="mt-2 text-danger fw-bold">Partnerable</div>
             </div>

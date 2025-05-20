@@ -55,16 +55,7 @@ export class DocumentsService {
         if (!animal) {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
-        // Check if the user is an owner of the animal
-        const isOwner = await this.databaseService.owner.findFirst({
-            where: {
-                userId: authUserId,
-                animals: { some: { id: animalId } },
-            },
-        });
-        if (!isOwner) {
-            throw new ForbiddenException('You are not assigned to this animal.');
-        }
+
         return this.databaseService.animalDocument.findMany({
             where: { animalId },
         });
