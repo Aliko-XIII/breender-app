@@ -9,6 +9,7 @@ import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
 import { format, parse, startOfWeek } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { useMediaQuery } from 'react-responsive';
 
 export const ReminderList = () => {
   const [reminders, setReminders] = useState<AnimalReminder[]>([]);
@@ -18,6 +19,9 @@ export const ReminderList = () => {
   const { userId: contextUserId } = useUser();
   const navigate = useNavigate();
   const [view, setView] = useState<'list' | 'calendar'>('list');
+
+  // Responsive: detect if mobile
+  const isMobile = useMediaQuery({ maxWidth: 600 });
 
   // Calendar localizer setup
   const locales = {
@@ -219,23 +223,44 @@ export const ReminderList = () => {
             </Row>
           </Form>
         </Card.Header>
-        <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
+        <div className="p-3 bg-white calendar-responsive-container" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
           {view === 'list' ? renderContent() : (
-            <div style={{ height: 500 }}>
+            <div style={{ height: isMobile ? 350 : 500, minWidth: 0 }}>
               <Calendar
                 localizer={localizer}
                 events={calendarEvents}
                 startAccessor="start"
                 endAccessor="end"
-                style={{ height: 500 }}
+                style={{ height: isMobile ? 350 : 500, width: '100%' }}
                 popup
                 tooltipAccessor={event => event.resource?.message || ''}
                 onSelectEvent={event => navigate(`/reminders/${event.id}`)}
+                views={isMobile ? ['agenda', 'day'] : undefined}
+                defaultView={isMobile ? 'agenda' : 'month'}
+                toolbar
               />
             </div>
           )}
         </div>
       </Card>
+      <style>{`
+        .calendar-responsive-container {
+          width: 100%;
+          min-width: 0;
+        }
+        @media (max-width: 600px) {
+          .calendar-responsive-container {
+            padding: 0.5rem !important;
+          }
+          .rbc-calendar {
+            font-size: 0.92em;
+          }
+          .rbc-toolbar {
+            flex-direction: column;
+            gap: 0.5rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };
