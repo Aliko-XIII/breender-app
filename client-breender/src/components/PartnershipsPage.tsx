@@ -9,6 +9,9 @@ import { getChats, createChat } from "../api/chatApi";
 const TABS = ["ACCEPTED", "PENDING", "REJECTED", "CANCELED"] as const;
 type TabType = typeof TABS[number];
 
+const TOP_TABS = ["PARTNERS", "PARTNERED_ANIMALS", "REQUESTS"] as const;
+type TopTabType = typeof TOP_TABS[number];
+
 interface OwnerInfo {
   id: string;
   name: string;
@@ -45,120 +48,36 @@ const getAnimalProfilePicUrl = (url?: string | null) => {
   return url;
 };
 
-export const PartnershipsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("ACCEPTED");
-  const [partnerships, setPartnerships] = useState<PartnershipWithDetails[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { userId: currentUserId } = useUser();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    setLoading(true);
-    getPartnerships()
-      .then(async (res) => {
-        if (res.status === 200) {
-          const rawPartnerships = res.data;
-          const animalIds = Array.from(new Set([
-            ...rawPartnerships.map((p: any) => p.requesterAnimalId),
-            ...rawPartnerships.map((p: any) => p.recipientAnimalId),
-          ]));
-          const animalResults = await Promise.all(
-            animalIds.map((id) => getAnimal(id))
-          );
-          const animalMap: Record<string, AnimalInfo> = {};
-          animalResults.forEach((result, idx) => {
-            if (result.status === 200 && result.data) {
-              const animal = result.data;
-              animalMap[animal.id] = {
-                id: animal.id,
-                name: animal.name,
-                species: animal.species,
-                breed: animal.breed,
-                pictureUrl: animal.pictureUrl,
-                owners: (animal.owners || []).map((ownerRel: any) => {
-                  const user = ownerRel?.owner?.user;
-                  const profile = user?.userProfile;
-                  return {
-                    id: user?.id,
-                    name: profile?.name || user?.email || "Unknown",
-                    email: user?.email || "",
-                    pictureUrl: profile?.pictureUrl || null,
-                  };
-                }).filter((o: OwnerInfo) => o.id && o.name && o.email),
-              };
-            }
-          });
-          const partnershipsWithDetails: PartnershipWithDetails[] = rawPartnerships.map((p: any) => ({
-            ...p,
-            requesterAnimal: animalMap[p.requesterAnimalId],
-            recipientAnimal: animalMap[p.recipientAnimalId],
-          }));
-          setPartnerships(partnershipsWithDetails);
-          setError(null);
-        } else {
-          setError("Failed to load partnership requests.");
-        }
-      })
-      .catch(() => setError("Failed to load partnership requests."))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleAccept = async (id: string) => {
-    await acceptPartnership(id);
-    window.location.reload();
-  };
-
-  const handleReject = async (id: string) => {
-    await rejectPartnership(id);
-    window.location.reload();
-  };
-
-  const handleCancel = async (id: string) => {
-    await cancelPartnership(id);
-    window.location.reload();
-  };
-
-  const handleReopen = async (id: string) => {
-    await reopenPartnership(id);
-    window.location.reload();
-  };
-
-  const handleChat = async (otherUserId: string) => {
-    if (!currentUserId || !otherUserId) return;
-    const chatsRes = await getChats();
-    let chat = null;
-    if (chatsRes.status === 200 && Array.isArray(chatsRes.data)) {
-      chat = chatsRes.data.find((c: any) =>
-        c.participants &&
-        c.participants.some((p: any) => p.userId === currentUserId) &&
-        c.participants.some((p: any) => p.userId === otherUserId)
-      );
-    }
-    if (!chat) {
-      const createRes = await createChat([currentUserId, otherUserId]);
-      if (createRes.status === 200 || createRes.status === 201) {
-        chat = createRes.data;
-      }
-    }
-    if (chat) {
-      navigate(`/chat/${otherUserId}`);
-    }
-  };
-
-  // Count partnerships by status for tab counters
-  const tabCounts: Record<TabType, number> = {
-    ACCEPTED: partnerships.filter((p) => p.status === "ACCEPTED").length,
-    PENDING: partnerships.filter((p) => p.status === "PENDING").length,
-    REJECTED: partnerships.filter((p) => p.status === "REJECTED").length,
-    CANCELED: partnerships.filter((p) => p.status === "CANCELED").length,
-  };
-
+function RequestsTabContent({
+  partnerships,
+  activeTab,
+  setActiveTab,
+  currentUserId,
+  handleAccept,
+  handleReject,
+  handleCancel,
+  handleReopen,
+  handleChat,
+  tabCounts,
+  loading,
+  error,
+}: {
+  partnerships: PartnershipWithDetails[];
+  activeTab: TabType;
+  setActiveTab: React.Dispatch<React.SetStateAction<TabType>>;
+  currentUserId: string;
+  handleAccept: (id: string) => void;
+  handleReject: (id: string) => void;
+  handleCancel: (id: string) => void;
+  handleReopen: (id: string) => void;
+  handleChat: (otherUserId: string) => void;
+  tabCounts: Record<TabType, number>;
+  loading: boolean;
+  error: string | null;
+}) {
   const filtered = partnerships.filter((p) => p.status === activeTab);
-
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Partnership Requests</h2>
+    <>
       <ul className="nav nav-tabs mb-3">
         {TABS.map((tab) => (
           <li className="nav-item" key={tab}>
@@ -331,6 +250,251 @@ export const PartnershipsPage: React.FC = () => {
             );
           })}
         </ul>
+      )}
+    </>
+  );
+}
+
+export const PartnershipsPage: React.FC = () => {
+  const [topTab, setTopTab] = useState<TopTabType>("PARTNERS");
+  const [activeTab, setActiveTab] = useState<TabType>("ACCEPTED");
+  const [partnerships, setPartnerships] = useState<PartnershipWithDetails[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { userId: currentUserId } = useUser();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setLoading(true);
+    getPartnerships()
+      .then(async (res) => {
+        if (res.status === 200) {
+          const rawPartnerships: PartnershipWithDetails[] = res.data;
+          const animalIds = Array.from(new Set([
+            ...rawPartnerships.map((p) => p.requesterAnimalId),
+            ...rawPartnerships.map((p) => p.recipientAnimalId),
+          ]));
+          const animalResults = await Promise.all(
+            animalIds.map((id) => getAnimal(id))
+          );
+          const animalMap: Record<string, AnimalInfo> = {};
+          animalResults.forEach((result) => {
+            if (result.status === 200 && result.data) {
+              const animal = result.data;
+              animalMap[animal.id] = {
+                id: animal.id,
+                name: animal.name,
+                species: animal.species,
+                breed: animal.breed,
+                pictureUrl: animal.pictureUrl,
+                owners: (animal.owners || []).map((ownerRel: { owner: { user: { id: string; email: string; userProfile?: { name?: string; pictureUrl?: string | null } } } }) => {
+                  const user = ownerRel?.owner?.user;
+                  const profile = user?.userProfile;
+                  return {
+                    id: user?.id,
+                    name: profile?.name || user?.email || "Unknown",
+                    email: user?.email || "",
+                    pictureUrl: profile?.pictureUrl || null,
+                  };
+                }).filter((o: OwnerInfo) => o.id && o.name && o.email),
+              };
+            }
+          });
+          const partnershipsWithDetails: PartnershipWithDetails[] = rawPartnerships.map((p) => ({
+            ...p,
+            requesterAnimal: animalMap[p.requesterAnimalId],
+            recipientAnimal: animalMap[p.recipientAnimalId],
+          }));
+          setPartnerships(partnershipsWithDetails);
+          setError(null);
+        } else {
+          setError("Failed to load partnership requests.");
+        }
+      })
+      .catch(() => setError("Failed to load partnership requests."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAccept = async (id: string) => {
+    await acceptPartnership(id);
+    window.location.reload();
+  };
+
+  const handleReject = async (id: string) => {
+    await rejectPartnership(id);
+    window.location.reload();
+  };
+
+  const handleCancel = async (id: string) => {
+    await cancelPartnership(id);
+    window.location.reload();
+  };
+
+  const handleReopen = async (id: string) => {
+    await reopenPartnership(id);
+    window.location.reload();
+  };
+
+  const handleChat = async (otherUserId: string) => {
+    if (!currentUserId || !otherUserId) return;
+    const chatsRes = await getChats();
+    let chat = null;
+    if (chatsRes.status === 200 && Array.isArray(chatsRes.data)) {
+      chat = chatsRes.data.find((c: { participants: { userId: string }[] }) =>
+        c.participants &&
+        c.participants.some((p) => p.userId === currentUserId) &&
+        c.participants.some((p) => p.userId === otherUserId)
+      );
+    }
+    if (!chat) {
+      const createRes = await createChat([currentUserId, otherUserId]);
+      if (createRes.status === 200 || createRes.status === 201) {
+        chat = createRes.data;
+      }
+    }
+    if (chat) {
+      navigate(`/chat/${otherUserId}`);
+    }
+  };
+
+  // Count partnerships by status for tab counters
+  const tabCounts: Record<TabType, number> = {
+    ACCEPTED: partnerships.filter((p) => p.status === "ACCEPTED").length,
+    PENDING: partnerships.filter((p) => p.status === "PENDING").length,
+    REJECTED: partnerships.filter((p) => p.status === "REJECTED").length,
+    CANCELED: partnerships.filter((p) => p.status === "CANCELED").length,
+  };
+
+  const partnerUsers: OwnerInfo[] = React.useMemo(() => {
+    const accepted = partnerships.filter((p) => p.status === "ACCEPTED");
+    const users: Record<string, OwnerInfo> = {};
+    accepted.forEach((p) => {
+      const owners = [
+        ...(p.requesterAnimal?.owners || []),
+        ...(p.recipientAnimal?.owners || []),
+      ];
+      owners.forEach((owner) => {
+        if (owner.id !== currentUserId && !users[owner.id]) {
+          users[owner.id] = owner;
+        }
+      });
+    });
+    return Object.values(users);
+  }, [partnerships, currentUserId]);
+
+  const partneredAnimals: AnimalInfo[] = React.useMemo(() => {
+    const accepted = partnerships.filter((p) => p.status === "ACCEPTED");
+    const animals: Record<string, AnimalInfo> = {};
+    accepted.forEach((p) => {
+      [p.requesterAnimal, p.recipientAnimal].forEach((animal) => {
+        if (
+          animal &&
+          !animal.owners.some((o) => o.id === currentUserId) &&
+          !animals[animal.id]
+        ) {
+          animals[animal.id] = animal;
+        }
+      });
+    });
+    return Object.values(animals);
+  }, [partnerships, currentUserId]);
+
+  return (
+    <div className="container mt-4">
+      <h2 className="mb-4">Partnerships</h2>
+      {/* Top-level tab bar */}
+      <ul className="nav nav-tabs mb-3">
+        {TOP_TABS.map((tab) => (
+          <li className="nav-item" key={tab}>
+            <button
+              className={`nav-link${topTab === tab ? " active" : ""}`}
+              onClick={() => setTopTab(tab)}
+              type="button"
+            >
+              {tab === "PARTNERS" ? "Partners" : tab === "PARTNERED_ANIMALS" ? "Partnered Animals" : "Requests"}
+            </button>
+          </li>
+        ))}
+      </ul>
+      {topTab === "PARTNERS" ? (
+        loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div className="alert alert-danger">{error}</div>
+        ) : partnerUsers.length === 0 ? (
+          <div className="alert alert-info">No partners found.</div>
+        ) : (
+          <ul className="list-group">
+            {partnerUsers.map((user) => (
+              <li className="list-group-item d-flex align-items-center justify-content-between" key={user.id}>
+                <div className="d-flex align-items-center gap-2">
+                  <Link to={`/user-profile/${user.id}`} className="d-flex align-items-center gap-2 text-decoration-none text-dark">
+                    <img
+                      src={user.pictureUrl && user.pictureUrl !== '' ? (user.pictureUrl.startsWith('http') ? user.pictureUrl : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${user.pictureUrl}`) : '/avatar-placeholder.png'}
+                      alt={user.name}
+                      style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee', border: '1px solid #ccc' }}
+                    />
+                    <div>
+                      <div className="fw-bold">{user.name}</div>
+                      <div className="text-muted" style={{ fontSize: 13 }}>{user.email}</div>
+                    </div>
+                  </Link>
+                </div>
+                <button className="btn btn-outline-secondary btn-sm" onClick={() => handleChat(user.id)}>
+                  Chat
+                </button>
+              </li>
+            ))}
+          </ul>
+        )
+      ) : topTab === "PARTNERED_ANIMALS" ? (
+        loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div className="alert alert-danger">{error}</div>
+        ) : partneredAnimals.length === 0 ? (
+          <div className="alert alert-info">No partnered animals found.</div>
+        ) : (
+          <ul className="list-group">
+            {partneredAnimals.map((animal) => (
+              <li className="list-group-item d-flex align-items-center justify-content-between" key={animal.id}>
+                <div className="d-flex align-items-center gap-2">
+                  <img
+                    src={getAnimalProfilePicUrl(animal.pictureUrl)}
+                    alt={animal.name}
+                    style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee', border: '1px solid #ccc' }}
+                  />
+                  <div>
+                    <Link to={`/animals/${animal.id}`} className="fw-bold">{animal.name}</Link>
+                    <div className="text-muted" style={{ fontSize: 13 }}>
+                      {animal.species || ''}{animal.species && animal.breed ? ', ' : ''}{animal.breed || ''}
+                    </div>
+                  </div>
+                </div>
+                {animal.owners.length > 0 && (
+                  <span className="text-muted" style={{ fontSize: 13 }}>
+                    owned by {animal.owners[0].name}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        )
+      ) : (
+        <RequestsTabContent
+          partnerships={partnerships}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          currentUserId={currentUserId || ''}
+          handleAccept={handleAccept}
+          handleReject={handleReject}
+          handleCancel={handleCancel}
+          handleReopen={handleReopen}
+          handleChat={handleChat}
+          tabCounts={tabCounts}
+          loading={loading}
+          error={error}
+        />
       )}
     </div>
   );
