@@ -416,4 +416,31 @@ export class AnimalsService {
 
     return user?.role === 'ADMIN';
   }
+
+  /**
+   * Get all owners' user records by animal ID
+   */
+  async getOwnerRecordsByAnimalId(animalId: string, authUserId: string) {
+    const animal = await this.databaseService.animal.findUnique({
+      where: { id: animalId },
+      include: {
+        owners: {
+          include: {
+            owner: {
+              include: { user: true }
+            }
+          }
+        }
+      }
+    });
+    if (!animal) {
+      throw new NotFoundException(`Animal with ID ${animalId} not found.`);
+    }
+    // Return all owners' user records
+    const ownerUsers = animal.owners.map((ao) => ao.owner?.user).filter(Boolean);
+    if (!ownerUsers.length) {
+      throw new NotFoundException('No owner users found for this animal.');
+    }
+    return ownerUsers;
+  }
 }
