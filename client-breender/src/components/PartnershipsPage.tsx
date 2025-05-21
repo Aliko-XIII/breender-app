@@ -122,9 +122,10 @@ function RequestsTabContent({
                   </>
                 );
               }
-            } else if (activeTab === "ACCEPTED" && p.requesterAnimal && p.requesterAnimal.owners.length > 0) {
-              // Allow cancel for accepted partnerships if current user is requester owner
-              const isMine = p.requesterAnimal.owners.some((o) => o.id === currentUserId);
+            } else if (activeTab === "ACCEPTED" && p.requesterAnimal && p.recipientAnimal) {
+              // Allow cancel for accepted partnerships if current user is an owner of either animal
+              const isMine = p.requesterAnimal.owners.some((o) => o.id === currentUserId) ||
+                p.recipientAnimal.owners.some((o) => o.id === currentUserId);
               if (isMine) {
                 actionButtons = (
                   <button className="btn btn-outline-danger btn-sm ms-2" onClick={() => handleCancel(p.id)}>
