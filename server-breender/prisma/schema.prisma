@@ -21,6 +21,53 @@ enum Sex {
   @@map("sex")
 }
 
+enum AnimalTag {
+  FRIENDLY
+  AGGRESSIVE
+  PLAYFUL
+  SHY
+  ENERGETIC
+  CALM
+  INTELLIGENT
+  TRAINED
+  VOCAL
+  QUIET
+  CURIOUS
+  INDEPENDENT
+  SOCIAL
+  PROTECTIVE
+  AFFECTIONATE
+  HUNTER
+  LAZY
+
+  @@map("animal_tag")
+}
+
+enum OwnerTag {
+  RESPONSIBLE
+  EXPERIENCED
+  FRIENDLY
+  COMMUNICATIVE
+  CARING
+  ORGANIZED
+  TRUSTWORTHY
+  PATIENT
+  KNOWLEDGEABLE
+  ACTIVE
+  SUPPORTIVE
+  FLEXIBLE
+  DEDICATED
+  PUNCTUAL
+  EDUCATED
+  SOCIAL
+  CALM
+  ENTHUSIASTIC
+  ADAPTIVE
+  HELPFUL
+
+  @@map("owner_tag")
+}
+
 model User {
   id           String        @id @default(uuid()) @map("user_id")
   email        String        @unique
@@ -44,6 +91,7 @@ model Owner {
   user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   animals      AnimalOwner[]
   is_available Boolean       @default(true) // Позначає чи доступний власник для партнерства
+  tags         OwnerTag[]    @default([]) @map("tags")
 
   @@map("owners")
 }
@@ -81,6 +129,9 @@ model Animal {
   latitude      Float?   @map("latitude")
   longitude     Float?   @map("longitude")
   profilePicUrl String?  @map("profile_pic_url")
+  isSterilized  Boolean  @default(false) @map("is_sterilized")
+  customData    Json?    @map("custom_data")
+  tags          AnimalTag[] @default([]) @map("tags")
 
   owners            AnimalOwner[]
   animalDocuments   AnimalDocument[]
