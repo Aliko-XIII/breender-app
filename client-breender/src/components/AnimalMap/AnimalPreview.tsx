@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { getAnimal } from "../../api/animalApi";
+import { getAnimal, getAnimalOwners } from "../../api/animalApi";
 import { requestPartnership } from "../../api/partnershipApi";
+import { getUser } from "../../api/userApi";
 import { useNavigate } from "react-router-dom";
+import { AnimalOwner } from "../../types/owner";
+import { Animal } from "../../types/animal";
+import { UserMention } from "../UserMention/UserMention";
 
 interface AnimalPreviewProps {
   animalId: string;
@@ -14,7 +18,7 @@ function getDistanceInMeters(lat1: number, lng1: number, lat2: number, lng2: num
   const toRad = (value: number) => (value * Math.PI) / 180;
   const R = 6371000; // meters
   const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
+  const dLng = toRad(lat2 - lat1);
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
@@ -24,14 +28,15 @@ function getDistanceInMeters(lat1: number, lng1: number, lat2: number, lng2: num
 }
 
 export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimalId, onClose }) => {
-  const [animal, setAnimal] = useState<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [myAnimal, setMyAnimal] = useState<any>(null);
+  const [animal, setAnimal] = useState<Animal | null>(null);
+  const [myAnimal, setMyAnimal] = useState<Animal | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(false);
   const [requestError, setRequestError] = useState<string | null>(null);
   const [requestSuccess, setRequestSuccess] = useState(false);
+  const [myAnimalOwners, setMyAnimalOwners] = useState<AnimalOwner[]>([]);
+  const [animalOwners, setAnimalOwners] = useState<AnimalOwner[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,6 +46,24 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
         if (res.status === 200) {
           setAnimal(res.data);
           setError(null);
+          // Fetch owners for the animal
+          getAnimalOwners(animalId).then(async (ownersRes) => {
+            if (ownersRes.status === 200) {
+              // Fetch profile for each owner
+              const ownersWithProfile = await Promise.all(
+                ownersRes.data.map(async (owner: AnimalOwner) => {
+                  if (!owner.profile) {
+                    const userRes = await getUser(owner.id, true);
+                    if (userRes.status === 200 && userRes.data.profile) {
+                      return { ...owner, profile: userRes.data.profile };
+                    }
+                  }
+                  return owner;
+                })
+              );
+              setAnimalOwners(ownersWithProfile);
+            } else setAnimalOwners([]);
+          });
         } else {
           setError("Could not load animal info.");
         }
@@ -55,11 +78,32 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
       .then((res) => {
         if (res.status === 200) {
           setMyAnimal(res.data);
+          // Fetch owners for my animal
+          getAnimalOwners(myAnimalId).then(async (ownersRes) => {
+            if (ownersRes.status === 200) {
+              const ownersWithProfile = await Promise.all(
+                ownersRes.data.map(async (owner: AnimalOwner) => {
+                  if (!owner.profile) {
+                    const userRes = await getUser(owner.id, true);
+                    if (userRes.status === 200 && userRes.data.profile) {
+                      return { ...owner, profile: userRes.data.profile };
+                    }
+                  }
+                  return owner;
+                })
+              );
+              setMyAnimalOwners(ownersWithProfile);
+            } else setMyAnimalOwners([]);
+          });
         } else {
           setMyAnimal(null);
+          setMyAnimalOwners([]);
         }
       })
-      .catch(() => setMyAnimal(null));
+      .catch(() => {
+        setMyAnimal(null);
+        setMyAnimalOwners([]);
+      });
   }, [myAnimalId]);
 
   const handleRequestPartnership = async () => {
@@ -78,6 +122,24 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
       setRequesting(false);
     }
   };
+
+  // Helper to render owners' info
+  const renderOwners = (owners: AnimalOwner[]) => (
+    <div className="mt-2">
+      <div className="fw-bold small mb-1">Owner{owners.length > 1 ? 's' : ''}:</div>
+      {owners.length === 0 && <div className="small text-muted">No owner info</div>}
+      {owners.map((owner, idx) => (
+        <UserMention
+          key={owner.id || idx}
+          userId={owner.id}
+          userName={owner.profile?.name || owner.email}
+          userEmail={owner.email}
+          userPictureUrl={owner.profile?.pictureUrl}
+          clickable
+        />
+      ))}
+    </div>
+  );
 
   if (loading) return <div className="d-flex justify-content-center align-items-center p-5" style={{ minHeight: 300 }}><div className="spinner-border text-primary" role="status"><span className="visually-hidden">Loading...</span></div></div>;
   if (error) return <div className="alert alert-danger d-flex align-items-center"><span className="me-2">❌</span>{error}</div>;
@@ -110,6 +172,7 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                 <div className="mb-2"><strong>Location:</strong> Lat: {myAnimal.latitude.toFixed(4)}, Lng: {myAnimal.longitude.toFixed(4)}</div>
               )}
               {myAnimal.bio && <div className="mt-2 small text-muted" style={{ whiteSpace: 'pre-line' }}>{myAnimal.bio}</div>}
+              {renderOwners(myAnimalOwners)}
               <div className="mt-2 text-primary fw-bold">Your Animal</div>
             </div>
           </div>
@@ -143,6 +206,7 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                 <div className="mb-2"><strong>Location:</strong> Lat: {animal.latitude.toFixed(4)}, Lng: {animal.longitude.toFixed(4)}</div>
               )}
               {animal.bio && <div className="mt-2 small text-muted" style={{ whiteSpace: 'pre-line' }}>{animal.bio}</div>}
+              {renderOwners(animalOwners)}
               <div className="mt-2 text-danger fw-bold">Partnerable</div>
             </div>
           </div>

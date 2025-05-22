@@ -10,6 +10,7 @@ interface UserMentionProps {
     userName: string;
     userEmail: string; // Add email prop
     userPictureUrl?: string | null; // Add optional picture URL prop
+    clickable?: boolean; // Add clickable prop
 }
 
 // Helper to get absolute URL for profile picture
@@ -28,7 +29,8 @@ export const UserMention: React.FC<UserMentionProps> = ({
     userId,
     userName,
     userEmail, // Destructure new prop
-    userPictureUrl // Destructure new prop
+    userPictureUrl, // Destructure new prop
+    clickable = false // Destructure clickable prop, default false
 }) => {
     const { userId: loggedInUserId, isLoading: isUserContextLoading } = useUser();
 
@@ -39,6 +41,23 @@ export const UserMention: React.FC<UserMentionProps> = ({
             return <span className={styles.userName}>{userName}</span>;
         }
 
+        // If clickable, always link to public profile (but use /user-profile/:id for self)
+        if (clickable) {
+            if (loggedInUserId === userId) {
+                return (
+                    <Link to={`/user-profile`} className={styles.userNameLink}>
+                        {userName}
+                    </Link>
+                );
+            } else {
+                return (
+                    <Link to={`/user-profile/${userId}`} className={styles.userNameLink}>
+                        {userName}
+                    </Link>
+                );
+            }
+        }
+
         // Link to personal profile if the ID matches the logged-in user
         if (loggedInUserId === userId) {
             return (
@@ -47,8 +66,7 @@ export const UserMention: React.FC<UserMentionProps> = ({
                 </Link>
             );
         } else {
-            // Otherwise, just display the name as text (can be linked to public profile later)
-            // TODO: Link to `/users/${userId}` for public profiles
+            // Otherwise, just display the name as text
             return <span className={styles.userName}>{userName}</span>;
         }
     };
