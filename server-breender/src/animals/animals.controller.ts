@@ -86,8 +86,8 @@ export class AnimalsController {
     };
   }
 
-  @Get(':id/owner-records')
-  async getOwnerRecord(@Request() req, @Param('id') id: string) {
+  @Get(':id/owners')
+  async getOwnerRecords(@Request() req, @Param('id') id: string) {
     const authUserId = req.authUserId;
     return this.animalsService.getOwnerRecordsByAnimalId(id, authUserId);
   }
