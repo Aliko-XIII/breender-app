@@ -92,6 +92,7 @@ model Owner {
   animals      AnimalOwner[]
   is_available Boolean       @default(true) // Позначає чи доступний власник для партнерства
   tags         OwnerTag[]    @default([]) @map("tags")
+  customData   Json?         @map("custom_data")
 
   @@map("owners")
 }
