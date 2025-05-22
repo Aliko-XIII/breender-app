@@ -1,3 +1,4 @@
+import './dark-theme.css';
 import { Routes, Route, useParams, useSearchParams } from "react-router-dom";
 import { Login } from './components/Login/Login';
 import { Register } from './components/Register/Register';

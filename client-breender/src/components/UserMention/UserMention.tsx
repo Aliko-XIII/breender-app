@@ -73,13 +73,14 @@ export const UserMention: React.FC<UserMentionProps> = ({
 
     return (
         // Main container using Flexbox for layout
-        <div className={styles.userMentionContainer}>
+        <div className={styles.userMentionContainer} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)', borderRadius: 8, padding: 6 }}>
             {/* Profile Picture */}
             <img
                 // Use provided picture URL or fallback to a placeholder
                 src={getProfilePicUrl(userPictureUrl)}
                 alt={`${userName}'s avatar`}
                 className={styles.avatar}
+                style={{ background: 'var(--color-bg-primary)', border: '1px solid var(--color-border)' }}
                 // Add basic error handling for images
                 onError={(e) => {
                     // If the provided image fails to load, fall back to the placeholder
@@ -90,11 +91,11 @@ export const UserMention: React.FC<UserMentionProps> = ({
                 }}
             />
             {/* Container for text info (Name and Email) */}
-            <div className={styles.userInfo}>
+            <div className={styles.userInfo} style={{ color: 'var(--color-text)' }}>
                 {/* Render the name using the helper component */}
                 <NameComponent />
                 {/* Display the user's email below the name */}
-                <span className={styles.userEmail}>{userEmail}</span>
+                <span className={styles.userEmail} style={{ color: 'var(--color-text-secondary)' }}>{userEmail}</span>
             </div>
         </div>
     );

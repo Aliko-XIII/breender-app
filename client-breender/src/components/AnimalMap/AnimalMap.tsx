@@ -5,6 +5,7 @@ import { AnimalMapInfo } from '../../types'; // Adjust path
 import { getAnimals, getAnimalsForMap } from '../../api/animalApi';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
+import './AnimalMap.css';
 
 interface AnimalMapProps {
     // Props for filtering or API fetching can be added later
@@ -30,6 +31,58 @@ const initialCenter = {
   lat: 45.35,
   lng: 28.83
 };
+
+// Add dark map style array
+const darkMapStyle = [
+  { elementType: 'geometry', stylers: [{ color: '#23272f' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#23272f' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#e0e0e0' }] },
+  {
+    featureType: 'administrative',
+    elementType: 'geometry',
+    stylers: [{ color: '#444b58' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'geometry',
+    stylers: [{ color: '#23272f' }],
+  },
+  {
+    featureType: 'poi.park',
+    elementType: 'geometry',
+    stylers: [{ color: '#263c3f' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#383c45' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#23272f' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#2c313a' }],
+  },
+  {
+    featureType: 'transit',
+    elementType: 'geometry',
+    stylers: [{ color: '#23272f' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#1a1e23' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#3d4852' }],
+  },
+];
 
 // Helper to resolve animal profile picture URL
 const resolveAnimalPictureUrl = (animal: AnimalMapListInfo & { pictureUrl?: string; profilePicUrl?: string; photo?: string }) => {
@@ -62,7 +115,7 @@ function getDistanceInMeters(lat1: number, lng1: number, lat2: number, lng2: num
     const toRad = (value: number) => (value * Math.PI) / 180;
     const R = 6371000; // meters
     const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
+    const dLng = toRad(lat2 - lng1);
     const a =
         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
         Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
@@ -241,55 +294,56 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     }
 
     return (
-        <div className="animal-map-container my-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div className="animal-map-container my-4" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'var(--color-bg-primary)', color: 'var(--color-text)', borderRadius: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.18)', padding: 24 }}>
             <div className="mb-3" style={{ width: '100%', maxWidth: 800 }}>
-                <label htmlFor="my-animal-select" className="form-label fw-bold">Choose your animal to find a partner for:</label>
+                <label htmlFor="my-animal-select" className="form-label fw-bold" style={{ color: 'var(--color-text)' }}>Choose your animal to find a partner for:</label>
                 <select
                     id="my-animal-select"
-                    className="form-select"
+                    className="form-select bg-dark text-light border-secondary"
+                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                     value={selectedMyAnimalId}
                     onChange={e => setSelectedMyAnimalId(e.target.value)}
                 >
                     <option value="">-- Select your animal --</option>
                     {myAnimals.map(animal => (
-                        <option key={animal.id} value={animal.id}>
+                        <option key={animal.id} value={animal.id} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
                             {animal.name}{animal.species ? ` (${animal.species})` : ''}
                         </option>
                     ))}
                 </select>
             </div>
             {!selectedMyAnimalId && (
-                <div className="alert alert-warning mb-3" style={{ width: '100%', maxWidth: 800 }}>
+                <div className="alert alert-warning mb-3" style={{ width: '100%', maxWidth: 800, background: 'var(--color-bg-secondary)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}>
                     Please select your animal before proceeding.
                 </div>
             )}
 
-            <form className="mb-4" style={{ width: '100%', maxWidth: 800 }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
+            <form className="mb-4" style={{ width: '100%', maxWidth: 800, background: 'var(--color-bg-secondary)', borderRadius: 12, padding: 16, border: '1px solid var(--color-border)' }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
                 <div className="row g-2 align-items-end">
                     <div className="col-md-2">
-                        <input type="text" className="form-control" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} />
+                        <input type="text" className="form-control bg-dark text-light border-secondary" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                     <div className="col-md-2">
-                        <input type="text" className="form-control" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} />
+                        <input type="text" className="form-control bg-dark text-light border-secondary" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                     <div className="col-md-2">
-                        <input type="text" className="form-control" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} />
+                        <input type="text" className="form-control bg-dark text-light border-secondary" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                     <div className="col-md-2">
-                        <select className="form-select" name="sex" value={filters.sex} onChange={handleFilterChange}>
+                        <select className="form-select bg-dark text-light border-secondary" name="sex" value={filters.sex} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
                             <option value="">Sex</option>
                             <option value="MALE">Male</option>
                             <option value="FEMALE">Female</option>
                         </select>
                     </div>
                     <div className="col-md-2">
-                        <input type="date" className="form-control" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31" />
+                        <input type="date" className="form-control bg-dark text-light border-secondary" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                     <div className="col-md-2">
-                        <input type="date" className="form-control" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" />
+                        <input type="date" className="form-control bg-dark text-light border-secondary" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                     <div className="col-md-2">
-                        <input type="number" className="form-control" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" />
+                        <input type="number" className="form-control bg-dark text-light border-secondary" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                     <div className="col-md-2">
                         <button type="submit" className="btn btn-primary w-100">Apply Filters</button>
@@ -297,10 +351,10 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                 </div>
             </form>
 
-            <h2 className="text-start w-100" style={{ maxWidth: 800 }}>Animal Locations</h2>
+            <h2 className="text-start w-100" style={{ maxWidth: 800, color: 'var(--color-text)' }}>Animal Locations</h2>
 
-            {isLoading && <p>Loading map and animal data...</p>}
-            {error && <div className="alert alert-warning">{error}</div>}
+            {isLoading && <p style={{ color: 'var(--color-text)' }}>Loading map and animal data...</p>}
+            {error && <div className="alert alert-warning" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}>{error}</div>}
 
             <LoadScript googleMapsApiKey={googleMapsApiKey}>
                 <GoogleMap
@@ -309,6 +363,9 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     zoom={13}
                     options={{
                         streetViewControl: false,
+                        styles: darkMapStyle,
+                        backgroundColor: '#23272f',
+                        disableDefaultUI: false,
                     }}
                     onLoad={handleMapLoad}
                 >
@@ -335,21 +392,24 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <InfoWindow
                             position={{ lat: selectedAnimal.latitude, lng: selectedAnimal.longitude }}
                             onCloseClick={handleInfoWindowClose}
+                            options={{
+                                pixelOffset: new window.google.maps.Size(0, -30),
+                            }}
                         >
-                            <div style={{ minWidth: 180 }}>
+                            <div style={{ minWidth: 180, background: 'var(--color-bg-secondary)', color: 'var(--color-text)', borderRadius: 8, border: '1px solid var(--color-border)', boxShadow: '0 2px 8px rgba(0,0,0,0.4)', padding: 8 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                                     <img
                                         src={resolveAnimalPictureUrl(selectedAnimal)}
                                         alt={selectedAnimal.name}
-                                        style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: '50%', border: '1px solid #eee' }}
+                                        style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: '50%', border: '1px solid #888' }}
                                         onError={e => { (e.target as HTMLImageElement).src = '/animal-placeholder.png'; }}
                                     />
                                     <div>
-                                        <h5 style={{ margin: 0 }}>{selectedAnimal.name}</h5>
-                                        {selectedAnimal.species && <div style={{ fontSize: 13, color: '#666' }}>Species: {selectedAnimal.species}</div>}
+                                        <h5 style={{ margin: 0, color: 'var(--color-text)' }}>{selectedAnimal.name}</h5>
+                                        {selectedAnimal.species && <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Species: {selectedAnimal.species}</div>}
                                     </div>
                                 </div>
-                                <p style={{ fontSize: 12, margin: 0 }}><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
+                                <p style={{ fontSize: 12, margin: 0, color: 'var(--color-text-secondary)' }}><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
                                 <button className="btn btn-primary btn-sm mt-2" onClick={() => handleAnimalSelect(selectedAnimal)} disabled={!selectedMyAnimalId}>
                                     Preview & Partner
                                 </button>
@@ -366,9 +426,10 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             alt="Your location"
                             width={32}
                             height={32}
+                            style={{ filter: 'brightness(0.9)' }}
                         />
                     </span>
-                    <span>Your Location</span>
+                    <span style={{ color: 'var(--color-text)' }}>Your Location</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span style={{ display: 'inline-block', width: 32, height: 32 }}>
@@ -377,37 +438,38 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             alt="Partnerable animal"
                             width={32}
                             height={32}
+                            style={{ filter: 'brightness(0.9)' }}
                         />
                     </span>
-                    <span>Partnerable Animal</span>
+                    <span style={{ color: 'var(--color-text)' }}>Partnerable Animal</span>
                 </div>
             </div>
             <div style={{ width: '100%', maxWidth: 800, margin: '32px auto 0 auto' }}>
-                <h3 className="mb-3">Animals List</h3>
-                <ul className="list-group">
+                <h3 className="mb-3" style={{ color: 'var(--color-text)' }}>Animals List</h3>
+                <ul className="list-group" style={{ background: 'var(--color-bg-secondary)', borderRadius: 8, border: '1px solid var(--color-border)' }}>
                     {animals.length === 0 ? (
-                        <li className="list-group-item text-center">No animals found.</li>
+                        <li className="list-group-item text-center" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)', border: 'none' }}>No animals found.</li>
                     ) : (
                         animals.map(animal => (
-                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: selectedMyAnimalId ? 'pointer' : 'not-allowed', opacity: selectedMyAnimalId ? 1 : 0.5 }} onClick={() => handleAnimalSelect(animal)}>
+                            <li key={animal.id} className="list-group-item d-flex justify-content-between align-items-center" style={{ cursor: selectedMyAnimalId ? 'pointer' : 'not-allowed', opacity: selectedMyAnimalId ? 1 : 0.5, background: 'var(--color-bg-primary)', color: 'var(--color-text)', borderBottom: '1px solid var(--color-border)' }} onClick={() => handleAnimalSelect(animal)}>
                                 <span className="d-flex align-items-center" style={{ gap: 8 }}>
                                     <img
                                         src={resolveAnimalPictureUrl(animal)}
                                         alt={animal.name}
-                                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%', marginRight: 8, border: '1px solid #eee' }}
+                                        style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: '50%', marginRight: 8, border: '1px solid #888' }}
                                         onError={e => { (e.target as HTMLImageElement).src = '/animal-placeholder.png'; }}
                                     />
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <strong>{animal.name}</strong>
-                                        {animal.species ? <span className="text-muted">({animal.species})</span> : null}
-                                        <span style={{ fontSize: 12, color: '#888' }}>
+                                        <strong style={{ color: 'var(--color-text)' }}>{animal.name}</strong>
+                                        {animal.species ? <span className="text-muted" style={{ color: 'var(--color-text-secondary)' }}>({animal.species})</span> : null}
+                                        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
                                             {animal.breed && <span>Breed: {animal.breed} </span>}
                                             {animal.sex && <span>Sex: {animal.sex} </span>}
                                             {animal.birthdate && <span>Age: {getAge(animal.birthdate)} </span>}
                                         </span>
                                     </div>
                                 </span>
-                                <span style={{ fontSize: 12, color: '#888' }}>
+                                <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
                                     Lat: {animal.latitude.toFixed(4)}, Lng: {animal.longitude.toFixed(4)}
                                     {mapCenter && (
                                         <>

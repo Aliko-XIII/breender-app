@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAnimals } from "../../api/animalApi";
 import { useUser } from "../../context/UserContext";
+import './AnimalList.css';
 
 export const AnimalList: React.FC = () => {
     const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string; pictureUrl?: string | null }[]>([]);
@@ -94,35 +95,53 @@ export const AnimalList: React.FC = () => {
             <form className="mb-4" onSubmit={handleFilterSubmit}>
                 <div className="row g-2 align-items-end">
                     <div className="col-md-2">
-                        <input type="text" className="form-control" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} />
+                        <input type="text" className="form-control animal-filter-input" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <input type="text" className="form-control" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} />
+                        <input type="text" className="form-control animal-filter-input" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <input type="text" className="form-control" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} />
+                        <input type="text" className="form-control animal-filter-input" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <select className="form-select" name="sex" value={filters.sex} onChange={handleFilterChange}>
-                            <option value="">Sex</option>
+                        <select className="form-select animal-filter-input" name="sex" value={filters.sex} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        >
+                            <option value="" style={{ color: '#b0b3b8' }}>Sex</option>
                             <option value="MALE">Male</option>
                             <option value="FEMALE">Female</option>
                         </select>
                     </div>
                     <div className="col-md-2">
-                        <input type="date" className="form-control" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31" />
+                        <input type="date" className="form-control animal-filter-input" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31"
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <input type="date" className="form-control" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" />
+                        <input type="date" className="form-control animal-filter-input" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31"
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <input type="number" className="form-control" name="latitude" placeholder="Latitude" value={filters.latitude} onChange={handleFilterChange} step="any" />
+                        <input type="number" className="form-control animal-filter-input" name="latitude" placeholder="Latitude" value={filters.latitude} onChange={handleFilterChange} step="any"
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <input type="number" className="form-control" name="longitude" placeholder="Longitude" value={filters.longitude} onChange={handleFilterChange} step="any" />
+                        <input type="number" className="form-control animal-filter-input" name="longitude" placeholder="Longitude" value={filters.longitude} onChange={handleFilterChange} step="any"
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
-                        <input type="number" className="form-control" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" />
+                        <input type="number" className="form-control animal-filter-input" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any"
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
                     <div className="col-md-2">
                         <button type="submit" className="btn btn-primary w-100">Apply Filters</button>

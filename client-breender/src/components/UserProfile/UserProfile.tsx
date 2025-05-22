@@ -167,8 +167,20 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
             style={{ width: "100px", height: "100px", objectFit: "cover" }}
           />
           {isEditing && isOwnProfile && (
-            <div className="mt-2">
-              <input type="file" accept="image/*" onChange={handleFileChange} />
+            <div className="mt-2 d-flex align-items-center justify-content-center gap-2">
+              <label htmlFor="profilePicUpload" className="btn btn-outline-primary btn-sm mb-0">
+                Choose File
+              </label>
+              <input
+                id="profilePicUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <span className="text-secondary small">
+                {selectedFile ? selectedFile.name : "No file chosen"}
+              </span>
               <button
                 className="btn btn-outline-primary btn-sm ms-2"
                 onClick={handleUploadPic}
@@ -189,6 +201,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
               value={formData.name || ""}
               onChange={handleChange}
               className="form-control"
+              style={{
+                background: 'var(--color-bg-secondary)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)'
+              }}
             />
           ) : (
             <span className="ms-2">{userProfile.name}</span>
@@ -215,6 +232,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
               onChange={handleChange}
               className="form-control"
               placeholder="Not set"
+              style={{
+                background: 'var(--color-bg-secondary)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)'
+              }}
             />
           ) : (
             <span className="ms-2">{userProfile.phone || "Not set"}</span>
@@ -230,6 +252,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
               onChange={handleChange}
               className="form-control"
               placeholder="Not set"
+              style={{
+                background: 'var(--color-bg-secondary)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)'
+              }}
             />
           ) : (
             <p className="mt-1" style={{ whiteSpace: "pre-wrap" }}>{userProfile.bio || "Not set"}</p>
@@ -269,6 +296,11 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
               onChange={handleChange}
               className="form-control"
               placeholder="Not set"
+              style={{
+                background: 'var(--color-bg-secondary)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border)'
+              }}
             />
           </div>
         )}

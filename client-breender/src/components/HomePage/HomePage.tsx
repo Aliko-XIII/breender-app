@@ -332,7 +332,7 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                                 ) : (
                                     <ul className="list-group">
                                         {pendingRequests.map((req) => (
-                                            <li className="list-group-item" key={req.id}>
+                                            <li className="list-group-item" key={req.id} style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
                                                 <div className="row">
                                                     <div className="col-md-6 mb-2 mb-md-0">
                                                         <div className="fw-bold">From:</div>
@@ -349,12 +349,13 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                                                                 )}
                                                                 {req.requesterAnimal.owners?.length > 0 && (
                                                                     <>
-                                                                        {' '}<span> owned by </span>
+                                                                        {' '}<br/><span> owned by </span><br/>
                                                                         <UserMention
                                                                             userId={req.requesterAnimal.owners[0].id}
                                                                             userName={req.requesterAnimal.owners[0].name}
                                                                             userEmail={req.requesterAnimal.owners[0].email}
                                                                             userPictureUrl={req.requesterAnimal.owners[0].pictureUrl}
+                                                                            clickable={true}
                                                                         />
                                                                     </>
                                                                 )}
@@ -378,12 +379,13 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                                                                 )}
                                                                 {req.recipientAnimal.owners?.length > 0 && (
                                                                     <>
-                                                                        {' '}<span> owned by </span>
+                                                                        {' '}<br/><span> owned by </span><br/>
                                                                         <UserMention
                                                                             userId={req.recipientAnimal.owners[0].id}
                                                                             userName={req.recipientAnimal.owners[0].name}
                                                                             userEmail={req.recipientAnimal.owners[0].email}
                                                                             userPictureUrl={req.recipientAnimal.owners[0].pictureUrl}
+                                                                            clickable={true}
                                                                         />
                                                                     </>
                                                                 )}
@@ -393,7 +395,7 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="small text-muted mt-2">Requested at: {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '-'}</div>
+                                                <div className="small text-muted mt-2" style={{ color: 'var(--color-text-secondary)' }}>Requested at: {req.requestedAt ? new Date(req.requestedAt).toLocaleString() : '-'}</div>
                                             </li>
                                         ))}
                                     </ul>

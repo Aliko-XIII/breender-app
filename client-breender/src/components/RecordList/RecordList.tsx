@@ -134,12 +134,12 @@ export const RecordList = () => {
 
     return (
         <div className="d-flex justify-content-center">
-            <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
-                <Card.Header className="d-flex justify-content-between align-items-center">
+            <Card className="mt-4 w-100" style={{ maxWidth: 600, background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
+                <Card.Header className="d-flex justify-content-between align-items-center" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', borderBottom: '1px solid var(--color-border)' }}>
                     <span>Animal Records</span>
                     <div className="d-flex gap-2">
                         <Button
-                            variant="outline-primary"
+                            variant="outline-light"
                             size="sm"
                             onClick={handleExportFilteredJson}
                             disabled={records.length === 0}
@@ -156,13 +156,13 @@ export const RecordList = () => {
                         </Button>
                     </div>
                 </Card.Header>
-                <div className="p-3 bg-white" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
+                <div className="p-3" style={{ background: 'var(--color-bg-primary)', borderRadius: '0 0 0.5rem 0.5rem' }}>
                     {/* Filter Form */}
                     <form className="mb-3" onSubmit={handleFilterSubmit}>
                         <div className="row g-2 align-items-end">
                             <div className="col-md-4">
-                                <label className="form-label mb-0">Type</label>
-                                <select className="form-select" value={recordType} onChange={e => { setRecordType(e.target.value); setDetailsFilter(null); }}>
+                                <label className="form-label mb-0" style={{ color: 'var(--color-text-secondary)' }}>Type</label>
+                                <select className="form-select" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} value={recordType} onChange={e => { setRecordType(e.target.value); setDetailsFilter(null); }}>
                                     <option value="">All Types</option>
                                     {Object.values(AnimalRecordType).map((type) => (
                                         <option key={type} value={type}>{type}</option>
@@ -170,12 +170,12 @@ export const RecordList = () => {
                                 </select>
                             </div>
                             <div className="col-md-3">
-                                <label className="form-label mb-0">From</label>
-                                <input type="date" className="form-control" value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
+                                <label className="form-label mb-0" style={{ color: 'var(--color-text-secondary)' }}>From</label>
+                                <input type="date" className="form-control" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} value={dateFrom} onChange={e => setDateFrom(e.target.value)} />
                             </div>
                             <div className="col-md-3">
-                                <label className="form-label mb-0">To</label>
-                                <input type="date" className="form-control" value={dateTo} onChange={e => setDateTo(e.target.value)} />
+                                <label className="form-label mb-0" style={{ color: 'var(--color-text-secondary)' }}>To</label>
+                                <input type="date" className="form-control" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} value={dateTo} onChange={e => setDateTo(e.target.value)} />
                             </div>
                             <div className="col-md-2">
                                 <button type="submit" className="btn btn-primary w-100">Filter</button>
@@ -201,9 +201,9 @@ export const RecordList = () => {
                                 <ListGroup.Item
                                     key={record.id}
                                     className="mb-3 p-0 border-0 bg-transparent"
-                                    style={{ background: "none" }}
+                                    style={{ background: 'none' }}
                                 >
-                                    <Card className="shadow-sm bg-light border border-primary">
+                                    <Card className="shadow-sm" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
                                         <Card.Body className="d-flex justify-content-between align-items-start flex-wrap p-3">
                                             <div className="ms-2 me-auto">
                                                 <div className="fw-bold">
@@ -223,7 +223,7 @@ export const RecordList = () => {
                                                     </div>
                                                 )}
                                                 <Button
-                                                    variant="outline-primary"
+                                                    variant="outline-light"
                                                     size="sm"
                                                     className="mt-2"
                                                     onClick={() => navigate(`/records/${record.id}`)}

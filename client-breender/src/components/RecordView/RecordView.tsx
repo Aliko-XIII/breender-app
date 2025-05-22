@@ -100,12 +100,14 @@ export const RecordView: React.FC = () => {
 
   return (
     <div className="d-flex justify-content-center mt-5">
-      <Card style={{ maxWidth: 600, width: "100%" }} className="shadow">
-        <Card.Header className="fw-bold">Record Details</Card.Header>
+      <Card style={{ maxWidth: 600, width: "100%", background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} className="shadow">
+        <Card.Header className="fw-bold" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', borderBottom: '1px solid var(--color-border)' }}>
+          Record Details
+        </Card.Header>
         <Card.Body>
           {/* Animal Basic Details */}
           {record.animal && (
-            <div className="mb-3 p-2 rounded bg-light border">
+            <div className="mb-3 p-2 rounded border" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
               <div><b>Animal:</b> {record.animal.name}</div>
               <div><b>Breed:</b> {record.animal.breed || <span className="text-muted">(none)</span>}</div>
               <div><b>Species:</b> {record.animal.species || <span className="text-muted">(none)</span>}</div>
@@ -120,6 +122,7 @@ export const RecordView: React.FC = () => {
               value={formDescription}
               onChange={e => setFormDescription(e.target.value)}
               className="mb-2"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
             />
           ) : (
             record.description || <span className="text-muted">(none)</span>
@@ -128,7 +131,7 @@ export const RecordView: React.FC = () => {
           <div className="mt-3">
             <b>Details:</b>
             {isEditing ? (
-              <div className="border p-3 rounded bg-light">
+              <div className="border p-3 rounded" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
                 <RecordDetailsForm
                   recordType={record.recordType}
                   onChange={setFormDetails}

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { UserMention } from "./UserMention/UserMention";
 import { useUser } from "../context/UserContext";
 import { getChats, createChat } from "../api/chatApi";
+import '../dark-theme.css';
 
 const TABS = ["ACCEPTED", "PENDING", "REJECTED", "CANCELED"] as const;
 type TabType = typeof TABS[number];
@@ -48,6 +49,17 @@ const getAnimalProfilePicUrl = (url?: string | null) => {
   return url;
 };
 
+// Add dark theme styles for PartnershipsPage
+const darkListItemStyle = {
+  background: 'var(--color-bg-secondary)',
+  color: 'var(--color-text)',
+  border: '1px solid var(--color-border)'
+};
+const darkMutedStyle = { color: 'var(--color-text-secondary)' };
+const darkBadgeStyle = { background: 'var(--color-bg-input)', color: 'var(--color-text-secondary)' };
+const darkTabStyle = { background: 'var(--color-bg-secondary)', color: 'var(--color-text)' };
+const darkTabActiveStyle = { background: 'var(--color-bg-primary)', color: 'var(--color-primary)', borderBottom: '2px solid var(--color-primary)' };
+
 function RequestsTabContent({
   partnerships,
   activeTab,
@@ -78,25 +90,26 @@ function RequestsTabContent({
   const filtered = partnerships.filter((p) => p.status === activeTab);
   return (
     <>
-      <ul className="nav nav-tabs mb-3">
+      <ul className="nav nav-tabs mb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
         {TABS.map((tab) => (
           <li className="nav-item" key={tab}>
             <button
               className={`nav-link${activeTab === tab ? " active" : ""}`}
+              style={activeTab === tab ? darkTabActiveStyle : darkTabStyle}
               onClick={() => setActiveTab(tab)}
               type="button"
             >
-              {tab.charAt(0) + tab.slice(1).toLowerCase()} <span className="badge bg-light text-dark ms-1">{tabCounts[tab]}</span>
+              {tab.charAt(0) + tab.slice(1).toLowerCase()} <span className="badge bg-light text-dark ms-1" style={darkBadgeStyle}>{tabCounts[tab]}</span>
             </button>
           </li>
         ))}
       </ul>
       {loading ? (
-        <div>Loading...</div>
+        <div style={darkListItemStyle}>Loading...</div>
       ) : error ? (
-        <div className="alert alert-danger">{error}</div>
+        <div className="alert alert-danger" style={darkListItemStyle}>{error}</div>
       ) : filtered.length === 0 ? (
-        <div className="alert alert-info">No {activeTab.toLowerCase()} requests.</div>
+        <div className="alert alert-info" style={darkListItemStyle}>No {activeTab.toLowerCase()} requests.</div>
       ) : (
         <ul className="list-group">
           {filtered.map((p) => {
@@ -123,7 +136,6 @@ function RequestsTabContent({
                 );
               }
             } else if (activeTab === "ACCEPTED" && p.requesterAnimal && p.recipientAnimal) {
-              // Allow cancel for accepted partnerships if current user is an owner of either animal
               const isMine = p.requesterAnimal.owners.some((o) => o.id === currentUserId) ||
                 p.recipientAnimal.owners.some((o) => o.id === currentUserId);
               if (isMine) {
@@ -155,7 +167,7 @@ function RequestsTabContent({
               }
             }
             return (
-              <li className="list-group-item" key={p.id}>
+              <li className="list-group-item" key={p.id} style={darkListItemStyle}>
                 <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
                   <div style={{ width: '100%' }}>
                     <div className="row">
@@ -172,7 +184,7 @@ function RequestsTabContent({
                               <Link to={`/animals/${p.requesterAnimal.id}`}>{p.requesterAnimal.name}</Link>
                             </div>
                             {(p.requesterAnimal.species || p.requesterAnimal.breed) && (
-                              <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                              <span className="text-muted ms-1" style={{ ...darkMutedStyle, fontSize: '0.95em' }}>
                                 {p.requesterAnimal.species ? `(${p.requesterAnimal.species}` : ''}
                                 {p.requesterAnimal.species && p.requesterAnimal.breed ? ', ' : ''}
                                 {p.requesterAnimal.breed ? p.requesterAnimal.breed : ''}
@@ -187,6 +199,7 @@ function RequestsTabContent({
                                   userName={p.requesterAnimal.owners[0].name}
                                   userEmail={p.requesterAnimal.owners[0].email}
                                   userPictureUrl={p.requesterAnimal.owners[0].pictureUrl}
+                                  clickable={true}
                                 />
                               </>
                             )}
@@ -208,7 +221,7 @@ function RequestsTabContent({
                               <Link to={`/animals/${p.recipientAnimal.id}`}>{p.recipientAnimal.name}</Link>
                             </div>
                             {(p.recipientAnimal.species || p.recipientAnimal.breed) && (
-                              <span className="text-muted ms-1" style={{ fontSize: '0.95em' }}>
+                              <span className="text-muted ms-1" style={{ ...darkMutedStyle, fontSize: '0.95em' }}>
                                 {p.recipientAnimal.species ? `(${p.recipientAnimal.species}` : ''}
                                 {p.recipientAnimal.species && p.recipientAnimal.breed ? ', ' : ''}
                                 {p.recipientAnimal.breed ? p.recipientAnimal.breed : ''}
@@ -223,6 +236,7 @@ function RequestsTabContent({
                                   userName={p.recipientAnimal.owners[0].name}
                                   userEmail={p.recipientAnimal.owners[0].email}
                                   userPictureUrl={p.recipientAnimal.owners[0].pictureUrl}
+                                  clickable={true}
                                 />
                               </>
                             )}
@@ -234,12 +248,12 @@ function RequestsTabContent({
                     </div>
                   </div>
                   <div className="d-flex align-items-center mt-2 mt-md-0">
-                    <span className="badge bg-secondary me-2">{p.status}</span>
+                    <span className="badge bg-secondary me-2" style={darkBadgeStyle}>{p.status}</span>
                     {actionButtons}
                     {chatBtn}
                   </div>
                 </div>
-                <div className="text-muted mt-2" style={{ fontSize: 12 }}>
+                <div className="text-muted mt-2" style={{ ...darkMutedStyle, fontSize: 12 }}>
                   Requested: {p.requestedAt ? new Date(p.requestedAt).toLocaleString() : "-"}
                   {p.respondedAt && (
                     <>
@@ -409,14 +423,15 @@ export const PartnershipsPage: React.FC = () => {
   }, [partnerships, currentUserId]);
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Partnerships</h2>
+    <div className="container mt-4" style={{ background: 'var(--color-bg)', color: 'var(--color-text)', borderRadius: 12, padding: 24 }}>
+      <h2 className="mb-4" style={{ color: 'var(--color-text)' }}>Partnerships</h2>
       {/* Top-level tab bar */}
-      <ul className="nav nav-tabs mb-3">
+      <ul className="nav nav-tabs mb-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
         {TOP_TABS.map((tab) => (
           <li className="nav-item" key={tab}>
             <button
               className={`nav-link${topTab === tab ? " active" : ""}`}
+              style={topTab === tab ? darkTabActiveStyle : darkTabStyle}
               onClick={() => setTopTab(tab)}
               type="button"
             >
@@ -427,15 +442,15 @@ export const PartnershipsPage: React.FC = () => {
       </ul>
       {topTab === "PARTNERS" ? (
         loading ? (
-          <div>Loading...</div>
+          <div style={darkListItemStyle}>Loading...</div>
         ) : error ? (
-          <div className="alert alert-danger">{error}</div>
+          <div className="alert alert-danger" style={darkListItemStyle}>{error}</div>
         ) : partnerUsers.length === 0 ? (
-          <div className="alert alert-info">No partners found.</div>
+          <div className="alert alert-info" style={darkListItemStyle}>No partners found.</div>
         ) : (
           <ul className="list-group">
             {partnerUsers.map((user) => (
-              <li className="list-group-item d-flex align-items-center justify-content-between" key={user.id}>
+              <li className="list-group-item d-flex align-items-center justify-content-between" key={user.id} style={darkListItemStyle}>
                 <div className="d-flex align-items-center gap-2">
                   <Link to={`/user-profile/${user.id}`} className="d-flex align-items-center gap-2 text-decoration-none text-dark">
                     <img
@@ -444,8 +459,8 @@ export const PartnershipsPage: React.FC = () => {
                       style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#eee', border: '1px solid #ccc' }}
                     />
                     <div>
-                      <div className="fw-bold">{user.name}</div>
-                      <div className="text-muted" style={{ fontSize: 13 }}>{user.email}</div>
+                      <div className="fw-bold" style={{ color: 'var(--color-text)' }}>{user.name}</div>
+                      <div className="text-muted" style={{ ...darkMutedStyle, fontSize: 13 }}>{user.email}</div>
                     </div>
                   </Link>
                 </div>
@@ -458,15 +473,15 @@ export const PartnershipsPage: React.FC = () => {
         )
       ) : topTab === "PARTNERED_ANIMALS" ? (
         loading ? (
-          <div>Loading...</div>
+          <div style={darkListItemStyle}>Loading...</div>
         ) : error ? (
-          <div className="alert alert-danger">{error}</div>
+          <div className="alert alert-danger" style={darkListItemStyle}>{error}</div>
         ) : partneredAnimals.length === 0 ? (
-          <div className="alert alert-info">No partnered animals found.</div>
+          <div className="alert alert-info" style={darkListItemStyle}>No partnered animals found.</div>
         ) : (
           <ul className="list-group">
             {partneredAnimals.map((animal) => (
-              <li className="list-group-item d-flex align-items-center justify-content-between" key={animal.id}>
+              <li className="list-group-item d-flex align-items-center justify-content-between" key={animal.id} style={darkListItemStyle}>
                 <div className="d-flex align-items-center gap-2">
                   <img
                     src={getAnimalProfilePicUrl(animal.pictureUrl)}
@@ -475,13 +490,13 @@ export const PartnershipsPage: React.FC = () => {
                   />
                   <div>
                     <Link to={`/animals/${animal.id}`} className="fw-bold">{animal.name}</Link>
-                    <div className="text-muted" style={{ fontSize: 13 }}>
+                    <div className="text-muted" style={{ ...darkMutedStyle, fontSize: 13 }}>
                       {animal.species || ''}{animal.species && animal.breed ? ', ' : ''}{animal.breed || ''}
                     </div>
                   </div>
                 </div>
                 {animal.owners.length > 0 && (
-                  <span className="text-muted" style={{ fontSize: 13 }}>
+                  <span className="text-muted" style={{ ...darkMutedStyle, fontSize: 13 }}>
                     owned by {animal.owners[0].name}
                   </span>
                 )}

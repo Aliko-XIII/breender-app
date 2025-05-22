@@ -125,8 +125,8 @@ export const ReminderList = () => {
     return (
       <ListGroup variant="flush">
         {reminders.map((reminder) => (
-          <ListGroup.Item key={reminder.id} className="mb-3 p-0 border-0 bg-transparent" style={{ background: "none" }}>
-            <Card className="shadow-sm bg-light border border-primary">
+          <ListGroup.Item key={reminder.id} className="mb-3 p-0 border-0 bg-transparent" style={{ background: 'none' }}>
+            <Card className="shadow-sm" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
               <Card.Body className="d-flex justify-content-between align-items-start flex-wrap p-3">
                 <div className="ms-2 me-auto">
                   <div className="fw-bold">{reminder.reminderType}</div>
@@ -145,7 +145,7 @@ export const ReminderList = () => {
                   <small>{formatDate(reminder.remindAt)}</small>
                 </span>
                 <Button
-                  variant="outline-primary"
+                  variant="outline-light"
                   size="sm"
                   className="ms-3 mt-2 mt-md-0"
                   onClick={() => navigate(`/reminders/${reminder.id}`)}
@@ -162,13 +162,13 @@ export const ReminderList = () => {
 
   return (
     <div className="d-flex justify-content-center">
-      <Card className="mt-4 w-100" style={{ maxWidth: 600 }}>
-        <Card.Header className="d-flex flex-column align-items-center">
+      <Card className="mt-4 w-100" style={{ maxWidth: 600, background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
+        <Card.Header className="d-flex flex-column align-items-center" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', borderBottom: '1px solid var(--color-border)' }}>
           <span>Reminders</span>
           {/* View Toggle */}
           <div className="mb-2 mt-2">
             <Button
-              variant={view === 'list' ? 'primary' : 'outline-primary'}
+              variant={view === 'list' ? 'primary' : 'outline-light'}
               size="sm"
               className="me-2"
               onClick={() => setView('list')}
@@ -176,54 +176,56 @@ export const ReminderList = () => {
               List View
             </Button>
             <Button
-              variant={view === 'calendar' ? 'primary' : 'outline-primary'}
+              variant={view === 'calendar' ? 'primary' : 'outline-light'}
               size="sm"
               onClick={() => setView('calendar')}
             >
               Calendar View
             </Button>
           </div>
-          {/* Filter Form */}
-          <Form className="w-100 mt-3" onSubmit={handleFilterSubmit}>
-            <Row className="g-2 align-items-end">
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Reminder Type</Form.Label>
-                  <Form.Select name="reminderType" value={filters.reminderType} onChange={handleFilterChange}>
-                    <option value="">All Types</option>
-                    {Object.values(ReminderType).map((type) => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </Form.Select>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Message Contains</Form.Label>
-                  <Form.Control type="text" name="message" value={filters.message} onChange={handleFilterChange} placeholder="Search message..." />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Remind At From</Form.Label>
-                  <Form.Control type="datetime-local" name="remindAtFrom" value={filters.remindAtFrom} onChange={handleFilterChange} />
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group>
-                  <Form.Label>Remind At To</Form.Label>
-                  <Form.Control type="datetime-local" name="remindAtTo" value={filters.remindAtTo} onChange={handleFilterChange} />
-                </Form.Group>
-              </Col>
-            </Row>
-            <Row className="mt-3">
-              <Col>
-                <Button type="submit" variant="primary" className="w-100">Apply Filters</Button>
-              </Col>
-            </Row>
-          </Form>
+          {/* Filter Form - hidden in calendar view */}
+          {view === 'list' && (
+            <Form className="w-100 mt-3" onSubmit={handleFilterSubmit}>
+              <Row className="g-2 align-items-end">
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label style={{ color: 'var(--color-text-secondary)' }}>Reminder Type</Form.Label>
+                    <Form.Select name="reminderType" value={filters.reminderType} onChange={handleFilterChange} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
+                      <option value="">All Types</option>
+                      {Object.values(ReminderType).map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label style={{ color: 'var(--color-text-secondary)' }}>Message Contains</Form.Label>
+                    <Form.Control type="text" name="message" value={filters.message} onChange={handleFilterChange} placeholder="Search message..." style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label style={{ color: 'var(--color-text-secondary)' }}>Remind At From</Form.Label>
+                    <Form.Control type="datetime-local" name="remindAtFrom" value={filters.remindAtFrom} onChange={handleFilterChange} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label style={{ color: 'var(--color-text-secondary)' }}>Remind At To</Form.Label>
+                    <Form.Control type="datetime-local" name="remindAtTo" value={filters.remindAtTo} onChange={handleFilterChange} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                  </Form.Group>
+                </Col>
+              </Row>
+              <Row className="mt-3">
+                <Col>
+                  <Button type="submit" variant="primary" className="w-100">Apply Filters</Button>
+                </Col>
+              </Row>
+            </Form>
+          )}
         </Card.Header>
-        <div className="p-3 bg-white calendar-responsive-container" style={{ borderRadius: '0 0 0.5rem 0.5rem' }}>
+        <div className="p-3 calendar-responsive-container" style={{ background: 'var(--color-bg-primary)', borderRadius: '0 0 0.5rem 0.5rem' }}>
           {view === 'list' ? renderContent() : (
             <div style={{ height: isMobile ? 350 : 500, minWidth: 0 }}>
               <Calendar
@@ -247,6 +249,67 @@ export const ReminderList = () => {
         .calendar-responsive-container {
           width: 100%;
           min-width: 0;
+        }
+        /* Dark theme overrides for react-big-calendar */
+        .rbc-calendar,
+        .rbc-month-view,
+        .rbc-header,
+        .rbc-toolbar,
+        .rbc-month-row,
+        .rbc-month-header,
+        .rbc-month-row,
+        .rbc-date-cell,
+        .rbc-day-bg,
+        .rbc-off-range-bg,
+        .rbc-off-range,
+        .rbc-today,
+        .rbc-event,
+        .rbc-agenda-view,
+        .rbc-agenda-table,
+        .rbc-agenda-content,
+        .rbc-agenda-date-cell,
+        .rbc-agenda-time-cell,
+        .rbc-agenda-event-cell {
+          background: var(--color-bg-secondary) !important;
+          color: var(--color-text) !important;
+          border-color: var(--color-border) !important;
+        }
+        .rbc-toolbar button,
+        .rbc-toolbar button:active,
+        .rbc-toolbar button.rbc-active {
+          background: var(--color-bg-primary) !important;
+          color: var(--color-text) !important;
+          border: 1px solid var(--color-border) !important;
+        }
+        .rbc-toolbar button.rbc-active {
+          background: var(--color-bg-secondary) !important;
+          color: var(--color-text) !important;
+        }
+        .rbc-off-range-bg,
+        .rbc-off-range {
+          background: #232323 !important;
+          color: #888 !important;
+        }
+        .rbc-today {
+          background: #1a1a1a !important;
+        }
+        .rbc-event {
+          background: #1976d2 !important;
+          color: #fff !important;
+        }
+        .rbc-header {
+          background: var(--color-bg-primary) !important;
+          color: var(--color-text) !important;
+          border-bottom: 1px solid var(--color-border) !important;
+        }
+        .rbc-date-cell {
+          color: var(--color-text) !important;
+        }
+        .rbc-agenda-view .rbc-agenda-table th,
+        .rbc-agenda-view .rbc-agenda-table td {
+          background: var(--color-bg-secondary) !important;
+          color: var(--color-text) !important;
+          border-color: var(--color-border) !important;
         }
         @media (max-width: 600px) {
           .calendar-responsive-container {

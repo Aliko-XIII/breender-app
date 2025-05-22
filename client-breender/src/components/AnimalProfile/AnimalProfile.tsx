@@ -44,6 +44,31 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  const darkMapStyle = [
+    { elementType: 'geometry', stylers: [{ color: '#212121' }] },
+    { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#212121' }] },
+    { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#757575' }] },
+    { featureType: 'administrative.country', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] },
+    { featureType: 'administrative.land_parcel', stylers: [{ visibility: 'off' }] },
+    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#bdbdbd' }] },
+    { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
+    { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#181818' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.stroke', stylers: [{ color: '#1b1b1b' }] },
+    { featureType: 'road', elementType: 'geometry.fill', stylers: [{ color: '#2c2c2c' }] },
+    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#8a8a8a' }] },
+    { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#373737' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3c3c3c' }] },
+    { featureType: 'road.highway.controlled_access', elementType: 'geometry', stylers: [{ color: '#4e4e4e' }] },
+    { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
+    { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2f2f2f' }] },
+    { featureType: 'transit.station', elementType: 'labels.text.fill', stylers: [{ color: '#bdbdbd' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#000000' }] },
+    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3d3d3d' }] }
+  ];
+
   const getProfilePicUrl = (url?: string | null) => {
     if (!url) return '/animal-placeholder.png';
     if (url.startsWith('/uploads/')) {
@@ -248,8 +273,20 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             style={{ width: "120px", height: "120px", objectFit: "cover" }}
           />
           {isEditing && isOwner && (
-            <div className="mt-2">
-              <input type="file" accept="image/*" onChange={handleFileChange} />
+            <div className="mt-2 d-flex align-items-center justify-content-center gap-2">
+              <label htmlFor="animalPicUpload" className="btn btn-outline-primary btn-sm mb-0">
+                Choose File
+              </label>
+              <input
+                id="animalPicUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+              />
+              <span className="text-secondary small">
+                {selectedFile ? selectedFile.name : "No file chosen"}
+              </span>
               <button
                 className="btn btn-outline-primary btn-sm ms-2"
                 onClick={handleUploadPic}
@@ -268,7 +305,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               value={formData.name || ""}
               onChange={handleChange}
               className="form-control text-center"
-              style={{ fontSize: "2rem", fontWeight: "bold" }}
+              style={{ fontSize: "2rem", fontWeight: "bold", background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               placeholder="Animal Name"
             />
           ) : (
@@ -278,7 +315,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
 
         {/* Editable fields for owners */}
         <div className="mb-3">
-          <label><strong>Name:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Name:</strong></label>
           {isEditing ? (
             <input
               type="text"
@@ -286,6 +323,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               value={formData.name || ""}
               onChange={handleChange}
               className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               placeholder="Animal Name"
             />
           ) : (
@@ -293,7 +331,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           )}
         </div>
         <div className="mb-3">
-          <label><strong>Species:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Species:</strong></label>
           {isEditing ? (
             <input
               type="text"
@@ -301,13 +339,14 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               value={formData.species || ""}
               onChange={handleChange}
               className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
             />
           ) : (
             <span className="ms-2">{animalData.species}</span>
           )}
         </div>
         <div className="mb-3">
-          <label><strong>Breed:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Breed:</strong></label>
           {isEditing ? (
             <input
               type="text"
@@ -315,19 +354,21 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               value={formData.breed || ""}
               onChange={handleChange}
               className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
             />
           ) : (
             <span className="ms-2">{animalData.breed}</span>
           )}
         </div>
         <div className="mb-3">
-          <label><strong>Sex:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Sex:</strong></label>
           {isEditing ? (
             <select
               name="sex"
               value={formData.sex || ""}
               onChange={handleChange}
               className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
             >
               <option value="MALE">Male</option>
               <option value="FEMALE">Female</option>
@@ -337,7 +378,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           )}
         </div>
         <div className="mb-3">
-          <label><strong>Birth Date:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Birth Date:</strong></label>
           {isEditing ? (
             <input
               type="date"
@@ -345,19 +386,21 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               value={formData.birthDate ? formData.birthDate.slice(0, 10) : ""}
               onChange={handleChange}
               className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
             />
           ) : (
             <span className="ms-2">{displayBirthDate(animalData.birthDate)}</span>
           )}
         </div>
         <div className="mb-3">
-          <label><strong>Bio:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Bio:</strong></label>
           {isEditing ? (
             <textarea
               name="bio"
               value={formData.bio || ""}
               onChange={handleChange}
               className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               placeholder="No bio available."
             />
           ) : (
@@ -365,7 +408,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           )}
         </div>
         <div className="mb-3">
-          <label><strong>Location:</strong></label>
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Location:</strong></label>
           {isEditing ? (
             <>
               <div className="row mb-2">
@@ -376,6 +419,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                     value={formData.latitude ?? ""}
                     onChange={handleChange}
                     className="form-control"
+                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                     placeholder="Latitude"
                     step="any"
                   />
@@ -387,6 +431,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                     value={formData.longitude ?? ""}
                     onChange={handleChange}
                     className="form-control"
+                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                     placeholder="Longitude"
                     step="any"
                   />
@@ -399,6 +444,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                     center={formData.latitude && formData.longitude ? { lat: Number(formData.latitude), lng: Number(formData.longitude) } : mapCenter || { lat: 45.35, lng: 28.83 }}
                     zoom={13}
                     onClick={handleMapClick}
+                    options={{ styles: darkMapStyle, streetViewControl: false }}
                   >
                     {formData.latitude && formData.longitude && (
                       <Marker position={{ lat: Number(formData.latitude), lng: Number(formData.longitude) }} />
@@ -418,7 +464,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                       mapContainerStyle={{ height: '100%', width: '100%' }}
                       center={{ lat: animalData.latitude, lng: animalData.longitude }}
                       zoom={13}
-                      options={{ streetViewControl: false }}
+                      options={{ styles: darkMapStyle, streetViewControl: false }}
                     >
                       <Marker position={{ lat: animalData.latitude, lng: animalData.longitude }} />
                     </GoogleMap>

@@ -1,0 +1,7 @@
+/* Ensure filter/search input placeholders are visible in dark mode on AnimalMap page */
+.animal-map-container input::placeholder,
+.animal-map-container textarea::placeholder,
+.animal-map-container select::placeholder {
+  color: var(--color-text-secondary, #b0b0b0);
+  opacity: 1;
+}

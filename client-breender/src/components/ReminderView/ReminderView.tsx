@@ -73,18 +73,20 @@ export const ReminderView: React.FC = () => {
 
   return (
     <div className="d-flex justify-content-center mt-5">
-      <Card style={{ maxWidth: 600, width: "100%" }} className="shadow">
-        <Card.Header className="fw-bold">Reminder Details</Card.Header>
+      <Card style={{ maxWidth: 600, width: "100%", background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} className="shadow">
+        <Card.Header className="fw-bold" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', borderBottom: '1px solid var(--color-border)' }}>
+          Reminder Details
+        </Card.Header>
         <Card.Body>
           {reminder.animal && (
-            <div className="mb-3 p-2 rounded bg-light border">
+            <div className="mb-3 p-2 rounded border" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
               <div><b>Animal:</b> {reminder.animal.name}</div>
               <div><b>Breed:</b> {reminder.animal.breed || <span className="text-muted">(none)</span>}</div>
               <div><b>Species:</b> {reminder.animal.species || <span className="text-muted">(none)</span>}</div>
             </div>
           )}
           <div><b>Type:</b> {isEditing ? (
-            <select className="form-select" value={formType} onChange={e => setFormType(e.target.value as ReminderType)}>
+            <select className="form-select" value={formType} onChange={e => setFormType(e.target.value as ReminderType)} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
               <option value="" disabled>Select type</option>
               {Object.values(ReminderType).map(type => (
                 <option key={type} value={type}>{type}</option>
@@ -94,12 +96,12 @@ export const ReminderView: React.FC = () => {
             reminder.reminderType
           )}</div>
           <div><b>Message:</b> {isEditing ? (
-            <textarea className="form-control" rows={2} value={formMessage} onChange={e => setFormMessage(e.target.value)} />
+            <textarea className="form-control" rows={2} value={formMessage} onChange={e => setFormMessage(e.target.value)} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
           ) : (
             reminder.message || <span className="text-muted">(none)</span>
           )}</div>
           <div><b>Remind At:</b> {isEditing ? (
-            <input type="datetime-local" className="form-control" value={formRemindAt} onChange={e => setFormRemindAt(e.target.value)} />
+            <input type="datetime-local" className="form-control" value={formRemindAt} onChange={e => setFormRemindAt(e.target.value)} style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
           ) : (
             formatDate(reminder.remindAt)
           )}</div>
