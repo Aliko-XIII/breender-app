@@ -88,6 +88,33 @@ export class OwnerService {
     return owner;
   }
 
+  /**
+   * Switches the availability status of the owner (is_available).
+   * @param {string} id - The owner id.
+   * @param {string} authUserId - The authenticated user id.
+   * @param {boolean} isAvailable - The new availability status.
+   * @returns {Promise<Owner>} - The updated owner.
+   */
+  async switchAvailability(id: string, isAvailable: boolean, authUserId: string) {
+    const owner = await this.databaseService.owner.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!owner) {
+      throw new NotFoundException('Owner not found');
+    }
+
+    if (owner.userId !== authUserId && !(await this.isAdmin(authUserId))) {
+      throw new ForbiddenException('You are not authorized to update this owner');
+    }
+
+    return this.databaseService.owner.update({
+      where: { id },
+      data: { is_available: isAvailable },
+    });
+  }
+
   private async isAdmin(userId: string): Promise<boolean> {
     const user = await this.databaseService.user.findUnique({
       where: { id: userId },
