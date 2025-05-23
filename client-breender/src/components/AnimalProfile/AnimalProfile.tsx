@@ -32,7 +32,15 @@ interface AnimalProfileData {
   isSterilized?: boolean;
   isAvailable?: boolean;
   customData?: Record<string, string>;
+  tags?: string[];
 }
+
+// Add available tags constant
+const AVAILABLE_TAGS = [
+  'FRIENDLY', 'AGGRESSIVE', 'PLAYFUL', 'SHY', 'ENERGETIC', 'CALM',
+  'INTELLIGENT', 'TRAINED', 'VOCAL', 'QUIET', 'CURIOUS', 'INDEPENDENT',
+  'SOCIAL', 'PROTECTIVE', 'AFFECTIONATE', 'HUNTER', 'LAZY'
+] as const;
 
 interface CustomField {
   id: string;
@@ -132,6 +140,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             pictureUrl: response.data.pictureUrl,
             isSterilized: response.data.isSterilized,
             isAvailable: response.data.isAvailable,
+            tags: response.data.tags || [],
             customData: (() => {
               const cd = response.data.customData;
               if (!cd) return {};
@@ -448,6 +457,15 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           ) : (
             <h1 className="mb-0">{animalData.name}'s Profile</h1>
           )}
+          {/* Move Edit Profile button here */}
+          {isOwner && !isEditing && (
+            <button 
+              className="btn btn-primary mt-3 px-4" 
+              onClick={() => setIsEditing(true)}
+            >
+              ✏️ Edit Profile
+            </button>
+          )}
         </div>        {/* Basic Information Section */}
         <div className="mb-4">
           <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Basic Information</h5>
@@ -601,8 +619,104 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                 {animalData.bio || <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>No biography available.</span>}
               </p>
             </div>
+          )}        </div>
+        
+        {/* Tags Section */}
+        <div className="mb-4">
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>🏷️ Tags</h5>
+          {isEditing ? (
+            <div>
+              <p className="mb-3 text-muted small">Select tags that describe your animal's personality and characteristics:</p>
+              <div className="row g-2">
+                {AVAILABLE_TAGS.map((tag) => {
+                  const isSelected = (formData.tags || []).includes(tag);
+                  return (
+                    <div key={tag} className="col-6 col-sm-4 col-md-3">
+                      <button
+                        type="button"
+                        className={`btn w-100 btn-sm ${isSelected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => {
+                          const currentTags = formData.tags || [];
+                          const newTags = isSelected
+                            ? currentTags.filter(t => t !== tag)
+                            : [...currentTags, tag];
+                          setFormData({ ...formData, tags: newTags });
+                        }}
+                        style={{
+                          fontSize: '0.8rem',
+                          padding: '0.375rem 0.5rem',
+                          transition: 'all 0.2s ease',
+                          background: isSelected ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                          borderColor: isSelected ? 'var(--color-primary)' : 'var(--color-border)',
+                          color: isSelected ? 'white' : 'var(--color-text)'
+                        }}
+                      >
+                        {isSelected && '✓ '}
+                        {tag.charAt(0) + tag.slice(1).toLowerCase()}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              {formData.tags && formData.tags.length > 0 && (
+                <div className="mt-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                  <small className="text-muted">Selected tags: </small>
+                  <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>
+                    {formData.tags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              {animalData.tags && animalData.tags.length > 0 ? (
+                <div className="d-flex flex-wrap gap-2">
+                  {animalData.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="badge rounded-pill px-3 py-2"
+                      style={{
+                        background: 'var(--color-primary)',
+                        color: 'white',
+                        fontSize: '0.85rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      {tag.charAt(0) + tag.slice(1).toLowerCase()}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                  <i style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>🏷️ No tags assigned</i>
+                </div>
+              )}
+            </>
           )}
-        </div>        {/* Location Section */}
+        </div>
+
+        {/* Owners Section */}
+        <div className="mb-4">
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Owners</h5>
+          {animalData.owners.length > 0 ? (
+            <div className="d-flex flex-wrap gap-2">
+              {animalData.owners.map((owner) => (
+                <UserMention
+                  key={owner.id}
+                  userId={owner.id}
+                  userName={owner.name}
+                  userEmail={owner.email}
+                  userPictureUrl={owner.pictureUrl}
+                />
+              ))}
+            </div>          ) : (
+            <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+              <i style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>👤 No owners assigned</i>
+            </div>
+          )}
+        </div>
+        
+        {/* Location Section */}
         <div className="mb-4">
           <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Location</h5>
           {isEditing ? (
@@ -802,65 +916,35 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               )}
             </>
           )}
-        </div>        {/* Owners Section */}
-        <div className="mb-4">
-          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Owners</h5>
-          {animalData.owners.length > 0 ? (
-            <div className="d-flex flex-wrap gap-2">
-              {animalData.owners.map((owner) => (
-                <UserMention
-                  key={owner.id}
-                  userId={owner.id}
-                  userName={owner.name}
-                  userEmail={owner.email}
-                  userPictureUrl={owner.pictureUrl}
-                />
-              ))}
-            </div>          ) : (
-            <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
-              <i style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>👤 No owners assigned</i>
-            </div>
-          )}
         </div>
 
         {/* Action Buttons */}
-        {isOwner && (
+        {isOwner && isEditing && (
           <div className="d-flex justify-content-center gap-2 pt-3 border-top">
-            {isEditing ? (
-              <>
-                <button 
-                  className="btn btn-success px-4" 
-                  onClick={handleSave}
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'Saving...' : 'Save Changes'}
-                </button>
-                <button 
-                  className="btn btn-outline-secondary px-4" 
-                  onClick={() => { 
-                    setIsEditing(false); 
-                    setFormData(animalData);
-                    // Reset custom fields array when canceling
-                    const fieldsArray: CustomField[] = Object.entries(animalData?.customData || {}).map(([key, value]) => ({
-                      id: `${Date.now()}-${Math.random()}`,
-                      key,
-                      value: String(value)
-                    }));
-                    setCustomFields(fieldsArray);
-                  }}
-                  disabled={isLoading}
-                >
-                  Cancel
-                </button>
-              </>
-            ) : (
-              <button 
-                className="btn btn-primary px-4" 
-                onClick={() => setIsEditing(true)}
-              >
-                ✏️ Edit Profile
-              </button>
-            )}
+            <button 
+              className="btn btn-success px-4" 
+              onClick={handleSave}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button 
+              className="btn btn-outline-secondary px-4" 
+              onClick={() => { 
+                setIsEditing(false); 
+                setFormData(animalData);
+                // Reset custom fields array when canceling
+                const fieldsArray: CustomField[] = Object.entries(animalData?.customData || {}).map(([key, value]) => ({
+                  id: `${Date.now()}-${Math.random()}`,
+                  key,
+                  value: String(value)
+                }));
+                setCustomFields(fieldsArray);
+              }}
+              disabled={isLoading}
+            >
+              Cancel
+            </button>
           </div>
         )}
       </div>
