@@ -29,6 +29,7 @@ interface AnimalProfileData {
   longitude?: number;
   owners: OwnerInfo[];
   pictureUrl?: string | null;
+  isSterilized?: boolean;
 }
 
 export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateAnimal }) => {
@@ -121,6 +122,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             longitude: response.data.longitude,
             owners: mappedOwners,
             pictureUrl: response.data.pictureUrl,
+            isSterilized: response.data.isSterilized,
           };
           setAnimalData(data);
           setFormData(data);
@@ -167,11 +169,16 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
       setIsLoading(true);
       // Remove owners from data sent to backend
       const { owners, ...dataToSendRaw } = formData;
-      const dataToSend = { ...dataToSendRaw };
-      if (dataToSend.latitude !== undefined && dataToSend.latitude !== "") {
+      // Map pictureUrl to profilePicUrl if present
+      const dataToSend = { ...dataToSendRaw } as any;
+      if (dataToSend.pictureUrl !== undefined) {
+        dataToSend.profilePicUrl = dataToSend.pictureUrl;
+        delete dataToSend.pictureUrl;
+      }
+      if (dataToSend.latitude !== undefined) {
         dataToSend.latitude = Number(dataToSend.latitude);
       }
-      if (dataToSend.longitude !== undefined && dataToSend.longitude !== "") {
+      if (dataToSend.longitude !== undefined) {
         dataToSend.longitude = Number(dataToSend.longitude);
       }
       await updateAnimal(animalId, dataToSend);
@@ -405,6 +412,24 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             />
           ) : (
             <p className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{animalData.bio || "No bio available."}</p>
+          )}
+        </div>
+        <div className="mb-3">
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Sterilized:</strong></label>
+          {isEditing ? (
+            <select
+              name="isSterilized"
+              value={formData.isSterilized === undefined ? '' : formData.isSterilized ? 'true' : 'false'}
+              onChange={e => setFormData({ ...formData, isSterilized: e.target.value === 'true' })}
+              className="form-control"
+              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+            >
+              <option value="">Select...</option>
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          ) : (
+            <span className="ms-2">{animalData.isSterilized === undefined ? 'Not specified' : animalData.isSterilized ? 'Yes' : 'No'}</span>
           )}
         </div>
         <div className="mb-3">
