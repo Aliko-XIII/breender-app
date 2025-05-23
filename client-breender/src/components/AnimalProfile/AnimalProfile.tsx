@@ -386,15 +386,13 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           ) : (
             <h1 className="mb-0">{animalData.name}'s Profile</h1>
           )}
-        </div>
-
-        {/* Basic Information Section */}
+        </div>        {/* Basic Information Section */}
         <div className="mb-4">
-          <h5 className="mb-3 text-muted">Basic Information</h5>
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Basic Information</h5>
           
           <div className="row g-3">
             <div className="col-md-6">
-              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Name
               </label>
               {isEditing ? (
@@ -406,14 +404,13 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   className="form-control"
                   style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                   placeholder="Animal Name"
-                />
-              ) : (
-                <p className="mb-0">{animalData.name}</p>
+                />              ) : (
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.name}</p>
               )}
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Species
               </label>
               {isEditing ? (
@@ -424,14 +421,13 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   onChange={handleChange}
                   className="form-control"
                   style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-                />
-              ) : (
-                <p className="mb-0">{animalData.species}</p>
+                />              ) : (
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.species}</p>
               )}
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Breed
               </label>
               {isEditing ? (
@@ -444,12 +440,12 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                 />
               ) : (
-                <p className="mb-0">{animalData.breed}</p>
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.breed}</p>
               )}
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Sex
               </label>
               {isEditing ? (
@@ -462,14 +458,13 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                 >
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
-                </select>
-              ) : (
-                <p className="mb-0">{displaySex(animalData.sex)}</p>
+                </select>              ) : (
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{displaySex(animalData.sex)}</p>
               )}
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Birth Date
               </label>
               {isEditing ? (
@@ -482,12 +477,12 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                 />
               ) : (
-                <p className="mb-0">{displayBirthDate(animalData.birthDate)}</p>
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{displayBirthDate(animalData.birthDate)}</p>
               )}
             </div>
 
             <div className="col-md-6">
-              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Sterilized
               </label>
               {isEditing ? (
@@ -501,9 +496,8 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   <option value="">Select...</option>
                   <option value="true">Yes</option>
                   <option value="false">No</option>
-                </select>
-              ) : (
-                <p className="mb-0">{animalData.isSterilized === undefined ? 'Not specified' : animalData.isSterilized ? 'Yes' : 'No'}</p>
+                </select>              ) : (
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.isSterilized === undefined ? 'Not specified' : animalData.isSterilized ? 'Yes' : 'No'}</p>
               )}
             </div>
           </div>
@@ -511,7 +505,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
 
         {/* Bio Section */}
         <div className="mb-4">
-          <h5 className="mb-3 text-muted">Biography</h5>
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Biography</h5>
           {isEditing ? (
             <textarea
               name="bio"
@@ -521,22 +515,20 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               rows={4}
               style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
               placeholder="Tell us about this animal..."
-            />
-          ) : (
+            />          ) : (
             <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)', minHeight: '60px' }}>
-              <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
-                {animalData.bio || "No biography available."}
+              <p className="mb-0" style={{ whiteSpace: 'pre-wrap', color: 'var(--color-text)', lineHeight: '1.6' }}>
+                {animalData.bio || <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>No biography available.</span>}
               </p>
             </div>
           )}
         </div>        {/* Location Section */}
         <div className="mb-4">
-          <h5 className="mb-3 text-muted">Location</h5>
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Location</h5>
           {isEditing ? (
-            <>
-              <div className="row g-3 mb-3">
+            <>              <div className="row g-3 mb-3">
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold">Latitude</label>
+                  <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>Latitude</label>
                   <input
                     type="number"
                     name="latitude"
@@ -549,7 +541,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   />
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label fw-semibold">Longitude</label>
+                  <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>Longitude</label>
                   <input
                     type="number"
                     name="longitude"
@@ -574,22 +566,20 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                     {formData.latitude && formData.longitude && (
                       <Marker position={{ lat: Number(formData.latitude), lng: Number(formData.longitude) }} />
                     )}
-                  </GoogleMap>
-                </LoadScript>
+                  </GoogleMap>                </LoadScript>
               </div>
-              <small className="text-muted">💡 Click on the map to set the animal's location</small>
+              <small style={{ color: 'var(--color-text-muted)' }}>💡 Click on the map to set the animal's location</small>
             </>
           ) : (
             <>
               {animalData.latitude && animalData.longitude ? (
-                <>
-                  <div className="mb-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                <>                  <div className="mb-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
                     <div className="row g-2">
                       <div className="col-sm-6">
-                        <strong>Latitude:</strong> {animalData.latitude}
+                        <strong style={{ color: 'var(--color-text)' }}>Latitude:</strong> <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.latitude}</span>
                       </div>
                       <div className="col-sm-6">
-                        <strong>Longitude:</strong> {animalData.longitude}
+                        <strong style={{ color: 'var(--color-text)' }}>Longitude:</strong> <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.longitude}</span>
                       </div>
                     </div>
                   </div>
@@ -605,25 +595,23 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                       </GoogleMap>
                     </LoadScript>
                   </div>
-                </>
-              ) : (
+                </>              ) : (
                 <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
-                  <i className="text-muted">📍 Location not provided</i>
+                  <i style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>📍 Location not provided</i>
                 </div>
               )}
             </>
           )}
         </div>        {/* Custom Fields Section */}
         <div className="mb-4">
-          <h5 className="mb-3 text-muted">Custom Fields</h5>
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Custom Fields</h5>
           {isEditing ? (
             <>
               {customFields.map((field, idx) => (
                 <div className="card mb-3 border-0" key={field.id} style={{ background: 'var(--color-bg-secondary)' }}>
-                  <div className="card-body p-3">
-                    <div className="row g-2">
+                  <div className="card-body p-3">                    <div className="row g-2">
                       <div className="col-md-5">
-                        <label className="form-label fw-semibold">Field Name</label>
+                        <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>Field Name</label>
                         <input
                           type="text"
                           className="form-control"
@@ -638,7 +626,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                           }}
                         />
                       </div>                      <div className="col-md-5">
-                        <label className="form-label fw-semibold">Value</label>
+                        <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>Value</label>
                         <textarea
                           className="form-control"
                           style={{ 
@@ -708,8 +696,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                       <div className="card border-0 h-100" style={{ background: 'var(--color-bg-secondary)' }}>
                         <div className="card-body p-3">
                           <div className="d-flex justify-content-between align-items-start">
-                            <div className="flex-grow-1">
-                              <h6 className="card-title mb-1 text-uppercase small fw-bold" style={{ color: 'var(--color-primary)' }}>
+                            <div className="flex-grow-1">                              <h6 className="card-title mb-1 text-uppercase small fw-bold" style={{ color: 'var(--color-primary)', fontSize: '0.85rem', letterSpacing: '0.5px' }}>
                                 {key}
                               </h6>                              <p className="card-text mb-0" style={{ 
                                 color: 'var(--color-text)', 
@@ -717,7 +704,8 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                                 overflowWrap: 'anywhere',
                                 whiteSpace: 'pre-wrap',
                                 lineHeight: '1.5',
-                                maxWidth: '100%'
+                                maxWidth: '100%',
+                                fontWeight: '500'
                               }}>
                                 {String(value)}
                               </p>
@@ -727,17 +715,16 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                       </div>
                     </div>
                   ))}
-                </div>
-              ) : (
+                </div>              ) : (
                 <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
-                  <i className="text-muted">🏷️ No custom fields added</i>
+                  <i style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>🏷️ No custom fields added</i>
                 </div>
               )}
             </>
           )}
         </div>        {/* Owners Section */}
         <div className="mb-4">
-          <h5 className="mb-3 text-muted">Owners</h5>
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Owners</h5>
           {animalData.owners.length > 0 ? (
             <div className="d-flex flex-wrap gap-2">
               {animalData.owners.map((owner) => (
@@ -749,10 +736,9 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   userPictureUrl={owner.pictureUrl}
                 />
               ))}
-            </div>
-          ) : (
+            </div>          ) : (
             <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
-              <i className="text-muted">👤 No owners assigned</i>
+              <i style={{ color: 'var(--color-text-muted)', fontSize: '1.1rem' }}>👤 No owners assigned</i>
             </div>
           )}
         </div>
