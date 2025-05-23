@@ -52,6 +52,10 @@ export class CreateAnimalDto {
   isSterilized?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  isAvailable?: boolean;
+
+  @IsOptional()
   @IsJSON()
   customData?: any;
 

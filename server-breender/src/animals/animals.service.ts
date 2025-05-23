@@ -133,9 +133,7 @@ export class AnimalsService {
       owner = await this.databaseService.owner.create({
         data: { userId: authUserId },
       });
-    }
-
-    const createdAnimal: Prisma.AnimalCreateInput = {
+    }    const createdAnimal: Prisma.AnimalCreateInput = {
       name: createAnimalDto.name,
       sex: createAnimalDto.sex,
       breed: createAnimalDto.breed,
@@ -146,6 +144,7 @@ export class AnimalsService {
       longitude: createAnimalDto.longitude,
       profilePicUrl: createAnimalDto.profilePicUrl,
       isSterilized: createAnimalDto.isSterilized,
+      isAvailable: createAnimalDto.isAvailable,
       customData: createAnimalDto.customData,
       tags: createAnimalDto.tags,
       owners: {
@@ -361,9 +360,11 @@ export class AnimalsService {
     }
     if (updateAnimalDto.profilePicUrl !== undefined) {
       updatedAnimal.profilePicUrl = updateAnimalDto.profilePicUrl;
-    }
-    if (updateAnimalDto.isSterilized !== undefined) {
+    }    if (updateAnimalDto.isSterilized !== undefined) {
       updatedAnimal.isSterilized = updateAnimalDto.isSterilized;
+    }
+    if (updateAnimalDto.isAvailable !== undefined) {
+      updatedAnimal.isAvailable = updateAnimalDto.isAvailable;
     }
     if (updateAnimalDto.customData !== undefined) {
       updatedAnimal.customData = updateAnimalDto.customData;

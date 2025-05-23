@@ -30,6 +30,7 @@ interface AnimalProfileData {
   owners: OwnerInfo[];
   pictureUrl?: string | null;
   isSterilized?: boolean;
+  isAvailable?: boolean;
   customData?: Record<string, string>;
 }
 
@@ -118,8 +119,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   return null;
                 }
               }).filter((owner: any): owner is OwnerInfo => owner !== null)
-            : [];
-          const data: AnimalProfileData = {
+            : [];          const data: AnimalProfileData = {
             name: response.data.name,
             sex: response.data.sex,
             breed: response.data.breed,
@@ -131,6 +131,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             owners: mappedOwners,
             pictureUrl: response.data.pictureUrl,
             isSterilized: response.data.isSterilized,
+            isAvailable: response.data.isAvailable,
             customData: (() => {
               const cd = response.data.customData;
               if (!cd) return {};
@@ -143,7 +144,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               }
               return cd;
             })(),
-          };          setAnimalData(data);
+          };setAnimalData(data);
           setFormData(data);
           
           // Initialize custom fields array
@@ -202,8 +203,9 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
     const customDataObject = customFieldsToObject(fields);
     setFormData(prev => ({ ...prev, customData: customDataObject }));
   };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    // Skip handling isAvailable here as it has its own onChange handler
+    if (e.target.name === 'isAvailable') return;
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -539,9 +541,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               ) : (
                 <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{displayBirthDate(animalData.birthDate)}</p>
               )}
-            </div>
-
-            <div className="col-md-6">
+            </div>            <div className="col-md-6">
               <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
                 Sterilized
               </label>
@@ -558,6 +558,26 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   <option value="false">No</option>
                 </select>              ) : (
                 <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.isSterilized === undefined ? 'Not specified' : animalData.isSterilized ? 'Yes' : 'No'}</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text)', fontSize: '0.9rem' }}>
+                Available for Partnership
+              </label>
+              {isEditing ? (
+                <select
+                  name="isAvailable"
+                  value={formData.isAvailable === undefined ? '' : formData.isAvailable ? 'true' : 'false'}
+                  onChange={e => setFormData({ ...formData, isAvailable: e.target.value === 'true' })}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                >
+                  <option value="">Select...</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>              ) : (
+                <p className="mb-0" style={{ color: 'var(--color-text)', fontWeight: '500' }}>{animalData.isAvailable === undefined ? 'Not specified' : animalData.isAvailable ? 'Yes' : 'No'}</p>
               )}
             </div>
           </div>

@@ -13,6 +13,7 @@ export interface Animal {
   longitude?: number;
   profilePicUrl?: string;
   isSterilized?: boolean;
+  isAvailable?: boolean;
   customData?: any;
   tags?: string[];
   // Add more fields as needed from backend

@@ -9,25 +9,29 @@ interface NewAnimalData {
     species: string;
     bio?: string;
     birthDate: string;
+    isAvailable?: boolean;
 }
 
 interface RegisterAnimalProps {
     createAnimal: (animalData: NewAnimalData) => Promise<ApiResponse>;
 }
 
-export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) => {
-    const [formData, setFormData] = useState<NewAnimalData>({
+export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) => {    const [formData, setFormData] = useState<NewAnimalData>({
         name: "",
         sex: "MALE",
         breed: "",
         species: "",
         bio: "",
-        birthDate: ""
+        birthDate: "",
+        isAvailable: true
     });
-    const navigate = useNavigate();
+    const navigate = useNavigate();    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleIsAvailableChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFormData({ ...formData, isAvailable: e.target.value === "true" });
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -78,11 +82,20 @@ export const RegisterAnimal: React.FC<RegisterAnimalProps> = ({ createAnimal }) 
                     <div className="mb-3">
                         <label>Bio:</label>
                         <textarea name="bio" value={formData.bio} onChange={handleChange} className="form-control" placeholder="Optional" />
-                    </div>
-
-                    <div className="mb-3">
+                    </div>                    <div className="mb-3">
                         <label>Birth Date:</label>
                         <input type="date" name="birthDate" value={formData.birthDate} onChange={handleChange} className="form-control" required />
+                    </div>                    <div className="mb-3">
+                        <label>Available for Partnership:</label>
+                        <select 
+                            name="isAvailable" 
+                            value={formData.isAvailable === undefined ? "true" : formData.isAvailable ? "true" : "false"} 
+                            onChange={handleIsAvailableChange} 
+                            className="form-control"
+                        >
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
                     </div>
 
                     <button type="submit" className="btn btn-success w-100">Create Animal</button>

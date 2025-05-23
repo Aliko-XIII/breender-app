@@ -104,6 +104,7 @@ export const updateAnimal = async (
         longitude?: number,
         profilePicUrl?: string,
         isSterilized?: boolean,
+        isAvailable?: boolean,
         customData?: Record<string, unknown>,
         tags?: string[],
     }>

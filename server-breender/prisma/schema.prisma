@@ -131,6 +131,7 @@ model Animal {
   longitude     Float?   @map("longitude")
   profilePicUrl String?  @map("profile_pic_url")
   isSterilized  Boolean  @default(false) @map("is_sterilized")
+  isAvailable   Boolean  @default(true) @map("is_available")
   customData    Json?    @map("custom_data")
   tags          AnimalTag[] @default([]) @map("tags")
 
