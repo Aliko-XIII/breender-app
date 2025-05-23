@@ -30,6 +30,13 @@ interface AnimalProfileData {
   owners: OwnerInfo[];
   pictureUrl?: string | null;
   isSterilized?: boolean;
+  customData?: Record<string, string>;
+}
+
+interface CustomField {
+  id: string;
+  key: string;
+  value: string;
 }
 
 export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateAnimal }) => {
@@ -44,6 +51,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
   const googleMapsApiKey = 'AIzaSyBC_pASKr9NaZ__W6JQGTFM5_5q9lRqE4g'; // Consider moving to env
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
 
   const darkMapStyle = [
     { elementType: 'geometry', stylers: [{ color: '#212121' }] },
@@ -123,9 +131,28 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             owners: mappedOwners,
             pictureUrl: response.data.pictureUrl,
             isSterilized: response.data.isSterilized,
-          };
-          setAnimalData(data);
+            customData: (() => {
+              const cd = response.data.customData;
+              if (!cd) return {};
+              if (typeof cd === 'string') {
+                try {
+                  return JSON.parse(cd);
+                } catch {
+                  return {};
+                }
+              }
+              return cd;
+            })(),
+          };          setAnimalData(data);
           setFormData(data);
+          
+          // Initialize custom fields array
+          const fieldsArray: CustomField[] = Object.entries(data.customData || {}).map(([key, value]) => ({
+            id: `${Date.now()}-${Math.random()}`,
+            key,
+            value: String(value)
+          }));
+          setCustomFields(fieldsArray);
         } else {
           setError(response.message || `Failed to fetch data. Status: ${response.status}`);
         }
@@ -159,6 +186,23 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
 
   const isOwner = animalData?.owners.some(owner => owner.id === currentUserId);
 
+  // Helper function to convert custom fields array to object
+  const customFieldsToObject = (fields: CustomField[]): Record<string, string> => {
+    const result: Record<string, string> = {};
+    fields.forEach(field => {
+      if (field.key.trim()) {
+        result[field.key] = field.value;
+      }
+    });
+    return result;
+  };
+
+  // Helper function to update custom fields in formData
+  const updateCustomFieldsInFormData = (fields: CustomField[]) => {
+    const customDataObject = customFieldsToObject(fields);
+    setFormData(prev => ({ ...prev, customData: customDataObject }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -181,8 +225,22 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
       if (dataToSend.longitude !== undefined) {
         dataToSend.longitude = Number(dataToSend.longitude);
       }
+      // Stringify customData if present
+      if (dataToSend.customData && typeof dataToSend.customData === 'object') {
+        dataToSend.customData = JSON.stringify(dataToSend.customData);
+      }
       await updateAnimal(animalId, dataToSend);
-      setAnimalData({ ...animalData!, ...dataToSend });
+      // Ensure customData is always an object in UI state
+      let updatedCustomData = dataToSend.customData;
+      if (typeof updatedCustomData === 'string') {
+        try {
+          updatedCustomData = JSON.parse(updatedCustomData);
+        } catch {
+          updatedCustomData = {};
+        }
+      }
+      setAnimalData({ ...animalData!, ...dataToSend, customData: updatedCustomData });
+      setFormData({ ...formData, ...dataToSend, customData: updatedCustomData });
       setIsEditing(false);
     } catch (err) {
       alert("Failed to update animal profile.");
@@ -498,8 +556,85 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               )}
             </>
           )}
+        </div>        <div className="mb-3">
+          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Custom Fields:</strong></label>
+          {isEditing ? (
+            <>
+              {customFields.map((field, idx) => (
+                <div className="input-group mb-2" key={field.id}>
+                  <input
+                    type="text"
+                    className="form-control"
+                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                    placeholder="Field Name"
+                    value={field.key}
+                    onChange={e => {
+                      const updatedFields = [...customFields];
+                      updatedFields[idx] = { ...field, key: e.target.value };
+                      setCustomFields(updatedFields);
+                      updateCustomFieldsInFormData(updatedFields);
+                    }}
+                  />
+                  <input
+                    type="text"
+                    className="form-control"
+                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                    placeholder="Field Value"
+                    value={field.value}
+                    onChange={e => {
+                      const updatedFields = [...customFields];
+                      updatedFields[idx] = { ...field, value: e.target.value };
+                      setCustomFields(updatedFields);
+                      updateCustomFieldsInFormData(updatedFields);
+                    }}
+                  />
+                  <button
+                    className="btn btn-outline-danger"
+                    type="button"
+                    onClick={() => {
+                      const updatedFields = customFields.filter((_, i) => i !== idx);
+                      setCustomFields(updatedFields);
+                      updateCustomFieldsInFormData(updatedFields);
+                    }}
+                  >Remove</button>
+                </div>
+              ))}
+              <button
+                className="btn btn-outline-primary btn-sm"
+                type="button"
+                onClick={() => {
+                  const newField: CustomField = {
+                    id: `${Date.now()}-${Math.random()}`,
+                    key: "New Field",
+                    value: ""
+                  };
+                  const updatedFields = [...customFields, newField];
+                  setCustomFields(updatedFields);
+                  updateCustomFieldsInFormData(updatedFields);
+                }}
+              >Add Field</button>
+            </>
+          ) : (
+            <>
+              {animalData.customData && Object.keys(animalData.customData).length > 0 ? (
+                <div className="row g-2">
+                  {Object.entries(animalData.customData).map(([key, value]) => (
+                    <div className="col-12 col-md-6" key={key}>
+                      <div className="card border-0 shadow-sm mb-2" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
+                        <div className="card-body py-2 px-3 d-flex flex-column">
+                          <span className="fw-semibold small text-uppercase mb-1" style={{ color: 'var(--color-primary)' }}>{key}</span>
+                          <span className="fs-6" style={{ color: 'var(--color-text)' }}>{String(value)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <span className="ms-2">No custom fields.</span>
+              )}
+            </>
+          )}
         </div>
-
         <div className="mb-3">
           <strong className="d-block mb-2">Owners:</strong>
           {animalData.owners.length > 0 ? (
@@ -517,15 +652,23 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
           ) : (
             <p className="ms-1">No owners assigned.</p>
           )}
-        </div>
-
-        {/* Edit/Save buttons for owners */}
+        </div>        {/* Edit/Save buttons for owners */}
         {isOwner && (
           <div className="mt-3">
             {isEditing ? (
               <>
                 <button className="btn btn-success me-2" onClick={handleSave}>Save</button>
-                <button className="btn btn-secondary" onClick={() => { setIsEditing(false); setFormData(animalData); }}>Cancel</button>
+                <button className="btn btn-secondary" onClick={() => { 
+                  setIsEditing(false); 
+                  setFormData(animalData);
+                  // Reset custom fields array when canceling
+                  const fieldsArray: CustomField[] = Object.entries(animalData?.customData || {}).map(([key, value]) => ({
+                    id: `${Date.now()}-${Math.random()}`,
+                    key,
+                    value: String(value)
+                  }));
+                  setCustomFields(fieldsArray);
+                }}>Cancel</button>
               </>
             ) : (
               <button className="btn btn-primary" onClick={() => setIsEditing(true)}>Edit</button>
