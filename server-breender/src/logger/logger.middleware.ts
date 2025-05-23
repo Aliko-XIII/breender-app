@@ -17,8 +17,8 @@ export class LoggerMiddleware implements NestMiddleware {
     const originalSend = res.send;
     res.send = (body: any) => {
       responseBody = body;
-      res.send = originalSend; // restore the original send method
-      return res.send(body); // send the response
+      res.send = originalSend;
+      return res.send(body);
     };
 
     // Log request details

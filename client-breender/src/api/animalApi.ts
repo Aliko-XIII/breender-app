@@ -68,8 +68,14 @@ export const createAnimal = async (
         sex: "MALE" | "FEMALE",
         breed: string,
         species: string,
-        bio: string,
+        bio?: string,
         birthDate: string,
+        latitude?: number,
+        longitude?: number,
+        profilePicUrl?: string,
+        isSterilized?: boolean,
+        customData?: Record<string, unknown>,
+        tags?: string[],
     }
 ) => {
     try {
@@ -92,10 +98,14 @@ export const updateAnimal = async (
         sex: "MALE" | "FEMALE",
         breed: string,
         species: string,
-        bio: string,
-        birthDate: string,
-        latitude: number,
-        longitude: number,
+        bio?: string,
+        birthDate?: string,
+        latitude?: number,
+        longitude?: number,
+        profilePicUrl?: string,
+        isSterilized?: boolean,
+        customData?: Record<string, unknown>,
+        tags?: string[],
     }>
 ) => {
     try {

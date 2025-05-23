@@ -142,6 +142,12 @@ export class AnimalsService {
       species: createAnimalDto.species,
       bio: createAnimalDto.bio,
       birthDate: new Date(createAnimalDto.birthDate).toISOString(),
+      latitude: createAnimalDto.latitude,
+      longitude: createAnimalDto.longitude,
+      profilePicUrl: createAnimalDto.profilePicUrl,
+      isSterilized: createAnimalDto.isSterilized,
+      customData: createAnimalDto.customData,
+      tags: createAnimalDto.tags,
       owners: {
         create: {
           owner: { connect: { id: owner.id } },
@@ -352,6 +358,18 @@ export class AnimalsService {
     }
     if (updateAnimalDto.longitude !== undefined) {
       updatedAnimal.longitude = updateAnimalDto.longitude;
+    }
+    if (updateAnimalDto.profilePicUrl !== undefined) {
+      updatedAnimal.profilePicUrl = updateAnimalDto.profilePicUrl;
+    }
+    if (updateAnimalDto.isSterilized !== undefined) {
+      updatedAnimal.isSterilized = updateAnimalDto.isSterilized;
+    }
+    if (updateAnimalDto.customData !== undefined) {
+      updatedAnimal.customData = updateAnimalDto.customData;
+    }
+    if (updateAnimalDto.tags !== undefined) {
+      updatedAnimal.tags = updateAnimalDto.tags;
     }
 
     try {

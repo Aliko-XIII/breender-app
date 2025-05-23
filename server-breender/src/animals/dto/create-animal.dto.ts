@@ -6,8 +6,11 @@ import {
   MinLength,
   MaxLength,
   IsOptional,
+  IsBoolean,
+  IsJSON,
+  IsArray,
 } from 'class-validator';
-import { Sex } from '@prisma/client';
+import { Sex, AnimalTag } from '@prisma/client';
 
 export class CreateAnimalDto {
   @IsString()
@@ -40,4 +43,19 @@ export class CreateAnimalDto {
 
   @IsOptional()
   longitude?: number;
+
+  @IsOptional()
+  profilePicUrl?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isSterilized?: boolean;
+
+  @IsOptional()
+  @IsJSON()
+  customData?: any;
+
+  @IsOptional()
+  @IsArray()
+  tags?: AnimalTag[];
 }
