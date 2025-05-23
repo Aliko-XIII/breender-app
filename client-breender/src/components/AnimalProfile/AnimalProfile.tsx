@@ -303,31 +303,91 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
   if (error) return <div className="container mt-5 alert alert-danger">{error}</div>;
   if (!animalData) return <div className="container mt-5">Could not load animal profile.</div>;
 
-  return (
-    <div className="container mt-5">
-      <div className="card shadow-lg p-3 mb-4 mx-auto" style={{ maxWidth: "700px", width: "100%" }}>
-        <div className="d-flex flex-column gap-2">
-          <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
-            <Link to="/animals" className="btn btn-outline-secondary">Back</Link>
+  return (    <div className="container mt-5">
+      <div className="card shadow-lg p-3 mb-4 mx-auto" style={{ maxWidth: "800px", width: "100%" }}>
+        <div className="row g-3">
+          {/* Navigation Section */}
+          <div className="col-12">
+            <div className="d-flex align-items-center gap-2 flex-wrap mb-3">
+              <Link to="/animals" className="btn btn-outline-secondary">
+                ← Back to Animals
+              </Link>
+            </div>
           </div>
-          <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
-            <span className="fw-bold">Records:</span>
-            <Link to={`/animals/${animalId}/records/create`} className="btn btn-primary">Create Record</Link>
-            <Link to={`/animals/${animalId}/records`} className="btn btn-primary">Records</Link>
+
+          {/* Records Section */}
+          <div className="col-md-6 col-lg-4">
+            <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+              <h6 className="mb-2 fw-bold" style={{ color: 'var(--color-primary)' }}>
+                📋 Records
+              </h6>
+              <div className="d-flex flex-column gap-1">
+                <Link to={`/animals/${animalId}/records`} className="btn btn-sm btn-primary">
+                  View Records
+                </Link>
+                <Link to={`/animals/${animalId}/records/create`} className="btn btn-sm btn-outline-primary">
+                  + Create Record
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
-            <span className="fw-bold">Reminders:</span>
-            <Link to={`/animals/${animalId}/reminders/create`} className="btn btn-primary">Create Reminder</Link>
-            <Link to={`/animals/${animalId}/reminders`} className="btn btn-primary">View Reminders</Link>
+
+          {/* Reminders Section */}
+          <div className="col-md-6 col-lg-4">
+            <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+              <h6 className="mb-2 fw-bold" style={{ color: 'var(--color-primary)' }}>
+                ⏰ Reminders
+              </h6>
+              <div className="d-flex flex-column gap-1">
+                <Link to={`/animals/${animalId}/reminders`} className="btn btn-sm btn-warning">
+                  View Reminders
+                </Link>
+                <Link to={`/animals/${animalId}/reminders/create`} className="btn btn-sm btn-outline-warning">
+                  + Create Reminder
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="d-flex align-items-center gap-2 flex-wrap">
-            <span className="fw-bold">Uploads:</span>
-            <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-primary">Upload Photo</Link>
-            <Link to={`/animals/${animalId}/upload-document`} className="btn btn-primary">Upload Document</Link>
-            <Link to={`/animals/${animalId}/photos`} className="btn btn-outline-primary">View Photos</Link>
+
+          {/* Media Section */}
+          <div className="col-md-6 col-lg-4">
+            <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+              <h6 className="mb-2 fw-bold" style={{ color: 'var(--color-primary)' }}>
+                📁 Media & Files
+              </h6>
+              <div className="d-flex flex-column gap-1">
+                <Link to={`/animals/${animalId}/photos`} className="btn btn-sm btn-success">
+                  View Photos
+                </Link>
+                <Link to={`/animals/${animalId}/documents`} className="btn btn-sm btn-info">
+                  View Documents
+                </Link>
+              </div>
+            </div>
           </div>
+
+          {/* Upload Section - Only show if user is owner */}
+          {isOwner && (
+            <div className="col-md-6 col-lg-4">
+              <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                <h6 className="mb-2 fw-bold" style={{ color: 'var(--color-primary)' }}>
+                  ⬆️ Upload
+                </h6>
+                <div className="d-flex flex-column gap-1">
+                  <Link to={`/animals/${animalId}/upload-photo`} className="btn btn-sm btn-outline-success">
+                    + Upload Photo
+                  </Link>
+                  <Link to={`/animals/${animalId}/upload-document`} className="btn btn-sm btn-outline-info">
+                    + Upload Document
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+
+          
         </div>
-      </div>      <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
+      </div><div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
         {/* Profile Picture Section */}
         <div className="text-center mb-4">
           <img
