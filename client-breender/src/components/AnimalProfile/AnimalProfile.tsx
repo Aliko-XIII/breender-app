@@ -327,18 +327,18 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             <Link to={`/animals/${animalId}/photos`} className="btn btn-outline-primary">View Photos</Link>
           </div>
         </div>
-      </div>
-
-      <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
-        <div className="text-center mb-3">
+      </div>      <div className="card shadow-lg p-4 mx-auto" style={{ maxWidth: "600px", width: "100%" }}>
+        {/* Profile Picture Section */}
+        <div className="text-center mb-4">
           <img
             src={getProfilePicUrl(animalData.pictureUrl)}
             alt="Animal Avatar"
-            className="rounded-circle"
+            className="rounded-circle mb-3"
             style={{ width: "120px", height: "120px", objectFit: "cover" }}
           />
+          
           {isEditing && isOwner && (
-            <div className="mt-2 d-flex align-items-center justify-content-center gap-2">
+            <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap">
               <label htmlFor="animalPicUpload" className="btn btn-outline-primary btn-sm mb-0">
                 Choose File
               </label>
@@ -349,11 +349,13 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                 onChange={handleFileChange}
                 style={{ display: 'none' }}
               />
-              <span className="text-secondary small">
-                {selectedFile ? selectedFile.name : "No file chosen"}
-              </span>
+              {selectedFile && (
+                <span className="text-secondary small">
+                  {selectedFile.name}
+                </span>
+              )}
               <button
-                className="btn btn-outline-primary btn-sm ms-2"
+                className="btn btn-primary btn-sm"
                 onClick={handleUploadPic}
                 disabled={!selectedFile || uploading}
               >
@@ -362,7 +364,9 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
             </div>
           )}
         </div>
-        <h1 className="text-center mb-4">
+
+        {/* Title Section */}
+        <div className="text-center mb-4">
           {isEditing ? (
             <input
               type="text"
@@ -370,132 +374,169 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               value={formData.name || ""}
               onChange={handleChange}
               className="form-control text-center"
-              style={{ fontSize: "2rem", fontWeight: "bold", background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+              style={{ 
+                fontSize: "2rem", 
+                fontWeight: "bold", 
+                background: 'var(--color-bg-secondary)', 
+                color: 'var(--color-text)', 
+                border: '1px solid var(--color-border)' 
+              }}
               placeholder="Animal Name"
             />
           ) : (
-            `${animalData.name}'s Profile`
+            <h1 className="mb-0">{animalData.name}'s Profile</h1>
           )}
-        </h1>
+        </div>
 
-        {/* Editable fields for owners */}
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Name:</strong></label>
-          {isEditing ? (
-            <input
-              type="text"
-              name="name"
-              value={formData.name || ""}
-              onChange={handleChange}
-              className="form-control"
-              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-              placeholder="Animal Name"
-            />
-          ) : (
-            <span className="ms-2">{animalData.name}</span>
-          )}
+        {/* Basic Information Section */}
+        <div className="mb-4">
+          <h5 className="mb-3 text-muted">Basic Information</h5>
+          
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Name
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                  placeholder="Animal Name"
+                />
+              ) : (
+                <p className="mb-0">{animalData.name}</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Species
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="species"
+                  value={formData.species || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                />
+              ) : (
+                <p className="mb-0">{animalData.species}</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Breed
+              </label>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="breed"
+                  value={formData.breed || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                />
+              ) : (
+                <p className="mb-0">{animalData.breed}</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Sex
+              </label>
+              {isEditing ? (
+                <select
+                  name="sex"
+                  value={formData.sex || ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                >
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                </select>
+              ) : (
+                <p className="mb-0">{displaySex(animalData.sex)}</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Birth Date
+              </label>
+              {isEditing ? (
+                <input
+                  type="date"
+                  name="birthDate"
+                  value={formData.birthDate ? formData.birthDate.slice(0, 10) : ""}
+                  onChange={handleChange}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                />
+              ) : (
+                <p className="mb-0">{displayBirthDate(animalData.birthDate)}</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <label className="form-label fw-semibold" style={{ color: 'var(--color-text-secondary)' }}>
+                Sterilized
+              </label>
+              {isEditing ? (
+                <select
+                  name="isSterilized"
+                  value={formData.isSterilized === undefined ? '' : formData.isSterilized ? 'true' : 'false'}
+                  onChange={e => setFormData({ ...formData, isSterilized: e.target.value === 'true' })}
+                  className="form-control"
+                  style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                >
+                  <option value="">Select...</option>
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              ) : (
+                <p className="mb-0">{animalData.isSterilized === undefined ? 'Not specified' : animalData.isSterilized ? 'Yes' : 'No'}</p>
+              )}
+            </div>
+          </div>
         </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Species:</strong></label>
-          {isEditing ? (
-            <input
-              type="text"
-              name="species"
-              value={formData.species || ""}
-              onChange={handleChange}
-              className="form-control"
-              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-            />
-          ) : (
-            <span className="ms-2">{animalData.species}</span>
-          )}
-        </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Breed:</strong></label>
-          {isEditing ? (
-            <input
-              type="text"
-              name="breed"
-              value={formData.breed || ""}
-              onChange={handleChange}
-              className="form-control"
-              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-            />
-          ) : (
-            <span className="ms-2">{animalData.breed}</span>
-          )}
-        </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Sex:</strong></label>
-          {isEditing ? (
-            <select
-              name="sex"
-              value={formData.sex || ""}
-              onChange={handleChange}
-              className="form-control"
-              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-            >
-              <option value="MALE">Male</option>
-              <option value="FEMALE">Female</option>
-            </select>
-          ) : (
-            <span className="ms-2">{displaySex(animalData.sex)}</span>
-          )}
-        </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Birth Date:</strong></label>
-          {isEditing ? (
-            <input
-              type="date"
-              name="birthDate"
-              value={formData.birthDate ? formData.birthDate.slice(0, 10) : ""}
-              onChange={handleChange}
-              className="form-control"
-              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-            />
-          ) : (
-            <span className="ms-2">{displayBirthDate(animalData.birthDate)}</span>
-          )}
-        </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Bio:</strong></label>
+
+        {/* Bio Section */}
+        <div className="mb-4">
+          <h5 className="mb-3 text-muted">Biography</h5>
           {isEditing ? (
             <textarea
               name="bio"
               value={formData.bio || ""}
               onChange={handleChange}
               className="form-control"
+              rows={4}
               style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-              placeholder="No bio available."
+              placeholder="Tell us about this animal..."
             />
           ) : (
-            <p className="mt-1" style={{ whiteSpace: 'pre-wrap' }}>{animalData.bio || "No bio available."}</p>
+            <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)', minHeight: '60px' }}>
+              <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                {animalData.bio || "No biography available."}
+              </p>
+            </div>
           )}
-        </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Sterilized:</strong></label>
-          {isEditing ? (
-            <select
-              name="isSterilized"
-              value={formData.isSterilized === undefined ? '' : formData.isSterilized ? 'true' : 'false'}
-              onChange={e => setFormData({ ...formData, isSterilized: e.target.value === 'true' })}
-              className="form-control"
-              style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-            >
-              <option value="">Select...</option>
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-          ) : (
-            <span className="ms-2">{animalData.isSterilized === undefined ? 'Not specified' : animalData.isSterilized ? 'Yes' : 'No'}</span>
-          )}
-        </div>
-        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Location:</strong></label>
+        </div>        {/* Location Section */}
+        <div className="mb-4">
+          <h5 className="mb-3 text-muted">Location</h5>
           {isEditing ? (
             <>
-              <div className="row mb-2">
-                <div className="col">
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">Latitude</label>
                   <input
                     type="number"
                     name="latitude"
@@ -507,7 +548,8 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                     step="any"
                   />
                 </div>
-                <div className="col">
+                <div className="col-md-6">
+                  <label className="form-label fw-semibold">Longitude</label>
                   <input
                     type="number"
                     name="longitude"
@@ -520,7 +562,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   />
                 </div>
               </div>
-              <div style={{ height: 300, width: '100%', marginBottom: 8 }}>
+              <div className="rounded overflow-hidden mb-2" style={{ height: 300, width: '100%' }}>
                 <LoadScript googleMapsApiKey={googleMapsApiKey}>
                   <GoogleMap
                     mapContainerStyle={{ height: '100%', width: '100%' }}
@@ -535,110 +577,169 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
                   </GoogleMap>
                 </LoadScript>
               </div>
-              <small>Click on the map to set the animal's location.</small>
+              <small className="text-muted">💡 Click on the map to set the animal's location</small>
             </>
           ) : (
             <>
-              <p>{animalData.latitude && animalData.longitude ? `${animalData.latitude}, ${animalData.longitude}` : "Location not provided."}</p>
-              {animalData.latitude && animalData.longitude && (
-                <div style={{ height: 300, width: '100%' }}>
-                  <LoadScript googleMapsApiKey={googleMapsApiKey}>
-                    <GoogleMap
-                      mapContainerStyle={{ height: '100%', width: '100%' }}
-                      center={{ lat: animalData.latitude, lng: animalData.longitude }}
-                      zoom={13}
-                      options={{ styles: darkMapStyle, streetViewControl: false }}
-                    >
-                      <Marker position={{ lat: animalData.latitude, lng: animalData.longitude }} />
-                    </GoogleMap>
-                  </LoadScript>
+              {animalData.latitude && animalData.longitude ? (
+                <>
+                  <div className="mb-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                    <div className="row g-2">
+                      <div className="col-sm-6">
+                        <strong>Latitude:</strong> {animalData.latitude}
+                      </div>
+                      <div className="col-sm-6">
+                        <strong>Longitude:</strong> {animalData.longitude}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="rounded overflow-hidden" style={{ height: 300, width: '100%' }}>
+                    <LoadScript googleMapsApiKey={googleMapsApiKey}>
+                      <GoogleMap
+                        mapContainerStyle={{ height: '100%', width: '100%' }}
+                        center={{ lat: animalData.latitude, lng: animalData.longitude }}
+                        zoom={13}
+                        options={{ styles: darkMapStyle, streetViewControl: false }}
+                      >
+                        <Marker position={{ lat: animalData.latitude, lng: animalData.longitude }} />
+                      </GoogleMap>
+                    </LoadScript>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                  <i className="text-muted">📍 Location not provided</i>
                 </div>
               )}
             </>
           )}
-        </div>        <div className="mb-3">
-          <label style={{ color: 'var(--color-text-secondary)' }}><strong>Custom Fields:</strong></label>
+        </div>        {/* Custom Fields Section */}
+        <div className="mb-4">
+          <h5 className="mb-3 text-muted">Custom Fields</h5>
           {isEditing ? (
             <>
               {customFields.map((field, idx) => (
-                <div className="input-group mb-2" key={field.id}>
-                  <input
-                    type="text"
-                    className="form-control"
-                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-                    placeholder="Field Name"
-                    value={field.key}
-                    onChange={e => {
-                      const updatedFields = [...customFields];
-                      updatedFields[idx] = { ...field, key: e.target.value };
-                      setCustomFields(updatedFields);
-                      updateCustomFieldsInFormData(updatedFields);
-                    }}
-                  />
-                  <input
-                    type="text"
-                    className="form-control"
-                    style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-                    placeholder="Field Value"
-                    value={field.value}
-                    onChange={e => {
-                      const updatedFields = [...customFields];
-                      updatedFields[idx] = { ...field, value: e.target.value };
-                      setCustomFields(updatedFields);
-                      updateCustomFieldsInFormData(updatedFields);
-                    }}
-                  />
-                  <button
-                    className="btn btn-outline-danger"
-                    type="button"
-                    onClick={() => {
-                      const updatedFields = customFields.filter((_, i) => i !== idx);
-                      setCustomFields(updatedFields);
-                      updateCustomFieldsInFormData(updatedFields);
-                    }}
-                  >Remove</button>
+                <div className="card mb-3 border-0" key={field.id} style={{ background: 'var(--color-bg-secondary)' }}>
+                  <div className="card-body p-3">
+                    <div className="row g-2">
+                      <div className="col-md-5">
+                        <label className="form-label fw-semibold">Field Name</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          style={{ background: 'var(--color-bg)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                          placeholder="e.g., Microchip ID"
+                          value={field.key}
+                          onChange={e => {
+                            const updatedFields = [...customFields];
+                            updatedFields[idx] = { ...field, key: e.target.value };
+                            setCustomFields(updatedFields);
+                            updateCustomFieldsInFormData(updatedFields);
+                          }}
+                        />
+                      </div>                      <div className="col-md-5">
+                        <label className="form-label fw-semibold">Value</label>
+                        <textarea
+                          className="form-control"
+                          style={{ 
+                            background: 'var(--color-bg)', 
+                            color: 'var(--color-text)', 
+                            border: '1px solid var(--color-border)',
+                            minHeight: '38px',
+                            resize: 'vertical'
+                          }}
+                          placeholder="Enter value..."
+                          value={field.value}
+                          rows={1}
+                          onChange={e => {
+                            const updatedFields = [...customFields];
+                            updatedFields[idx] = { ...field, value: e.target.value };
+                            setCustomFields(updatedFields);
+                            updateCustomFieldsInFormData(updatedFields);
+                          }}
+                          onInput={(e) => {
+                            // Auto-resize textarea based on content
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = Math.max(38, target.scrollHeight) + 'px';
+                          }}
+                        />
+                      </div>
+                      <div className="col-md-2 d-flex align-items-end">
+                        <button
+                          className="btn btn-outline-danger w-100"
+                          type="button"
+                          onClick={() => {
+                            const updatedFields = customFields.filter((_, i) => i !== idx);
+                            setCustomFields(updatedFields);
+                            updateCustomFieldsInFormData(updatedFields);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
               <button
-                className="btn btn-outline-primary btn-sm"
+                className="btn btn-outline-primary"
                 type="button"
                 onClick={() => {
                   const newField: CustomField = {
                     id: `${Date.now()}-${Math.random()}`,
-                    key: "New Field",
+                    key: "",
                     value: ""
                   };
                   const updatedFields = [...customFields, newField];
                   setCustomFields(updatedFields);
                   updateCustomFieldsInFormData(updatedFields);
                 }}
-              >Add Field</button>
+              >
+                + Add Custom Field
+              </button>
             </>
           ) : (
             <>
               {animalData.customData && Object.keys(animalData.customData).length > 0 ? (
-                <div className="row g-2">
+                <div className="row g-3">
                   {Object.entries(animalData.customData).map(([key, value]) => (
-                    <div className="col-12 col-md-6" key={key}>
-                      <div className="card border-0 shadow-sm mb-2" style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}>
-                        <div className="card-body py-2 px-3 d-flex flex-column">
-                          <span className="fw-semibold small text-uppercase mb-1" style={{ color: 'var(--color-primary)' }}>{key}</span>
-                          <span className="fs-6" style={{ color: 'var(--color-text)' }}>{String(value)}</span>
+                    <div className="col-12" key={key}>
+                      <div className="card border-0 h-100" style={{ background: 'var(--color-bg-secondary)' }}>
+                        <div className="card-body p-3">
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <h6 className="card-title mb-1 text-uppercase small fw-bold" style={{ color: 'var(--color-primary)' }}>
+                                {key}
+                              </h6>                              <p className="card-text mb-0" style={{ 
+                                color: 'var(--color-text)', 
+                                wordBreak: 'break-word',
+                                overflowWrap: 'anywhere',
+                                whiteSpace: 'pre-wrap',
+                                lineHeight: '1.5',
+                                maxWidth: '100%'
+                              }}>
+                                {String(value)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <span className="ms-2">No custom fields.</span>
+                <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                  <i className="text-muted">🏷️ No custom fields added</i>
+                </div>
               )}
             </>
           )}
-        </div>
-        <div className="mb-3">
-          <strong className="d-block mb-2">Owners:</strong>
+        </div>        {/* Owners Section */}
+        <div className="mb-4">
+          <h5 className="mb-3 text-muted">Owners</h5>
           {animalData.owners.length > 0 ? (
-            <div>
+            <div className="d-flex flex-wrap gap-2">
               {animalData.owners.map((owner) => (
                 <UserMention
                   key={owner.id}
@@ -650,28 +751,49 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               ))}
             </div>
           ) : (
-            <p className="ms-1">No owners assigned.</p>
+            <div className="text-center p-4 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+              <i className="text-muted">👤 No owners assigned</i>
+            </div>
           )}
-        </div>        {/* Edit/Save buttons for owners */}
+        </div>
+
+        {/* Action Buttons */}
         {isOwner && (
-          <div className="mt-3">
+          <div className="d-flex justify-content-center gap-2 pt-3 border-top">
             {isEditing ? (
               <>
-                <button className="btn btn-success me-2" onClick={handleSave}>Save</button>
-                <button className="btn btn-secondary" onClick={() => { 
-                  setIsEditing(false); 
-                  setFormData(animalData);
-                  // Reset custom fields array when canceling
-                  const fieldsArray: CustomField[] = Object.entries(animalData?.customData || {}).map(([key, value]) => ({
-                    id: `${Date.now()}-${Math.random()}`,
-                    key,
-                    value: String(value)
-                  }));
-                  setCustomFields(fieldsArray);
-                }}>Cancel</button>
+                <button 
+                  className="btn btn-success px-4" 
+                  onClick={handleSave}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+                <button 
+                  className="btn btn-outline-secondary px-4" 
+                  onClick={() => { 
+                    setIsEditing(false); 
+                    setFormData(animalData);
+                    // Reset custom fields array when canceling
+                    const fieldsArray: CustomField[] = Object.entries(animalData?.customData || {}).map(([key, value]) => ({
+                      id: `${Date.now()}-${Math.random()}`,
+                      key,
+                      value: String(value)
+                    }));
+                    setCustomFields(fieldsArray);
+                  }}
+                  disabled={isLoading}
+                >
+                  Cancel
+                </button>
               </>
             ) : (
-              <button className="btn btn-primary" onClick={() => setIsEditing(true)}>Edit</button>
+              <button 
+                className="btn btn-primary px-4" 
+                onClick={() => setIsEditing(true)}
+              >
+                ✏️ Edit Profile
+              </button>
             )}
           </div>
         )}
