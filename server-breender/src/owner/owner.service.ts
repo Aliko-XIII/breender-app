@@ -2,17 +2,17 @@ import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/commo
 import { DatabaseService } from '../database/database.service';
 import { CreateOwnerDto } from './dto/create-owner.dto';
 import { UpdateOwnerDto } from './dto/update-owner.dto';
+import { OwnerTag } from '@prisma/client';
 
 @Injectable()
 export class OwnerService {
   constructor(private databaseService: DatabaseService) { }
 
   async create(createOwnerDto: CreateOwnerDto, authUserId: string) {
-    const { userId, ...data } = createOwnerDto;
+    const { userId } = createOwnerDto;
     return this.databaseService.owner.create({
       data: {
         userId,
-        ...data,
       },
     });
   }
@@ -42,9 +42,23 @@ export class OwnerService {
       throw new ForbiddenException('You are not authorized to update this owner');
     }
 
+    // Only update provided fields
+    const updateData: any = { ...updateOwnerDto };
+    if (updateOwnerDto.tags !== undefined) {
+      updateData.tags = (updateOwnerDto.tags as string[])
+        .map((tag) => {
+          if (Object.values(OwnerTag).includes(tag as OwnerTag)) {
+            return tag as OwnerTag;
+          }
+          return undefined;
+        })
+        .filter((t): t is OwnerTag => !!t);
+    }
+    if (updateOwnerDto.customData !== undefined) updateData.customData = updateOwnerDto.customData;
+
     return this.databaseService.owner.update({
       where: { id },
-      data: updateOwnerDto,
+      data: updateData,
     });
   }
 
