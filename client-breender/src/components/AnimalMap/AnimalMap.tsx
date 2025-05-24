@@ -7,6 +7,13 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import './AnimalMap.css';
 
+// Available tags constant (same as in AnimalProfile)
+const AVAILABLE_TAGS = [
+  'FRIENDLY', 'AGGRESSIVE', 'PLAYFUL', 'SHY', 'ENERGETIC', 'CALM',
+  'INTELLIGENT', 'TRAINED', 'VOCAL', 'QUIET', 'CURIOUS', 'INDEPENDENT',
+  'SOCIAL', 'PROTECTIVE', 'AFFECTIONATE', 'HUNTER', 'LAZY'
+] as const;
+
 interface AnimalMapProps {
     // Props for filtering or API fetching can be added later
 }
@@ -131,36 +138,55 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [error, setError] = useState<string | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [userMarkerIcon, setUserMarkerIcon] = useState<any>(null);
-    const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);
-
-    const [myAnimals, setMyAnimals] = useState<{ id: string; name: string; species?: string }[]>([]);
+    const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);    const [myAnimals, setMyAnimals] = useState<{ id: string; name: string; species?: string }[]>([]);
     const [selectedMyAnimalId, setSelectedMyAnimalId] = useState<string>('');
     const { userId } = useUser();
     const [previewAnimalId, setPreviewAnimalId] = useState<string | null>(null);
-
-    const [filters, setFilters] = useState({
+    const [showTagModal, setShowTagModal] = useState(false);    const [filters, setFilters] = useState({
         name: '',
         species: '',
         breed: '',
         sex: '',
         birthdateFrom: '',
         birthdateTo: '',
-        radius: '10'
+        radius: '10',
+        bio: '',
+        isSterilized: '',
+        tags: [] as string[]
     });
 
-    const navigate = useNavigate();
-
-    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const navigate = useNavigate();    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFilters((prev) => ({ ...prev, [name]: value }));
-    };
-
-    // Fetch animals for map (not owned by user)
+    };    // Clear all filters
+    const handleClearFilters = () => {
+        setFilters({
+            name: '',
+            species: '',
+            breed: '',
+            sex: '',
+            birthdateFrom: '',
+            birthdateTo: '',
+            radius: '10',
+            bio: '',
+            isSterilized: '',
+            tags: []
+        });
+    };    // Fetch animals for map (not owned by user)
     const loadAnimals = useCallback(() => {
         setIsLoading(true);
         const activeFilters: any = {};
+        
+        // Always filter for available animals
+        activeFilters.isAvailable = "true";
+        
         Object.entries(filters).forEach(([key, value]) => {
-            if (value !== '') {
+            if (key === "tags") {
+                // Handle tags array
+                if (Array.isArray(value) && value.length > 0) {
+                    activeFilters[key] = value;
+                }
+            } else if (value !== '') {
                 if (key === 'radius') {
                     const num = Number(value);
                     if (!isNaN(num) && value !== '' && mapCenter) {
@@ -168,6 +194,9 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         activeFilters.latitude = mapCenter.lat;
                         activeFilters.longitude = mapCenter.lng;
                     }
+                } else if (key === "isSterilized") {
+                    // Always send as string ("true" or "false")
+                    activeFilters[key] = value;
                 } else {
                     activeFilters[key] = value;
                 }
@@ -316,9 +345,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                 <div className="alert alert-warning mb-3" style={{ width: '100%', maxWidth: 800, background: 'var(--color-bg-secondary)', color: 'var(--color-warning)', border: '1px solid var(--color-border)' }}>
                     Please select your animal before proceeding.
                 </div>
-            )}
-
-            <form className="mb-4" style={{ width: '100%', maxWidth: 800, background: 'var(--color-bg-secondary)', borderRadius: 12, padding: 16, border: '1px solid var(--color-border)' }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
+            )}            <form className="mb-4" style={{ width: '100%', maxWidth: 800, background: 'var(--color-bg-secondary)', borderRadius: 12, padding: 16, border: '1px solid var(--color-border)' }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
+                {/* First Row - Basic filters */}
                 <div className="row g-2 align-items-end">
                     <div className="col-md-2">
                         <input type="text" className="form-control bg-dark text-light border-secondary" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
@@ -342,14 +370,138 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     <div className="col-md-2">
                         <input type="date" className="form-control bg-dark text-light border-secondary" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
+                </div>
+                
+                {/* Second Row - Additional filters and actions */}
+                <div className="row g-2 align-items-end mt-2">
+                    <div className="col-md-2">
+                        <input type="text" className="form-control bg-dark text-light border-secondary" name="bio" placeholder="Bio (contains)" value={filters.bio} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                    </div>                    <div className="col-md-2">
+                        <select className="form-select bg-dark text-light border-secondary" name="isSterilized" value={filters.isSterilized} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
+                            <option value="">Sterilized</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
                     <div className="col-md-2">
                         <input type="number" className="form-control bg-dark text-light border-secondary" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
+                    <div className="col-md-3">
+                        <button
+                            type="button"
+                            className="btn btn-outline-primary w-100"
+                            onClick={() => setShowTagModal(true)}
+                            style={{
+                                background: 'var(--color-bg-secondary)',
+                                color: 'var(--color-text)',
+                                border: '1px solid var(--color-border)',
+                                position: 'relative'
+                            }}
+                        >
+                            🏷️ Tags {filters.tags.length > 0 && (
+                                <span className="badge bg-primary ms-2">{filters.tags.length}</span>
+                            )}
+                        </button>
+                    </div>
+                    <div className="col-md-1">
+                        <button type="submit" className="btn btn-primary w-100">Apply</button>
+                    </div>
                     <div className="col-md-2">
-                        <button type="submit" className="btn btn-primary w-100">Apply Filters</button>
+                        <button type="button" className="btn btn-secondary w-100" onClick={handleClearFilters}>Clear</button>
                     </div>
                 </div>
-            </form>
+                
+                {/* Tag filter preview - show selected tags */}
+                {filters.tags.length > 0 && (
+                    <div className="row mt-2">
+                        <div className="col-12">
+                            <div className="p-2 rounded" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                                <small className="text-muted">Selected tags: </small>
+                                <span style={{ color: 'var(--color-text)', fontWeight: '500', fontSize: '0.9rem' }}>
+                                    {filters.tags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}            </form>
+
+            {/* Tag Selection Modal */}
+            {showTagModal && (
+                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
+                    <div className="modal-dialog modal-lg modal-dialog-centered">
+                        <div className="modal-content" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '2px solid var(--color-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                            <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                <h5 className="modal-title">🏷️ Select Animal Tags</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setShowTagModal(false)}
+                                    style={{ filter: 'invert(1)' }}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="mb-3 text-muted small">Select tags to filter animals by their characteristics:</p>
+                                <div className="row g-2">
+                                    {AVAILABLE_TAGS.map((tag) => {
+                                        const isSelected = filters.tags.includes(tag);
+                                        return (
+                                            <div key={tag} className="col-6 col-sm-4 col-md-3">
+                                                <button
+                                                    type="button"
+                                                    className={`btn w-100 btn-sm ${isSelected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                                    onClick={() => {
+                                                        const newTags = isSelected
+                                                            ? filters.tags.filter(t => t !== tag)
+                                                            : [...filters.tags, tag];
+                                                        setFilters({ ...filters, tags: newTags });
+                                                    }}
+                                                    style={{
+                                                        fontSize: '0.8rem',
+                                                        padding: '0.375rem 0.5rem',
+                                                        transition: 'all 0.2s ease',
+                                                        background: isSelected ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                                                        borderColor: isSelected ? 'var(--color-primary)' : 'var(--color-border)',
+                                                        color: isSelected ? 'white' : 'var(--color-text)'
+                                                    }}
+                                                >
+                                                    {isSelected && '✓ '}
+                                                    {tag.charAt(0) + tag.slice(1).toLowerCase()}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {filters.tags.length > 0 && (
+                                    <div className="mt-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                                        <strong className="text-muted">Selected ({filters.tags.length}): </strong>
+                                        <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>
+                                            {filters.tags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)' }}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() => {
+                                        setFilters({ ...filters, tags: [] });
+                                    }}
+                                >
+                                    Clear All
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={() => setShowTagModal(false)}
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <h2 className="text-start w-100" style={{ maxWidth: 800, color: 'var(--color-text)' }}>Animal Locations</h2>
 
