@@ -113,7 +113,6 @@ export const RecordView: React.FC = () => {
               <div><b>Species:</b> {record.animal.species || <span className="text-muted">(none)</span>}</div>
             </div>
           )}
-          <div><b>Name:</b> {record.name}</div>
           <div><b>Type:</b> {record.recordType}</div>
           <div><b>Description:</b> {isEditing ? (
             <Form.Control

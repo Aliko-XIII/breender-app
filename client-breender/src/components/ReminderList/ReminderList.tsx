@@ -237,8 +237,8 @@ export const ReminderList = () => {
                 popup
                 tooltipAccessor={event => event.resource?.message || ''}
                 onSelectEvent={event => navigate(`/reminders/${event.id}`)}
-                views={isMobile ? ['agenda', 'day'] : undefined}
-                defaultView={isMobile ? 'agenda' : 'month'}
+                views={['month']}
+                defaultView="month"
                 toolbar
               />
             </div>

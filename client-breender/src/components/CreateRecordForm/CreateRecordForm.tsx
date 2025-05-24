@@ -83,6 +83,7 @@ export const CreateRecordForm: React.FC<CreateRecordFormProps> = ({ createRecord
             onChange={handleRecordTypeChange}
             required
             isInvalid={!recordType}
+            className="bg-dark text-light"
           >
             <option value="">-- Select Type --</option>
             {/* Ensure AnimalRecordType has string values */}
@@ -104,13 +105,14 @@ export const CreateRecordForm: React.FC<CreateRecordFormProps> = ({ createRecord
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Any general notes about this record..."
+            className="bg-dark text-light"
           />
         </Form.Group>
 
         {/* Details Section */}
         <div className="mb-3">
           <Form.Label>Details {recordType && <span className="text-danger">*</span>}</Form.Label>
-          <div className="border p-3 rounded bg-light">
+          <div className="border p-3 rounded bg-dark text-light">
             <RecordDetailsForm
               recordType={recordType}
               onChange={setDetailsData}
