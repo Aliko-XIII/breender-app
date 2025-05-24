@@ -150,18 +150,18 @@ const DocumentList: React.FC<DocumentListProps> = ({ animalId, userId }) => {
       </div>
       {/* Modal for viewing document details */}
       {selectedDocument && (
-        <div className="modal show d-block" tabIndex={-1} role="dialog" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={handleCloseModal}>
+        <div className="modal show d-block" tabIndex={-1} role="dialog" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={handleCloseModal}>
           <div className="modal-dialog modal-lg modal-dialog-centered" role="document" onClick={e => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{selectedDocument.documentName || 'Document'}</h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseModal}></button>
+            <div className="modal-content bg-dark text-light border-0" style={{ boxShadow: '0 0 24px 4px #000' }}>
+              <div className="modal-header border-0" style={{ background: '#222' }}>
+                <h5 className="modal-title text-light">{selectedDocument.documentName || 'Document'}</h5>
+                <button type="button" className="btn-close btn-close-white" aria-label="Close" onClick={handleCloseModal}></button>
               </div>
-              <div className="modal-body text-center">
+              <div className="modal-body text-center" style={{ background: '#181818' }}>
                 <div className="mb-3">
                   <a
                     href={API_BASE_URL + selectedDocument.documentUrl}
-                    className="btn btn-outline-primary"
+                    className="btn btn-outline-light"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -169,11 +169,11 @@ const DocumentList: React.FC<DocumentListProps> = ({ animalId, userId }) => {
                   </a>
                 </div>
                 {selectedDocument.uploadedAt && (
-                  <div className="text-muted small mt-2">Uploaded: {new Date(selectedDocument.uploadedAt).toLocaleString()}</div>
+                  <div className="text-muted small mt-2" style={{ color: '#bbb' }}>Uploaded: {new Date(selectedDocument.uploadedAt).toLocaleString()}</div>
                 )}
                 {selectedDocument.animalId && !animalId && (
                   <div className="mt-2">
-                    <a href={`/animals/${selectedDocument.animalId}/documents`} className="btn btn-outline-primary btn-sm">View Animal Documents</a>
+                    <a href={`/animals/${selectedDocument.animalId}/documents`} className="btn btn-outline-light btn-sm">View Animal Documents</a>
                   </div>
                 )}
               </div>

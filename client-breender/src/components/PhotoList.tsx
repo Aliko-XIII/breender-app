@@ -145,25 +145,25 @@ const PhotoList: React.FC<PhotoListProps> = ({ animalId, userId }) => {
       </div>
       {/* Modal for viewing photo */}
       {selectedPhoto && (
-        <div className="modal show d-block" tabIndex={-1} role="dialog" style={{ background: 'rgba(0,0,0,0.7)' }} onClick={handleCloseModal}>
+        <div className="modal show d-block" tabIndex={-1} role="dialog" style={{ background: 'rgba(0,0,0,0.85)' }} onClick={handleCloseModal}>
           <div className="modal-dialog modal-lg modal-dialog-centered" role="document" onClick={e => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">{selectedPhoto.title || 'Photo'}</h5>
-                <button type="button" className="btn-close" aria-label="Close" onClick={handleCloseModal}></button>
+            <div className="modal-content bg-dark text-light border-0" style={{ boxShadow: '0 0 24px 4px #000' }}>
+              <div className="modal-header border-0" style={{ background: '#222' }}>
+                <h5 className="modal-title text-light">{selectedPhoto.title || 'Photo'}</h5>
+                <button type="button" className="btn-close btn-close-white" aria-label="Close" onClick={handleCloseModal}></button>
               </div>
-              <div className="modal-body text-center">
+              <div className="modal-body text-center" style={{ background: '#181818' }}>
                 <img
                   src={API_BASE_URL + selectedPhoto.photoUrl}
                   alt={selectedPhoto.title || 'Animal photo'}
-                  style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: 8 }}
+                  style={{ maxWidth: '100%', maxHeight: '70vh', borderRadius: 8, boxShadow: '0 2px 16px #000' }}
                 />
                 {selectedPhoto.uploadedAt && (
-                  <div className="text-muted small mt-2">Uploaded: {new Date(selectedPhoto.uploadedAt).toLocaleString()}</div>
+                  <div className="text-muted small mt-2" style={{ color: '#bbb' }}>Uploaded: {new Date(selectedPhoto.uploadedAt).toLocaleString()}</div>
                 )}
                 {selectedPhoto.animalId && !animalId && (
                   <div className="mt-2">
-                    <a href={`/animals/${selectedPhoto.animalId}/photos`} className="btn btn-outline-primary btn-sm">View Animal Photos</a>
+                    <a href={`/animals/${selectedPhoto.animalId}/photos`} className="btn btn-outline-light btn-sm">View Animal Photos</a>
                   </div>
                 )}
               </div>

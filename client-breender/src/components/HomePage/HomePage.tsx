@@ -127,8 +127,8 @@ export const HomePage: React.FC<HomePageProps> = ({ getUser }) => {
                 }
                 const reqRes = await getPartnerships({ recipientAnimalId: myAnimalIds.join(','), status: 'PENDING' });
                 if (reqRes.status === 200 && Array.isArray(reqRes.data)) {
-                    // Only show requests where requester is not the current user
-                    const filtered = reqRes.data.filter((r: any) => r.requesterAnimalId && !myAnimalIds.includes(r.requesterAnimalId));
+                    // Only show requests with status PENDING
+                    const filtered = reqRes.data.filter((r: any) => r.status === 'PENDING');
                     // Fetch animal details for both requester and recipient
                     const animalIds = Array.from(new Set([
                         ...filtered.map((p: any) => p.requesterAnimalId),
