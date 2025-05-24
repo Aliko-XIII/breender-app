@@ -60,6 +60,15 @@ export class AnimalsController {
 
   @Get()
   async findAll(@Request() req, @Query() filter: AnimalFilterDto) {
+    // Manual boolean conversion for query params
+    if (filter.isSterilized === 'true') filter.isSterilized = true;
+    else if (filter.isSterilized === 'false') filter.isSterilized = false;
+    else filter.isSterilized = undefined;
+
+    if (filter.isAvailable === 'true') filter.isAvailable = true;
+    else if (filter.isAvailable === 'false') filter.isAvailable = false;
+    else filter.isAvailable = undefined;
+
     const authUserId = req.authUserId;
     const animals = await this.animalsService.findAllAnimals(authUserId, filter);
     // Map profilePicUrl to pictureUrl for each animal

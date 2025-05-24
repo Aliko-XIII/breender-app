@@ -11,6 +11,10 @@ export interface AnimalFilters {
     latitude?: number;
     longitude?: number;
     radius?: number;
+    bio?: string;
+    isSterilized?: boolean;
+    isAvailable?: boolean;
+    tags?: string[];
 }
 
 export const getAnimal = async (

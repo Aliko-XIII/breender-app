@@ -160,15 +160,23 @@ export class AnimalsService {
       throw new Error(`Could not create animal.`);
     }
   }
-
   async findAllAnimals(authUserId: string, filter?: AnimalFilterDto) {
     const where: any = {};
     let locationFilter = null;
+    // Debug log for filter values
+    Logger.log('AnimalFilterDto:', JSON.stringify(filter));
     if (filter) {
       if (filter.name) where.name = { contains: filter.name, mode: 'insensitive' };
       if (filter.species) where.species = { contains: filter.species, mode: 'insensitive' };
       if (filter.breed) where.breed = { contains: filter.breed, mode: 'insensitive' };
       if (filter.sex) where.sex = filter.sex;
+      if (filter.bio) where.bio = { contains: filter.bio, mode: 'insensitive' };
+      if (typeof filter.isSterilized === 'boolean') where.isSterilized = filter.isSterilized;      if (typeof filter.isAvailable === 'boolean') where.isAvailable = filter.isAvailable;
+      if (filter.tags && filter.tags.length > 0) {
+        where.tags = {
+          hasSome: filter.tags
+        };
+      }
       if (filter.birthdateFrom || filter.birthdateTo) {
         where.birthDate = {};
         if (filter.birthdateFrom) {
@@ -210,6 +218,7 @@ export class AnimalsService {
         };
       }
     }
+    Logger.log('Prisma where:', JSON.stringify(where));
     let animals = await this.databaseService.animal.findMany({ where });
     if (locationFilter) {
       // Haversine formula for distance filtering
@@ -242,14 +251,20 @@ export class AnimalsService {
         select: { animalId: true },
       });
       ownedAnimalIds = animalOwnerRecords.map((ao) => ao.animalId);
-    }
-    // Build filter for animals NOT owned by user
+    }    // Build filter for animals NOT owned by user
     const where: any = { id: { notIn: ownedAnimalIds } };
     if (filter) {
       if (filter.name) where.name = { contains: filter.name, mode: 'insensitive' };
       if (filter.species) where.species = { contains: filter.species, mode: 'insensitive' };
       if (filter.breed) where.breed = { contains: filter.breed, mode: 'insensitive' };
       if (filter.sex) where.sex = filter.sex;
+      if (filter.bio) where.bio = { contains: filter.bio, mode: 'insensitive' };
+      if (typeof filter.isSterilized === 'boolean') where.isSterilized = filter.isSterilized;      if (typeof filter.isAvailable === 'boolean') where.isAvailable = filter.isAvailable;
+      if (filter.tags && filter.tags.length > 0) {
+        where.tags = {
+          hasSome: filter.tags
+        };
+      }
       if (filter.birthdateFrom || filter.birthdateTo) {
         where.birthDate = {};
         if (filter.birthdateFrom) {

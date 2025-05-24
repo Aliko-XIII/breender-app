@@ -8,9 +8,7 @@ export const AnimalList: React.FC = () => {
     const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string; pictureUrl?: string | null }[]>([]);
     const [loading, setLoading] = useState(true);
     const { userId, isLoading } = useUser();
-    const navigate = useNavigate();
-
-    // Filter state
+    const navigate = useNavigate();    // Filter state
     const [filters, setFilters] = useState({
         name: "",
         species: "",
@@ -20,7 +18,11 @@ export const AnimalList: React.FC = () => {
         birthdateTo: "",
         latitude: "",
         longitude: "",
-        radius: ""
+        radius: "",
+        bio: "",
+        isSterilized: "",
+        isAvailable: "",
+        tags: ""
     });
 
     // Handle filter input changes
@@ -44,21 +46,26 @@ export const AnimalList: React.FC = () => {
             if (!userId) {
                 navigate("/login");
                 return;
-            }
-            // Only send non-empty filters
-            const activeFilters: any = { userId };
+            }            // Only send non-empty filters
+            const activeFilters: Record<string, string | number | boolean | string[]> = { userId };
             Object.entries(filters).forEach(([key, value]) => {
                 if (value !== "") {
                     // Convert to number for location fields
                     if (["latitude", "longitude", "radius"].includes(key)) {
                         activeFilters[key] = Number(value);
+                    } else if (key === "isSterilized" || key === "isAvailable") {
+                        // Always send as string ("true" or "false")
+                        activeFilters[key] = value;
+                    } else if (key === "tags") {
+                        // Split tags by comma and trim
+                        activeFilters[key] = value.split(",").map(tag => tag.trim()).filter(tag => tag);
                     } else {
                         activeFilters[key] = value;
                     }
                 }
             });
             const userAnimals = await getAnimals(activeFilters);
-            setAnimals(userAnimals.data.map((animal: any) => ({
+            setAnimals(userAnimals.data.map((animal: { id: string; name: string; species: string; pictureUrl?: string; profilePicUrl?: string }) => ({
                 id: animal.id,
                 name: animal.name,
                 species: animal.species,
@@ -81,6 +88,45 @@ export const AnimalList: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         loadAnimals();
+    };    // Clear all filters
+    const handleClearFilters = async () => {
+        const clearedFilters = {
+            name: "",
+            species: "",
+            breed: "",
+            sex: "",
+            birthdateFrom: "",
+            birthdateTo: "",
+            latitude: "",
+            longitude: "",
+            radius: "",
+            bio: "",
+            isSterilized: "",
+            isAvailable: "",
+            tags: ""
+        };
+        setFilters(clearedFilters);
+        
+        // Load animals with cleared filters
+        try {
+            setLoading(true);
+            if (!userId) {
+                navigate("/login");
+                return;
+            }
+            const activeFilters: Record<string, string | number | boolean | string[]> = { userId };
+            const userAnimals = await getAnimals(activeFilters);
+            setAnimals(userAnimals.data.map((animal: { id: string; name: string; species: string; pictureUrl?: string; profilePicUrl?: string }) => ({
+                id: animal.id,
+                name: animal.name,
+                species: animal.species,
+                pictureUrl: animal.pictureUrl || animal.profilePicUrl || null,
+            })));
+        } catch (error) {
+            console.error("Failed to fetch animals:", error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (loading) return <div>Loading your animals...</div>;
@@ -122,14 +168,53 @@ export const AnimalList: React.FC = () => {
                         <input type="date" className="form-control animal-filter-input" name="birthdateFrom" placeholder="Birthdate from" value={filters.birthdateFrom} onChange={handleFilterChange} max="9999-12-31"
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         />
-                    </div>
-                    <div className="col-md-2">
+                    </div>                    <div className="col-md-2">
                         <input type="date" className="form-control animal-filter-input" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31"
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         />
                     </div>
                     <div className="col-md-2">
-                        <button type="submit" className="btn btn-primary w-100">Apply Filters</button>
+                        <input type="text" className="form-control animal-filter-input" name="bio" placeholder="Bio (contains)" value={filters.bio} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
+                    </div>
+                </div>
+                <div className="row g-2 align-items-end mt-2">
+                    <div className="col-md-2">
+                        <select className="form-select animal-filter-input" name="isSterilized" value={filters.isSterilized} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        >
+                            <option value="" style={{ color: '#b0b3b8' }}>Sterilized</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <div className="col-md-2">
+                        <select className="form-select animal-filter-input" name="isAvailable" value={filters.isAvailable} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        >
+                            <option value="" style={{ color: '#b0b3b8' }}>Available</option>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <div className="col-md-3">
+                        <input type="text" className="form-control animal-filter-input" name="tags" placeholder="Tags (comma separated)" value={filters.tags} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
+                    </div>                    <div className="col-md-3">
+                        <small className="text-muted">Available tags: FRIENDLY, AGGRESSIVE, PLAYFUL, SHY, ENERGETIC, CALM, INTELLIGENT, TRAINED, VOCAL, QUIET, CURIOUS, INDEPENDENT, SOCIAL, PROTECTIVE, AFFECTIONATE, HUNTER, LAZY</small>
+                    </div>
+                    <div className="col-md-1">
+                        <button type="submit" className="btn btn-primary w-100">Apply</button>
+                    </div>
+                    <div className="col-md-1">
+                        <button type="button" className="btn btn-secondary w-100" onClick={handleClearFilters}>Clear</button>
+                    </div>
+                </div>
+                <div className="row g-2 align-items-end mt-2">
+                    <div className="col-md-2">
+                        <button type="button" className="btn btn-secondary w-100" onClick={handleClearFilters}>Clear Filters</button>
                     </div>
                 </div>
             </form>

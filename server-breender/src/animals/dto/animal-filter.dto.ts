@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsEnum, IsDateString, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsEnum, IsDateString, IsNumber, IsBoolean, IsArray } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { Sex } from '@prisma/client';
 
 export class AnimalFilterDto {
@@ -45,4 +45,19 @@ export class AnimalFilterDto {
   @Type(() => Number)
   @IsNumber({}, { message: 'radius must be a number', })
   radius?: number; // in kilometers
+
+  @IsOptional()
+  @IsString()
+  bio?: string;
+
+  @IsOptional()
+  isSterilized?: any;
+
+  @IsOptional()
+  isAvailable?: any;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
 }
