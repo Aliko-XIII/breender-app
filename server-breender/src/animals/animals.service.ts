@@ -159,8 +159,7 @@ export class AnimalsService {
       console.error(`Failed to create animal:`, error);
       throw new Error(`Could not create animal.`);
     }
-  }
-  async findAllAnimals(authUserId: string, filter?: AnimalFilterDto) {
+  }  async findAllAnimals(authUserId: string, filter?: AnimalFilterDto) {
     const where: any = {};
     let locationFilter = null;
     // Debug log for filter values
@@ -175,6 +174,17 @@ export class AnimalsService {
       if (filter.tags && filter.tags.length > 0) {
         where.tags = {
           hasSome: filter.tags
+        };
+      }
+      if (filter.ownerTags && filter.ownerTags.length > 0) {
+        where.owners = {
+          some: {
+            owner: {
+              tags: {
+                hasSome: filter.ownerTags
+              }
+            }
+          }
         };
       }
       if (filter.birthdateFrom || filter.birthdateTo) {
@@ -263,6 +273,17 @@ export class AnimalsService {
       if (filter.tags && filter.tags.length > 0) {
         where.tags = {
           hasSome: filter.tags
+        };
+      }
+      if (filter.ownerTags && filter.ownerTags.length > 0) {
+        where.owners = {
+          some: {
+            owner: {
+              tags: {
+                hasSome: filter.ownerTags
+              }
+            }
+          }
         };
       }
       if (filter.birthdateFrom || filter.birthdateTo) {

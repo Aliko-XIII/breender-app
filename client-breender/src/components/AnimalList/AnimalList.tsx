@@ -11,12 +11,19 @@ const AVAILABLE_TAGS = [
   'SOCIAL', 'PROTECTIVE', 'AFFECTIONATE', 'HUNTER', 'LAZY'
 ] as const;
 
+// Available owner tags constant
+const AVAILABLE_OWNER_TAGS = [
+  'RESPONSIBLE', 'EXPERIENCED', 'FRIENDLY', 'COMMUNICATIVE', 'CARING', 'ORGANIZED',
+  'TRUSTWORTHY', 'PATIENT', 'KNOWLEDGEABLE', 'ACTIVE', 'SUPPORTIVE', 'FLEXIBLE',
+  'DEDICATED', 'PUNCTUAL', 'EDUCATED', 'SOCIAL', 'CALM', 'ENTHUSIASTIC', 'ADAPTIVE', 'HELPFUL'
+] as const;
+
 export const AnimalList: React.FC = () => {
-    const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string; pictureUrl?: string | null }[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [animals, setAnimals] = useState<{ id: string; name: string; species: string; photoUrl?: string; pictureUrl?: string | null }[]>([]);    const [loading, setLoading] = useState(true);
     const [showTagModal, setShowTagModal] = useState(false);
+    const [showOwnerTagModal, setShowOwnerTagModal] = useState(false);
     const { userId, isLoading } = useUser();
-    const navigate = useNavigate();// Filter state
+    const navigate = useNavigate();    // Filter state
     const [filters, setFilters] = useState({
         name: "",
         species: "",
@@ -29,8 +36,9 @@ export const AnimalList: React.FC = () => {
         radius: "",
         bio: "",
         isSterilized: "",
-        isAvailable: "",
-        tags: [] as string[] // Changed to array
+        isAvailable: "", // Add as customizable filter
+        tags: [] as string[], // Changed to array
+        ownerTags: [] as string[] // Added owner tags
     });
 
     // Handle filter input changes
@@ -45,20 +53,22 @@ export const AnimalList: React.FC = () => {
             return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
         }
         return url;
-    };
-
-    // Load animals with filters
+    };    // Load animals with filters
     const loadAnimals = async () => {
         try {
             if (isLoading) return;
             if (!userId) {
                 navigate("/login");
                 return;
-            }            // Only send non-empty filters
-            const activeFilters: Record<string, string | number | boolean | string[]> = { userId };
+            }
+
+            // Only send non-empty filters
+            const activeFilters: Record<string, string | number | boolean | string[]> = { 
+                userId // Only filter by userId for AnimalList (user's own animals)
+            };
             Object.entries(filters).forEach(([key, value]) => {
-                if (key === "tags") {
-                    // Handle tags array
+                if (key === "tags" || key === "ownerTags") {
+                    // Handle tags and ownerTags arrays
                     if (Array.isArray(value) && value.length > 0) {
                         activeFilters[key] = value;
                     }
@@ -66,7 +76,7 @@ export const AnimalList: React.FC = () => {
                     // Convert to number for location fields
                     if (["latitude", "longitude", "radius"].includes(key)) {
                         activeFilters[key] = Number(value);
-                    } else if (key === "isSterilized" || key === "isAvailable") {
+                    } else if (key === "isSterilized") {
                         // Always send as string ("true" or "false")
                         activeFilters[key] = value;
                     } else {
@@ -112,8 +122,9 @@ export const AnimalList: React.FC = () => {
             radius: "",
             bio: "",
             isSterilized: "",
-            isAvailable: "",
-            tags: [] as string[] // Changed to array
+            isAvailable: "", // Add availability filter
+            tags: [] as string[], // Changed to array
+            ownerTags: [] as string[] // Added owner tags
         };
         setFilters(clearedFilters);
         
@@ -192,8 +203,7 @@ export const AnimalList: React.FC = () => {
                         <input type="text" className="form-control animal-filter-input" name="bio" placeholder="Bio (contains)" value={filters.bio} onChange={handleFilterChange}
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         />
-                    </div>
-                    <div className="col-md-2">
+                    </div>                    <div className="col-md-2">
                         <select className="form-select animal-filter-input" name="isSterilized" value={filters.isSterilized} onChange={handleFilterChange}
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         >
@@ -210,8 +220,24 @@ export const AnimalList: React.FC = () => {
                             <option value="true">Yes</option>
                             <option value="false">No</option>
                         </select>
+                    </div>                    <div className="col-md-2">
+                        <button
+                            type="button"
+                            className="btn btn-outline-info w-100"
+                            onClick={() => setShowOwnerTagModal(true)}
+                            style={{
+                                background: 'var(--color-bg-secondary)',
+                                color: 'var(--color-text)',
+                                border: '1px solid var(--color-border)',
+                                position: 'relative'
+                            }}
+                        >
+                            👥 Owner Tags {filters.ownerTags.length > 0 && (
+                                <span className="badge bg-info ms-2">{filters.ownerTags.length}</span>
+                            )}
+                        </button>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                         <button
                             type="button"
                             className="btn btn-outline-primary w-100"
@@ -236,14 +262,27 @@ export const AnimalList: React.FC = () => {
                     </div>
                 </div>
                 
-                {/* Tag filter preview - show selected tags */}
-                {filters.tags.length > 0 && (
+                {/* Tag filter preview - show selected tags */}                {filters.tags.length > 0 && (
                     <div className="row mt-2">
                         <div className="col-12">
                             <div className="p-2 rounded" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
                                 <small className="text-muted">Selected tags: </small>
                                 <span style={{ color: 'var(--color-text)', fontWeight: '500', fontSize: '0.9rem' }}>
                                     {filters.tags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Owner Tag filter preview - show selected owner tags */}
+                {filters.ownerTags.length > 0 && (
+                    <div className="row mt-2">
+                        <div className="col-12">
+                            <div className="p-2 rounded" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                                <small className="text-muted">Selected owner tags: </small>
+                                <span style={{ color: 'var(--color-text)', fontWeight: '500', fontSize: '0.9rem' }}>
+                                    {filters.ownerTags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
                                 </span>
                             </div>
                         </div>
@@ -318,6 +357,83 @@ export const AnimalList: React.FC = () => {
                                     type="button"
                                     className="btn btn-primary"
                                     onClick={() => setShowTagModal(false)}
+                                >
+                                    Done
+                                </button>                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Owner Tag Selection Modal */}
+            {showOwnerTagModal && (
+                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgb(0, 0, 0, 0.9)' }}>
+                    <div className="modal-dialog modal-lg modal-dialog-centered">
+                        <div className="modal-content" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '2px solid var(--color-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                            <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                <h5 className="modal-title">👥 Select Owner Tags</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setShowOwnerTagModal(false)}
+                                    style={{ filter: 'invert(1)' }}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="mb-3 text-muted small">Select tags to filter animals by their owners' characteristics:</p>
+                                <div className="row g-2">
+                                    {AVAILABLE_OWNER_TAGS.map((tag) => {
+                                        const isSelected = filters.ownerTags.includes(tag);
+                                        return (
+                                            <div key={tag} className="col-6 col-sm-4 col-md-3">
+                                                <button
+                                                    type="button"
+                                                    className={`btn w-100 btn-sm ${isSelected ? 'btn-info' : 'btn-outline-secondary'}`}
+                                                    onClick={() => {
+                                                        const newOwnerTags = isSelected
+                                                            ? filters.ownerTags.filter(t => t !== tag)
+                                                            : [...filters.ownerTags, tag];
+                                                        setFilters({ ...filters, ownerTags: newOwnerTags });
+                                                    }}
+                                                    style={{
+                                                        fontSize: '0.8rem',
+                                                        padding: '0.375rem 0.5rem',
+                                                        transition: 'all 0.2s ease',
+                                                        background: isSelected ? '#0dcaf0' : 'var(--color-bg-secondary)',
+                                                        borderColor: isSelected ? '#0dcaf0' : 'var(--color-border)',
+                                                        color: isSelected ? 'white' : 'var(--color-text)'
+                                                    }}
+                                                >
+                                                    {isSelected && '✓ '}
+                                                    {tag.charAt(0) + tag.slice(1).toLowerCase()}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {filters.ownerTags.length > 0 && (
+                                    <div className="mt-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                                        <strong className="text-muted">Selected ({filters.ownerTags.length}): </strong>
+                                        <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>
+                                            {filters.ownerTags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)' }}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() => {
+                                        setFilters({ ...filters, ownerTags: [] });
+                                    }}
+                                >
+                                    Clear All
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-info"
+                                    onClick={() => setShowOwnerTagModal(false)}
                                 >
                                     Done
                                 </button>

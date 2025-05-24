@@ -14,6 +14,13 @@ const AVAILABLE_TAGS = [
   'SOCIAL', 'PROTECTIVE', 'AFFECTIONATE', 'HUNTER', 'LAZY'
 ] as const;
 
+// Available owner tags constant
+const AVAILABLE_OWNER_TAGS = [
+  'RESPONSIBLE', 'EXPERIENCED', 'FRIENDLY', 'COMMUNICATIVE', 'CARING', 'ORGANIZED',
+  'TRUSTWORTHY', 'PATIENT', 'KNOWLEDGEABLE', 'ACTIVE', 'SUPPORTIVE', 'FLEXIBLE',
+  'DEDICATED', 'PUNCTUAL', 'EDUCATED', 'SOCIAL', 'CALM', 'ENTHUSIASTIC', 'ADAPTIVE', 'HELPFUL'
+] as const;
+
 interface AnimalMapProps {
     // Props for filtering or API fetching can be added later
 }
@@ -141,8 +148,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);    const [myAnimals, setMyAnimals] = useState<{ id: string; name: string; species?: string }[]>([]);
     const [selectedMyAnimalId, setSelectedMyAnimalId] = useState<string>('');
     const { userId } = useUser();
-    const [previewAnimalId, setPreviewAnimalId] = useState<string | null>(null);
-    const [showTagModal, setShowTagModal] = useState(false);    const [filters, setFilters] = useState({
+    const [previewAnimalId, setPreviewAnimalId] = useState<string | null>(null);    const [showTagModal, setShowTagModal] = useState(false);
+    const [showOwnerTagModal, setShowOwnerTagModal] = useState(false);    const [filters, setFilters] = useState({
         name: '',
         species: '',
         breed: '',
@@ -152,7 +159,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         radius: '10',
         bio: '',
         isSterilized: '',
-        tags: [] as string[]
+        tags: [] as string[],
+        ownerTags: [] as string[]
     });
 
     const navigate = useNavigate();    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -170,19 +178,19 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
             radius: '10',
             bio: '',
             isSterilized: '',
-            tags: []
+            tags: [],
+            ownerTags: []
         });
-    };    // Fetch animals for map (not owned by user)
+    };// Fetch animals for map (not owned by user)
     const loadAnimals = useCallback(() => {
         setIsLoading(true);
         const activeFilters: any = {};
         
         // Always filter for available animals
         activeFilters.isAvailable = "true";
-        
-        Object.entries(filters).forEach(([key, value]) => {
-            if (key === "tags") {
-                // Handle tags array
+          Object.entries(filters).forEach(([key, value]) => {
+            if (key === "tags" || key === "ownerTags") {
+                // Handle tags and ownerTags arrays
                 if (Array.isArray(value) && value.length > 0) {
                     activeFilters[key] = value;
                 }
@@ -385,8 +393,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     </div>
                     <div className="col-md-2">
                         <input type="number" className="form-control bg-dark text-light border-secondary" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
-                    </div>
-                    <div className="col-md-3">
+                    </div>                    <div className="col-md-2">
                         <button
                             type="button"
                             className="btn btn-outline-primary w-100"
@@ -403,6 +410,23 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             )}
                         </button>
                     </div>
+                    <div className="col-md-2">
+                        <button
+                            type="button"
+                            className="btn btn-info w-100"
+                            onClick={() => setShowOwnerTagModal(true)}
+                            style={{
+                                background: 'var(--color-bg-secondary)',
+                                color: 'var(--color-text)',
+                                border: '1px solid var(--color-border)',
+                                position: 'relative'
+                            }}
+                        >
+                            👥 Owner Tags {filters.ownerTags.length > 0 && (
+                                <span className="badge bg-info ms-2">{filters.ownerTags.length}</span>
+                            )}
+                        </button>
+                    </div>
                     <div className="col-md-1">
                         <button type="submit" className="btn btn-primary w-100">Apply</button>
                     </div>
@@ -410,8 +434,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <button type="button" className="btn btn-secondary w-100" onClick={handleClearFilters}>Clear</button>
                     </div>
                 </div>
-                
-                {/* Tag filter preview - show selected tags */}
+                  {/* Tag filter preview - show selected tags */}
                 {filters.tags.length > 0 && (
                     <div className="row mt-2">
                         <div className="col-12">
@@ -423,9 +446,21 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             </div>
                         </div>
                     </div>
-                )}            </form>
-
-            {/* Tag Selection Modal */}
+                )}
+                
+                {/* Owner tag filter preview - show selected owner tags */}
+                {filters.ownerTags.length > 0 && (
+                    <div className="row mt-2">
+                        <div className="col-12">
+                            <div className="p-2 rounded" style={{ background: 'var(--color-bg-secondary)', border: '1px solid var(--color-border)' }}>
+                                <small className="text-muted">Selected owner tags: </small>
+                                <span style={{ color: 'var(--color-text)', fontWeight: '500', fontSize: '0.9rem' }}>
+                                    {filters.ownerTags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}</form>            {/* Tag Selection Modal */}
             {showTagModal && (
                 <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -494,6 +529,84 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                     type="button"
                                     className="btn btn-primary"
                                     onClick={() => setShowTagModal(false)}
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Owner Tag Selection Modal */}
+            {showOwnerTagModal && (
+                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
+                    <div className="modal-dialog modal-lg modal-dialog-centered">
+                        <div className="modal-content" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '2px solid var(--color-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
+                            <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                                <h5 className="modal-title">👥 Select Owner Tags</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={() => setShowOwnerTagModal(false)}
+                                    style={{ filter: 'invert(1)' }}
+                                ></button>
+                            </div>
+                            <div className="modal-body">
+                                <p className="mb-3 text-muted small">Select tags to filter animal owners by their characteristics:</p>
+                                <div className="row g-2">
+                                    {AVAILABLE_OWNER_TAGS.map((tag) => {
+                                        const isSelected = filters.ownerTags.includes(tag);
+                                        return (
+                                            <div key={tag} className="col-6 col-sm-4 col-md-3">
+                                                <button
+                                                    type="button"
+                                                    className={`btn w-100 btn-sm ${isSelected ? 'btn-info' : 'btn-outline-secondary'}`}
+                                                    onClick={() => {
+                                                        const newOwnerTags = isSelected
+                                                            ? filters.ownerTags.filter(t => t !== tag)
+                                                            : [...filters.ownerTags, tag];
+                                                        setFilters({ ...filters, ownerTags: newOwnerTags });
+                                                    }}
+                                                    style={{
+                                                        fontSize: '0.8rem',
+                                                        padding: '0.375rem 0.5rem',
+                                                        transition: 'all 0.2s ease',
+                                                        background: isSelected ? 'var(--color-info)' : 'var(--color-bg-secondary)',
+                                                        borderColor: isSelected ? 'var(--color-info)' : 'var(--color-border)',
+                                                        color: isSelected ? 'white' : 'var(--color-text)'
+                                                    }}
+                                                >
+                                                    {isSelected && '✓ '}
+                                                    {tag.charAt(0) + tag.slice(1).toLowerCase()}
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                {filters.ownerTags.length > 0 && (
+                                    <div className="mt-3 p-3 rounded" style={{ background: 'var(--color-bg-secondary)' }}>
+                                        <strong className="text-muted">Selected ({filters.ownerTags.length}): </strong>
+                                        <span style={{ color: 'var(--color-text)', fontWeight: '500' }}>
+                                            {filters.ownerTags.map(tag => tag.charAt(0) + tag.slice(1).toLowerCase()).join(', ')}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="modal-footer" style={{ borderTop: '1px solid var(--color-border)' }}>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    onClick={() => {
+                                        setFilters({ ...filters, ownerTags: [] });
+                                    }}
+                                >
+                                    Clear All
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-info"
+                                    onClick={() => setShowOwnerTagModal(false)}
                                 >
                                     Done
                                 </button>

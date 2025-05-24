@@ -55,9 +55,13 @@ export class AnimalFilterDto {
 
   @IsOptional()
   isAvailable?: any;
-
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   tags?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  ownerTags?: string[];
 }

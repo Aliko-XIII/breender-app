@@ -15,6 +15,7 @@ export interface AnimalFilters {
     isSterilized?: boolean;
     isAvailable?: boolean;
     tags?: string[];
+    ownerTags?: string[];
 }
 
 export const getAnimal = async (
