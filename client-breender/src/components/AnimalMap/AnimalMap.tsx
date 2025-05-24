@@ -145,7 +145,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
     const [error, setError] = useState<string | null>(null);
     const [mapCenter, setMapCenter] = useState<{ lat: number; lng: number } | null>(null);
     const [userMarkerIcon, setUserMarkerIcon] = useState<any>(null);
-    const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);    const [myAnimals, setMyAnimals] = useState<{ id: string; name: string; species?: string }[]>([]);
+    const [animalMarkerIcon, setAnimalMarkerIcon] = useState<any>(null);    const [myAnimals, setMyAnimals] = useState<{ id: string; name: string; species?: string; breed?: string }[]>([]);
     const [selectedMyAnimalId, setSelectedMyAnimalId] = useState<string>('');
     const { userId } = useUser();
     const [previewAnimalId, setPreviewAnimalId] = useState<string | null>(null);    const [showTagModal, setShowTagModal] = useState(false);
@@ -275,6 +275,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             id: animal.id,
                             name: animal.name,
                             species: animal.species,
+                            breed: animal.breed, // Add breed property
                         }))
                     );
                 }
@@ -359,11 +360,41 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     <div className="col-md-2">
                         <input type="text" className="form-control bg-dark text-light border-secondary" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <input type="text" className="form-control bg-dark text-light border-secondary" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            title="Set species from my animal"
+                            style={{ minWidth: 32, padding: '0 8px' }}
+                            disabled={!selectedMyAnimalId || !myAnimals.find(a => a.id === selectedMyAnimalId)?.species}
+                            onClick={() => {
+                                const selected = myAnimals.find(a => a.id === selectedMyAnimalId);
+                                if (selected && selected.species) {
+                                    setFilters(prev => ({ ...prev, species: selected.species! }));
+                                }
+                            }}
+                        >
+                            ⬇️
+                        </button>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                         <input type="text" className="form-control bg-dark text-light border-secondary" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            title="Set breed from my animal"
+                            style={{ minWidth: 32, padding: '0 8px' }}
+                            disabled={!selectedMyAnimalId || !myAnimals.find(a => a.id === selectedMyAnimalId)?.breed}
+                            onClick={() => {
+                                const selected = myAnimals.find(a => a.id === selectedMyAnimalId);
+                                if (selected && selected.breed) {
+                                    setFilters(prev => ({ ...prev, breed: selected.breed! }));
+                                }
+                            }}
+                        >
+                            ⬇️
+                        </button>
                     </div>
                     <div className="col-md-2">
                         <select className="form-select bg-dark text-light border-secondary" name="sex" value={filters.sex} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
