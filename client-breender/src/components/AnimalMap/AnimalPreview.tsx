@@ -27,6 +27,15 @@ function getDistanceInMeters(lat1: number, lng1: number, lat2: number, lng2: num
   return Math.round(R * c);
 }
 
+// Helper to get full profile picture URL
+const getProfilePicUrl = (url?: string | null) => {
+  if (!url) return '/animal-placeholder.png';
+  if (url.startsWith('/uploads/')) {
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}${url}`;
+  }
+  return url;
+};
+
 export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimalId, onClose }) => {
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [myAnimal, setMyAnimal] = useState<Animal | null>(null);
@@ -160,7 +169,7 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
         <div className="col-12 col-md-5">
           <div className="card h-100 shadow border-primary border-2">
             <div className="card-body text-center">
-              <img src={myAnimal.photo || "/animal-placeholder.png"} alt={myAnimal.name} className="rounded-circle border mb-3" style={{ width: 120, height: 120, objectFit: 'cover', background: '#f8f9fa', borderWidth: 3, borderColor: '#0d6efd' }} />
+              <img src={getProfilePicUrl(myAnimal.profilePicUrl)} alt={myAnimal.name} className="rounded-circle border mb-3" style={{ width: 120, height: 120, objectFit: 'cover', background: '#f8f9fa', borderWidth: 3, borderColor: '#0d6efd' }} />
               <h5 className="card-title mb-1">{myAnimal.name}</h5>
               <div className="mb-2">{sexBadge(myAnimal.sex)}</div>
               <div className="mb-2">
@@ -194,7 +203,7 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
         <div className="col-12 col-md-5">
           <div className="card h-100 shadow border-danger border-2">
             <div className="card-body text-center">
-              <img src={animal.photo || "/animal-placeholder.png"} alt={animal.name} className="rounded-circle border mb-3" style={{ width: 120, height: 120, objectFit: 'cover', background: '#f8f9fa', borderWidth: 3, borderColor: '#dc3545' }} />
+              <img src={getProfilePicUrl(animal.profilePicUrl)} alt={animal.name} className="rounded-circle border mb-3" style={{ width: 120, height: 120, objectFit: 'cover', background: '#f8f9fa', borderWidth: 3, borderColor: '#dc3545' }} />
               <h5 className="card-title mb-1">{animal.name}</h5>
               <div className="mb-2">{sexBadge(animal.sex)}</div>
               <div className="mb-2">
