@@ -5,6 +5,8 @@ export interface OwnerProfile {
   bio?: string;
   pictureUrl?: string;
   phone?: string;
+  tags?: string[];
+  isAvailable?: boolean;
 }
 
 export interface OwnerUser {
@@ -12,6 +14,7 @@ export interface OwnerUser {
   email: string;
   role?: string;
   profile?: OwnerProfile;
+  ownerProfile?: OwnerProfile; // Additional owner-specific data
 }
 
 export type AnimalOwner = OwnerUser;

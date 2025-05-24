@@ -471,7 +471,6 @@ export class AnimalsService {
 
     return user?.role === 'ADMIN';
   }
-
   /**
    * Get all owners' user records by animal ID
    */
@@ -491,8 +490,19 @@ export class AnimalsService {
     if (!animal) {
       throw new NotFoundException(`Animal with ID ${animalId} not found.`);
     }
-    // Return all owners' user records
-    const ownerUsers = animal.owners.map((ao) => ao.owner?.user).filter(Boolean);
+    // Return all owners' user records with their owner data including tags
+    const ownerUsers = animal.owners.map((ao) => {
+      if (ao.owner?.user) {
+        return {
+          ...ao.owner.user,
+          ownerProfile: {
+            tags: ao.owner.tags,
+            isAvailable: ao.owner.is_available
+          }
+        };
+      }
+      return null;
+    }).filter(Boolean);
     if (!ownerUsers.length) {
       throw new NotFoundException('No owner users found for this animal.');
     }

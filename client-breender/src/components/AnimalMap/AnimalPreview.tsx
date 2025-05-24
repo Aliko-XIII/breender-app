@@ -7,6 +7,18 @@ import { AnimalOwner } from "../../types/owner";
 import { Animal } from "../../types/animal";
 import { UserMention } from "../UserMention/UserMention";
 
+// Available tags constants
+const AVAILABLE_TAGS = [
+  'FRIENDLY', 'AGGRESSIVE', 'PLAYFUL', 'SHY', 'ENERGETIC', 'CALM',
+  'INTELLIGENT', 'TRAINED', 'VOCAL', 'QUIET', 'CURIOUS', 'INDEPENDENT',
+  'SOCIAL', 'PROTECTIVE', 'AFFECTIONATE', 'HUNTER', 'LAZY'
+] as const;
+
+const AVAILABLE_OWNER_TAGS = [
+  'RESPONSIBLE', 'EXPERIENCED', 'FRIENDLY', 'COMMUNICATIVE', 'CARING', 'ORGANIZED',
+  'PATIENT', 'ACTIVE', 'RELIABLE', 'DEDICATED', 'KNOWLEDGEABLE', 'COMPASSIONATE'
+] as const;
+
 interface AnimalPreviewProps {
   animalId: string;
   myAnimalId: string;
@@ -36,6 +48,81 @@ const getProfilePicUrl = (url?: string | null) => {
   return url;
 };
 
+// Helper to display formatted birth date
+const displayBirthDate = (dateString?: string): string => {
+  if (!dateString) return '-';
+  try {
+    return new Date(dateString).toLocaleDateString(undefined, { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  } catch {
+    return 'Invalid Date';
+  }
+};
+
+// Helper to render animal tags
+const renderAnimalTags = (tags?: string[]) => {
+  return (
+    <div className="mt-2">
+      <div className="fw-bold small mb-1">🏷️ Tags:</div>
+      <div className="d-flex flex-wrap gap-1">
+        {tags && tags.length > 0 ? (
+          tags.map((tag) => (
+            <span
+              key={tag}
+              className="badge rounded-pill px-2 py-1"
+              style={{
+                background: 'var(--color-primary)',
+                color: 'white',
+                fontSize: '0.7rem',
+                fontWeight: '500'
+              }}
+            >
+              {tag.charAt(0) + tag.slice(1).toLowerCase()}
+            </span>
+          ))
+        ) : (
+          <span className="small text-muted fst-italic">No tags available</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Helper to render owner tags
+const renderOwnerTags = (owners: AnimalOwner[]) => {
+  const allOwnerTags = owners.flatMap(owner => owner.ownerProfile?.tags || []);
+  const uniqueOwnerTags = [...new Set(allOwnerTags)];
+  
+  return (
+    <div className="mt-2">
+      <div className="fw-bold small mb-1">👤 Owner Tags:</div>
+      <div className="d-flex flex-wrap gap-1">
+        {uniqueOwnerTags.length > 0 ? (
+          uniqueOwnerTags.map((tag) => (
+            <span
+              key={tag}
+              className="badge rounded-pill px-2 py-1"
+              style={{
+                background: 'var(--color-info)',
+                color: 'white',
+                fontSize: '0.7rem',
+                fontWeight: '500'
+              }}
+            >
+              {tag.charAt(0) + tag.slice(1).toLowerCase()}
+            </span>
+          ))
+        ) : (
+          <span className="small text-muted fst-italic">No owner tags available</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimalId, onClose }) => {
   const [animal, setAnimal] = useState<Animal | null>(null);
   const [myAnimal, setMyAnimal] = useState<Animal | null>(null);
@@ -46,20 +133,6 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [myAnimalOwners, setMyAnimalOwners] = useState<AnimalOwner[]>([]);
   const [animalOwners, setAnimalOwners] = useState<AnimalOwner[]>([]);  const navigate = useNavigate();
-
-  // Helper to display formatted birth date
-  const displayBirthDate = (dateString?: string): string => {
-    if (!dateString) return '-';
-    try {
-      return new Date(dateString).toLocaleDateString(undefined, { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    } catch {
-      return 'Invalid Date';
-    }
-  };
 
   useEffect(() => {
     setLoading(true);
@@ -242,6 +315,8 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                 <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>📍 Location:</strong> {myAnimal.latitude.toFixed(4)}, {myAnimal.longitude.toFixed(4)}</div>
               )}
               {myAnimal.bio && <div className="mt-3 small p-2 rounded" style={{ whiteSpace: 'pre-line', background: 'rgba(0,0,0,0.3)', color: 'var(--color-text-secondary)' }}>{myAnimal.bio}</div>}
+              {renderAnimalTags(myAnimal.tags)}
+              {renderOwnerTags(myAnimalOwners)}
               {renderOwners(myAnimalOwners)}
               <div className="mt-3 fw-bold badge px-3 py-2" style={{ fontSize: '12px', background: 'rgba(58, 134, 255, 0.2)', color: 'var(--color-primary)', border: '1px solid var(--color-primary)' }}>
                 ✨ Your Animal
@@ -301,6 +376,8 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                 <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>📍 Location:</strong> {animal.latitude.toFixed(4)}, {animal.longitude.toFixed(4)}</div>
               )}
               {animal.bio && <div className="mt-3 small p-2 rounded" style={{ whiteSpace: 'pre-line', background: 'rgba(0,0,0,0.3)', color: 'var(--color-text-secondary)' }}>{animal.bio}</div>}
+              {renderAnimalTags(animal.tags)}
+              {renderOwnerTags(animalOwners)}
               {renderOwners(animalOwners)}
               <div className="mt-3 fw-bold badge px-3 py-2" style={{ fontSize: '12px', background: 'rgba(255, 107, 107, 0.2)', color: '#ff6b6b', border: '1px solid #ff6b6b' }}>
                 💕 Available for Partnership
