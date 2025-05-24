@@ -129,21 +129,6 @@ export const AnimalList: React.FC = () => {
                         />
                     </div>
                     <div className="col-md-2">
-                        <input type="number" className="form-control animal-filter-input" name="latitude" placeholder="Latitude" value={filters.latitude} onChange={handleFilterChange} step="any"
-                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-                        />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control animal-filter-input" name="longitude" placeholder="Longitude" value={filters.longitude} onChange={handleFilterChange} step="any"
-                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-                        />
-                    </div>
-                    <div className="col-md-2">
-                        <input type="number" className="form-control animal-filter-input" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any"
-                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
-                        />
-                    </div>
-                    <div className="col-md-2">
                         <button type="submit" className="btn btn-primary w-100">Apply Filters</button>
                     </div>
                 </div>
