@@ -3,7 +3,7 @@ import { ApiResponse } from "../../types";
 import { useUser } from "../../context/UserContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { uploadUserProfilePic } from "../../api/userApi";
-import { getOwnerByUserId, switchOwnerAvailability } from "../../api/ownerApi";
+import { getOwnerByUserId, switchOwnerAvailability, updateOwner } from "../../api/ownerApi";
 
 interface UserProfileData {
   name: string;
@@ -13,6 +13,21 @@ interface UserProfileData {
   email: string;
   role: "OWNER" | "ADMIN";
   isAvailable?: boolean; // Owner availability
+  tags?: string[];
+  customData?: Record<string, string>;
+}
+
+// Add available owner tags constant
+const AVAILABLE_OWNER_TAGS = [
+  'RESPONSIBLE', 'EXPERIENCED', 'FRIENDLY', 'COMMUNICATIVE', 'CARING', 'ORGANIZED',
+  'TRUSTWORTHY', 'PATIENT', 'KNOWLEDGEABLE', 'ACTIVE', 'SUPPORTIVE', 'FLEXIBLE',
+  'DEDICATED', 'PUNCTUAL', 'EDUCATED', 'SOCIAL', 'CALM', 'ENTHUSIASTIC', 'ADAPTIVE', 'HELPFUL'
+] as const;
+
+interface CustomField {
+  id: string;
+  key: string;
+  value: string;
 }
 
 interface UserProfileProps {
@@ -29,6 +44,8 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
   const [ownerId, setOwnerId] = useState<string | null>(null);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const [ownerData, setOwnerData] = useState<Record<string, unknown> | null>(null);
   const { userId: currentUserId, isLoading } = useUser();
   const { id: routeUserId } = useParams();
   const navigate = useNavigate();
@@ -68,13 +85,39 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
         setUserProfile(profileData);
         setFormData(profileData);
 
-        // Fetch owner availability if user is OWNER
-        if (response.data.role === "OWNER") {
-          const ownerRes = await getOwnerByUserId(userIdToLoad);
-          if (ownerRes.status === 200 && ownerRes.data) {
-            setOwnerId(ownerRes.data.id);
-            setIsAvailable(ownerRes.data.is_available);
+        // Always fetch owner record for the user
+        const ownerRes = await getOwnerByUserId(userIdToLoad);
+        if (ownerRes.status === 200 && ownerRes.data) {
+          setOwnerId(ownerRes.data.id);
+          setIsAvailable(ownerRes.data.is_available);
+          setOwnerData(ownerRes.data);
+          // Initialize custom fields array from ownerData
+          const cd = ownerRes.data.customData;
+          let customDataObj = {};
+          if (cd) {
+            if (typeof cd === 'string') {
+              try { customDataObj = JSON.parse(cd); } catch { customDataObj = {}; }
+            } else {
+              customDataObj = cd;
+            }
           }
+          const fieldsArray: CustomField[] = Object.entries(customDataObj).map(([key, value]) => ({
+            id: `${Date.now()}-${Math.random()}`,
+            key,
+            value: String(value)
+          }));
+          setCustomFields(fieldsArray);
+          // Also update formData with tags/customData from owner
+          setFormData(prev => ({
+            ...prev,
+            tags: ownerRes.data.tags || [],
+            customData: customDataObj
+          }));
+        } else {
+          setOwnerData(null);
+          setOwnerId(null);
+          setIsAvailable(null);
+          setCustomFields([]);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -126,17 +169,51 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
       } else {
         alert("Failed to update availability");
       }
-    } catch (err) {
+    } catch {
       alert("Error updating availability");
     } finally {
       setAvailabilityLoading(false);
     }
   };
 
+  // Helper function to convert custom fields array to object
+  const customFieldsToObject = (fields: CustomField[]): Record<string, string> => {
+    const result: Record<string, string> = {};
+    fields.forEach(field => {
+      if (field.key.trim()) {
+        result[field.key] = field.value;
+      }
+    });
+    return result;
+  };
+
+  // Helper function to update custom fields in formData
+  const updateCustomFieldsInFormData = (fields: CustomField[]) => {
+    const customDataObject = customFieldsToObject(fields);
+    setFormData(prev => ({ ...prev, customData: customDataObject }));
+  };
+
   const handleSave = async () => {
     if (isOwnProfile && currentUserId && formData) {
       try {
-        await updateUser(currentUserId, formData);
+        // Prepare user profile fields (exclude tags/customData)
+        const { tags, customData, ...userFields } = formData;
+        await updateUser(currentUserId, userFields);
+        // If OWNER, update tags and customData via owner endpoint
+        if (ownerId) {
+          const ownerUpdate: { tags?: string[]; customData?: Record<string, string> } = {};
+          if (Array.isArray(tags) && tags.length > 0) ownerUpdate.tags = tags;
+          if (customData && Object.keys(customData).length > 0) ownerUpdate.customData = customData;
+          if (Object.keys(ownerUpdate).length > 0) {
+            await updateOwner(ownerId, ownerUpdate);
+            // Update ownerData state so UI reflects changes immediately
+            setOwnerData(prev => ({
+              ...(prev || {}),
+              ...(ownerUpdate.tags ? { tags: ownerUpdate.tags } : {}),
+              ...(ownerUpdate.customData ? { customData: ownerUpdate.customData } : {}),
+            }));
+          }
+        }
         setUserProfile({ ...userProfile!, ...formData });
         setIsEditing(false);
         alert("Profile updated successfully!");
@@ -302,6 +379,139 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
                 border: '1px solid var(--color-border)'
               }}
             />
+          </div>
+        )}
+
+        {/* Tags Section (OWNER only) */}
+        {(ownerData) && (
+          <div className="mb-3">
+            <label>Tags:</label>
+            {isEditing ? (
+              <div className="row g-2 mt-1">
+                {AVAILABLE_OWNER_TAGS.map((tag) => {
+                  const isSelected = (formData.tags || []).includes(tag);
+                  return (
+                    <div key={tag} className="col-6 col-sm-4">
+                      <button
+                        type="button"
+                        className={`btn w-100 btn-sm ${isSelected ? 'btn-primary' : 'btn-outline-secondary'}`}
+                        onClick={() => {
+                          const currentTags = formData.tags || [];
+                          const newTags = isSelected
+                            ? currentTags.filter(t => t !== tag)
+                            : [...currentTags, tag];
+                          setFormData({ ...formData, tags: newTags });
+                        }}
+                        style={{ fontSize: '0.85rem', marginBottom: 4 }}
+                      >
+                        {isSelected && '✓ '}{tag.charAt(0) + tag.slice(1).toLowerCase()}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="mt-2">
+                {((ownerData as { tags?: string[] }).tags && (ownerData as { tags?: string[] }).tags!.length > 0) ? (
+                  <div className="d-flex flex-wrap gap-2">
+                    {(ownerData as { tags?: string[] }).tags!.map((tag) => (
+                      <span key={tag} className="badge rounded-pill px-3 py-2 bg-primary text-white" style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                        {tag.charAt(0) + tag.slice(1).toLowerCase()}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-muted">No tags assigned</span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Custom Fields Section (OWNER only) */}
+        {(ownerData) && (
+          <div className="mb-3">
+            <label>Custom Fields:</label>
+            {isEditing ? (
+              <div>
+                {customFields.length > 0 ? (
+                  <div className="row g-3">
+                    {customFields.map((field, idx) => (
+                      <div className="col-12 d-flex align-items-center gap-2" key={field.id}>
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder="Field Name"
+                          value={field.key}
+                          onChange={e => {
+                            const updatedFields = [...customFields];
+                            updatedFields[idx] = { ...field, key: e.target.value };
+                            setCustomFields(updatedFields);
+                            updateCustomFieldsInFormData(updatedFields);
+                          }}
+                        />
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder="Value"
+                          value={field.value}
+                          onChange={e => {
+                            const updatedFields = [...customFields];
+                            updatedFields[idx] = { ...field, value: e.target.value };
+                            setCustomFields(updatedFields);
+                            updateCustomFieldsInFormData(updatedFields);
+                          }}
+                        />
+                        <button
+                          className="btn btn-outline-danger btn-sm"
+                          type="button"
+                          onClick={() => {
+                            const updatedFields = customFields.filter((_, i) => i !== idx);
+                            setCustomFields(updatedFields);
+                            updateCustomFieldsInFormData(updatedFields);
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-muted">No custom fields added</div>
+                )}
+                <button
+                  className="btn btn-outline-primary btn-sm mt-2"
+                  type="button"
+                  onClick={() => {
+                    const newField: CustomField = {
+                      id: `${Date.now()}-${Math.random()}`,
+                      key: "",
+                      value: ""
+                    };
+                    const updatedFields = [...customFields, newField];
+                    setCustomFields(updatedFields);
+                    updateCustomFieldsInFormData(updatedFields);
+                  }}
+                >
+                  + Add Custom Field
+                </button>
+              </div>
+            ) : (
+              <div className="mt-2">
+                {(ownerData.customData && Object.keys(ownerData.customData as Record<string, unknown>).length > 0) ? (
+                  <div className="row g-3">
+                    {Object.entries(ownerData.customData as Record<string, unknown>).map(([key, value]) => (
+                      <div className="col-12 d-flex align-items-center gap-2" key={key}>
+                        <span className="fw-bold" style={{ minWidth: 100 }}>{key}:</span>
+                        <span>{String(value)}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-muted">No custom fields added</span>
+                )}
+              </div>
+            )}
           </div>
         )}
 
