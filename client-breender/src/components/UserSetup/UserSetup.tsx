@@ -5,7 +5,7 @@ import { useUser } from "../../context/UserContext";
 interface UserSetupData {
     name: string;
     bio: string;
-    pictureUrl?: string;
+    phone?: string;
 }
 
 export const UserSetup = ({ updateUser }) => {
@@ -14,7 +14,7 @@ export const UserSetup = ({ updateUser }) => {
     const [userData, setUserData] = useState<UserSetupData>({
         name: "",
         bio: "",
-        pictureUrl: undefined,
+        phone: "",
     });
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -38,12 +38,12 @@ export const UserSetup = ({ updateUser }) => {
     };
 
     return (
-        <Container className="mt-5">
-            <Card className="shadow-lg p-4" style={{ maxWidth: "500px", margin: "0 auto" }}>
-                <h2 className="text-center mb-4">Setup Your Profile</h2>
+        <Container className="mt-5" style={{ minHeight: "100vh", background: "#181a1b" }}>
+            <Card className="shadow-lg p-4" style={{ maxWidth: "500px", margin: "0 auto", background: "#23272b", color: "#f8f9fa", border: "none" }}>
+                <h2 className="text-center mb-4" style={{ color: "#f8f9fa" }}>Setup Your Profile</h2>
 
                 <Form.Group className="mb-3">
-                    <Form.Label>Name</Form.Label>
+                    <Form.Label style={{ color: "#f8f9fa" }}>Name</Form.Label>
                     <Form.Control
                         type="text"
                         name="name"
@@ -51,11 +51,13 @@ export const UserSetup = ({ updateUser }) => {
                         onChange={handleInputChange}
                         placeholder="Enter your name"
                         required
+                        className="bg-dark text-light border-secondary"
+                        style={{ background: "#181a1b", color: "#f8f9fa", borderColor: "#343a40" }}
                     />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                    <Form.Label>Bio</Form.Label>
+                    <Form.Label style={{ color: "#f8f9fa" }}>Bio</Form.Label>
                     <Form.Control
                         as="textarea"
                         name="bio"
@@ -63,17 +65,21 @@ export const UserSetup = ({ updateUser }) => {
                         onChange={handleInputChange}
                         placeholder="Tell something about yourself"
                         rows={3}
+                        className="bg-dark text-light border-secondary"
+                        style={{ background: "#181a1b", color: "#f8f9fa", borderColor: "#343a40" }}
                     />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                    <Form.Label>Profile Picture URL</Form.Label>
+                    <Form.Label style={{ color: "#f8f9fa" }}>Phone Number</Form.Label>
                     <Form.Control
-                        type="text"
-                        name="pictureUrl"
-                        value={userData.pictureUrl}
+                        type="tel"
+                        name="phone"
+                        value={userData.phone}
                         onChange={handleInputChange}
-                        placeholder="Enter a profile picture URL"
+                        placeholder="Enter your phone number"
+                        className="bg-dark text-light border-secondary"
+                        style={{ background: "#181a1b", color: "#f8f9fa", borderColor: "#343a40" }}
                     />
                 </Form.Group>
 

@@ -337,7 +337,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
 
         {/* Bio Section */}
         <div className="mb-4">
-          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Biography</h5>
+          <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Bio</h5>
           {isEditing ? (
             <textarea
               name="bio"
@@ -355,7 +355,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
           ) : (
             <div className="p-3 rounded" style={{ background: 'var(--color-bg-secondary)', minHeight: '60px' }}>
               <p className="mb-0" style={{ whiteSpace: 'pre-wrap', color: 'var(--color-text)', lineHeight: '1.6' }}>
-                {userProfile.bio || <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>No biography available.</span>}
+                {userProfile.bio || <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>No bio available.</span>}
               </p>
             </div>
           )}
@@ -364,7 +364,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
         {/* Availability Section */}
         <div className="mb-4">
           <h5 className="mb-3" style={{ color: 'var(--color-primary)', fontWeight: '600' }}>Availability</h5>
-          {userProfile.role === "OWNER" && isAvailable !== null ? (
+          {
             isEditing && isOwnProfile ? (
               <div className="form-check form-switch">
                 <input
@@ -384,11 +384,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ getUser, updateUser })
                 {isAvailable ? "Available for Partnership" : "Not Available for Partnership"}
               </p>
             )
-          ) : (
-            <p className="mb-0" style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
-              Availability not applicable for this role
-            </p>
-          )}
+          }
         </div>
 
         {isEditing && (

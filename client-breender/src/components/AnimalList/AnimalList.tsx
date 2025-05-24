@@ -197,7 +197,7 @@ export const AnimalList: React.FC = () => {
                     </div>
                 </div>
                 
-                {/* Second Row - Additional filters and actions */}
+                {/* Second Row - Additional filters */}
                 <div className="row g-2 align-items-end mt-2">
                     <div className="col-md-2">
                         <input type="text" className="form-control animal-filter-input" name="bio" placeholder="Bio (contains)" value={filters.bio} onChange={handleFilterChange}
@@ -254,7 +254,11 @@ export const AnimalList: React.FC = () => {
                             )}
                         </button>
                     </div>
-                    <div className="col-md-1">
+                </div>
+                
+                {/* Third Row - Action buttons */}
+                <div className="row g-2 align-items-end mt-2">
+                    <div className="col-md-2 offset-md-8">
                         <button type="submit" className="btn btn-primary w-100">Apply</button>
                     </div>
                     <div className="col-md-2">

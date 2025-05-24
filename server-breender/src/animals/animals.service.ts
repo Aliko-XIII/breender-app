@@ -384,9 +384,9 @@ export class AnimalsService {
     }
     if (updateAnimalDto.bio) {
       updatedAnimal.bio = updateAnimalDto.bio;
-    }
-    if (updateAnimalDto.birthDate) {
-      updatedAnimal.birthDate = updateAnimalDto.birthDate;
+    }    if (updateAnimalDto.birthDate) {
+      // Ensure birthDate is properly formatted as ISO-8601 DateTime
+      updatedAnimal.birthDate = new Date(updateAnimalDto.birthDate).toISOString();
     }
     if (updateAnimalDto.latitude !== undefined) {
       updatedAnimal.latitude = updateAnimalDto.latitude;

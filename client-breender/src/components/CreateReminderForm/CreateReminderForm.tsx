@@ -43,15 +43,16 @@ export const CreateReminderForm: React.FC<CreateReminderFormProps> = ({ onSave }
 
   return (
     <div className="d-flex justify-content-center mt-5">
-      <div className="card p-4 shadow-sm" style={{ maxWidth: "600px", width: "100%" }}>
+      <div className="card p-4 shadow-sm bg-dark text-light" style={{ maxWidth: "600px", width: "100%" }}>
         <h3 className="mb-4">Create Reminder</h3>
-        {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className="alert alert-danger bg-danger text-light border-0">{error}</div>}
         <Form.Group className="mb-3">
-          <Form.Label>Reminder Type</Form.Label>
+          <Form.Label className="text-light">Reminder Type</Form.Label>
           <Form.Select
             value={reminderType}
             onChange={(e) => setReminderType(e.target.value as ReminderType)}
             disabled={isSubmitting}
+            className="form-select bg-dark text-light border-secondary"
           >
             <option value="">-- Select Type --</option>
             {Object.values(ReminderType).map((type) => (
@@ -61,7 +62,7 @@ export const CreateReminderForm: React.FC<CreateReminderFormProps> = ({ onSave }
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Reminder Message (optional)</Form.Label>
+          <Form.Label className="text-light">Reminder Message (optional)</Form.Label>
           <Form.Control
             as="textarea"
             rows={3}
@@ -69,23 +70,25 @@ export const CreateReminderForm: React.FC<CreateReminderFormProps> = ({ onSave }
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Add an optional note..."
             disabled={isSubmitting}
+            className="bg-dark text-light border-secondary"
           />
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Remind At</Form.Label>
+          <Form.Label className="text-light">Remind At</Form.Label>
           <Form.Control
             type="datetime-local"
             value={remindAt}
             onChange={(e) => setRemindAt(e.target.value)}
             disabled={isSubmitting}
+            className="bg-dark text-light border-secondary"
           />
         </Form.Group>
 
         <Button
           onClick={handleSave}
           disabled={!isFormValid || isSubmitting}
-          className="mt-3 w-100"
+          className="mt-3 w-100 btn-light btn-outline-dark"
         >
           {isSubmitting ? "Saving..." : "Save Reminder"}
         </Button>

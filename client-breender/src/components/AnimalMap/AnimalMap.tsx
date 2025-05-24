@@ -30,6 +30,10 @@ interface AnimalMapListInfo extends AnimalMapInfo {
     breed?: string;
     sex?: string;
     birthdate?: string;
+    profilePicUrl?: string; 
+    pictureUrl?: string;
+    photo?: string;
+    tags?: string[];
 }
 
 const containerStyle = {
@@ -100,12 +104,22 @@ const darkMapStyle = [
 
 // Helper to resolve animal profile picture URL
 const resolveAnimalPictureUrl = (animal: AnimalMapListInfo & { pictureUrl?: string; profilePicUrl?: string; photo?: string }) => {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || '';
+    // Use the same base URL that's configured in axiosInstance
+    const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    
     // Try all possible fields for backward compatibility
     const url = animal.pictureUrl || animal.profilePicUrl || animal.photo;
+    
+    // Debug the image URL resolution
+    console.log('Picture URL for', animal.name, ':', url);
+    
     if (url) {
         if (url.startsWith('http')) return url;
-        if (url.startsWith('/uploads/')) return apiBase + url;
+        if (url.startsWith('/uploads/')) {
+            const fullUrl = apiBase + url;
+            console.log('Full URL:', fullUrl);
+            return fullUrl;
+        }
         return url;
     }
     return '/animal-placeholder.png';
@@ -115,13 +129,40 @@ const resolveAnimalPictureUrl = (animal: AnimalMapListInfo & { pictureUrl?: stri
 function getAge(birthdate: string) {
     const birth = new Date(birthdate);
     if (isNaN(birth.getTime())) return '';
+    
     const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
+    
+    // Check if birthdate is in the future
+    if (birth > today) {
+        return 'Not born yet';
     }
-    return age + ' yrs';
+    
+    let years = today.getFullYear() - birth.getFullYear();
+    const months = today.getMonth() - birth.getMonth();
+    const days = today.getDate() - birth.getDate();
+    
+    // Adjust years if needed
+    if (months < 0 || (months === 0 && days < 0)) {
+        years--;
+    }
+    
+    // Calculate actual months considering year adjustment
+    let actualMonths = months;
+    if (actualMonths < 0) {
+        actualMonths += 12;
+    }
+    
+    // For animals less than 1 year old, show months
+    if (years === 0) {
+        if (actualMonths === 0) {
+            // Calculate age in days for very young animals
+            const ageInDays = Math.floor((today.getTime() - birth.getTime()) / (1000 * 60 * 60 * 24));
+            return ageInDays + (ageInDays === 1 ? ' day' : ' days');
+        }
+        return actualMonths + (actualMonths === 1 ? ' month' : ' months');
+    }
+    
+    return years + (years === 1 ? ' yr' : ' yrs');
 }
 
 // Helper to calculate distance in meters between two lat/lng points
@@ -213,7 +254,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         getAnimalsForMap(activeFilters)
             .then((response) => {
                 if (response.status === 200 && Array.isArray(response.data)) {
-                    setAnimals(
+                    console.log('Data: ', response.data);                    setAnimals(
                         response.data
                             .filter((animal: any) => typeof animal.latitude === 'number' && typeof animal.longitude === 'number')
                             .map((animal: any) => ({
@@ -225,7 +266,11 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                 canPartner: animal.canPartner,
                                 breed: animal.breed,
                                 sex: animal.sex,
-                                birthdate: animal.birthdate,
+                                birthdate: animal.birthDate,
+                                profilePicUrl: animal.profilePicUrl,
+                                photo: animal.photo,
+                                pictureUrl: animal.pictureUrl,
+                                tags: animal.tags,
                             }))
                     );
                     setError(null);
@@ -670,8 +715,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         disableDefaultUI: false,
                     }}
                     onLoad={handleMapLoad}
-                >
-                    {mapCenter && userMarkerIcon && (
+                >                    {mapCenter && userMarkerIcon && (
                         <Marker
                             position={mapCenter}
                             icon={userMarkerIcon}
@@ -683,7 +727,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <Marker
                             key={animal.id}
                             position={{ lat: animal.latitude, lng: animal.longitude }}
-                            title={animal.name}
+                            title={`${animal.name} (${animal.species || '?'})`}
                             onClick={() => handleMarkerClick(animal)}
                             icon={animalMarkerIcon}
                             clickable={true}
@@ -705,13 +749,14 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                         alt={selectedAnimal.name}
                                         style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: '50%', border: '1px solid #888' }}
                                         onError={e => { (e.target as HTMLImageElement).src = '/animal-placeholder.png'; }}
-                                    />
-                                    <div>
+                                    />                                    <div>
                                         <h5 style={{ margin: 0, color: 'var(--color-text)' }}>{selectedAnimal.name}</h5>
                                         {selectedAnimal.species && <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Species: {selectedAnimal.species}</div>}
+                                        {selectedAnimal.birthdate && <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>Age: {getAge(selectedAnimal.birthdate)}</div>}
                                     </div>
                                 </div>
                                 <p style={{ fontSize: 12, margin: 0, color: 'var(--color-text-secondary)' }}><small>Lat: {selectedAnimal.latitude.toFixed(4)}, Lng: {selectedAnimal.longitude.toFixed(4)}</small></p>
+                                {selectedAnimal.breed && <p style={{ fontSize: 12, margin: 0, color: 'var(--color-text-secondary)' }}><small>Breed: {selectedAnimal.breed} | Sex: {selectedAnimal.sex || 'Unknown'}</small></p>}
                                 <button className="btn btn-primary btn-sm mt-2" onClick={() => handleAnimalSelect(selectedAnimal)} disabled={!selectedMyAnimalId}>
                                     Preview & Partner
                                 </button>
@@ -763,11 +808,12 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                     />
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                                         <strong style={{ color: 'var(--color-text)' }}>{animal.name}</strong>
-                                        {animal.species ? <span className="text-muted" style={{ color: 'var(--color-text-secondary)' }}>({animal.species})</span> : null}
-                                        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                                        {animal.species ? <span className="text-muted" style={{ color: 'var(--color-text-secondary)' }}>({animal.species})</span> : null}                                        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
                                             {animal.breed && <span>Breed: {animal.breed} </span>}
                                             {animal.sex && <span>Sex: {animal.sex} </span>}
-                                            {animal.birthdate && <span>Age: {getAge(animal.birthdate)} </span>}
+                                            {animal.birthdate && (
+                                                <span>Age: <span style={{ fontWeight: 'bold' }}>{getAge(animal.birthdate)}</span> </span>
+                                            )}
                                         </span>
                                     </div>
                                 </span>

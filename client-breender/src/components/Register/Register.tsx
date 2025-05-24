@@ -37,44 +37,47 @@ export const Register: React.FC = () => {
     };
 
     return (
-        <div className="container mt-5 d-flex justify-content-center align-items-center">
-            <div className="card shadow-lg p-4" style={{ maxWidth: "400px", width: "100%" }}>
-                <h1 className="text-center mb-4">Sign Up</h1>
+        <div className="container mt-5 d-flex justify-content-center align-items-center" style={{ minHeight: "100vh", background: "#181a1b" }}>
+            <div className="card shadow-lg p-4" style={{ maxWidth: "400px", width: "100%", background: "#23272b", color: "#f8f9fa", border: "none" }}>
+                <h1 className="text-center mb-4" style={{ color: "#f8f9fa" }}>Sign Up</h1>
                 <form onSubmit={handleSubmit} method="post">
                     <div className="mb-3">
-                        <label htmlFor="email" className="form-label">Email:</label>
+                        <label htmlFor="email" className="form-label" style={{ color: "#f8f9fa" }}>Email:</label>
                         <input
                             type="email"
                             name="email"
                             id="email"
-                            className="form-control"
+                            className="form-control bg-dark text-light border-secondary"
                             required
+                            style={{ background: "#181a1b", color: "#f8f9fa", borderColor: "#343a40" }}
                         />
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="pass" className="form-label">Password:</label>
+                        <label htmlFor="pass" className="form-label" style={{ color: "#f8f9fa" }}>Password:</label>
                         <input
                             type="password"
                             name="pass"
                             id="pass"
-                            className="form-control"
+                            className="form-control bg-dark text-light border-secondary"
                             required
+                            style={{ background: "#181a1b", color: "#f8f9fa", borderColor: "#343a40" }}
                         />
                     </div>
                     <div className="mb-3">
-                        <label htmlFor="pass-repeat" className="form-label">Repeat Password:</label>
+                        <label htmlFor="pass-repeat" className="form-label" style={{ color: "#f8f9fa" }}>Repeat Password:</label>
                         <input
                             type="password"
                             name="pass-repeat"
                             id="pass-repeat"
-                            className="form-control"
+                            className="form-control bg-dark text-light border-secondary"
                             required
+                            style={{ background: "#181a1b", color: "#f8f9fa", borderColor: "#343a40" }}
                         />
                     </div>
                     <button type="submit" className="btn btn-primary w-100 mb-3">Sign Up</button>
                 </form>
                 <div className="text-center">
-                    <a href="/login" className="text-decoration-none">Already have an account?</a>
+                    <a href="/login" className="text-decoration-none text-info">Already have an account?</a>
                 </div>
             </div>
         </div>
