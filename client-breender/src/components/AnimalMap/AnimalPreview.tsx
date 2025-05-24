@@ -300,17 +300,23 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                     borderColor: 'var(--color-primary)' 
                   }} 
                 />
-                <div className="position-absolute top-0 end-0 text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 32, height: 32, fontSize: '14px', background: 'var(--color-primary)' }}>
-                  👤
-                </div>
               </div>
               <h5 className="card-title mb-2" style={{ color: 'var(--color-primary)', fontWeight: '700' }}>{myAnimal.name}</h5>
               <div className="mb-3">{sexBadge(myAnimal.sex)}</div>
               <div className="mb-3">
                 <span className="badge me-2 px-3 py-1" style={{ fontSize: '11px', background: 'var(--color-accent)', color: 'var(--color-bg)' }}>{myAnimal.species || '-'}</span>
                 <span className="badge px-3 py-1" style={{ fontSize: '11px', background: 'var(--color-bg)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>{myAnimal.breed || '-'}</span>
+              </div>              <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>🎂 Birth Date:</strong> {displayBirthDate(myAnimal.birthDate)}</div>
+              <div className="mb-2 small" style={{ color: 'var(--color-text)' }}>
+                <strong>🔸 Sterilized:</strong> 
+                <span className={`badge ms-1 px-2 py-1`} style={{ 
+                  fontSize: '0.7rem',
+                  background: myAnimal.isSterilized ? '#10b981' : '#ef4444',
+                  color: 'white'
+                }}>
+                  {myAnimal.isSterilized ? '✓ Yes' : '✗ No'}
+                </span>
               </div>
-              <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>🎂 Birth Date:</strong> {displayBirthDate(myAnimal.birthDate)}</div>
               {myAnimal.latitude && myAnimal.longitude && (
                 <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>📍 Location:</strong> {myAnimal.latitude.toFixed(4)}, {myAnimal.longitude.toFixed(4)}</div>
               )}
@@ -361,17 +367,23 @@ export const AnimalPreview: React.FC<AnimalPreviewProps> = ({ animalId, myAnimal
                     borderColor: '#ff6b6b' 
                   }} 
                 />
-                <div className="position-absolute top-0 end-0 text-white rounded-circle d-flex align-items-center justify-content-center" style={{ width: 32, height: 32, fontSize: '14px', background: '#ff6b6b' }}>
-                  💕
-                </div>
               </div>
               <h5 className="card-title mb-2" style={{ color: '#ff6b6b', fontWeight: '700' }}>{animal.name}</h5>
               <div className="mb-3">{sexBadge(animal.sex)}</div>
               <div className="mb-3">
                 <span className="badge me-2 px-3 py-1" style={{ fontSize: '11px', background: 'var(--color-accent)', color: 'var(--color-bg)' }}>{animal.species || '-'}</span>
                 <span className="badge px-3 py-1" style={{ fontSize: '11px', background: 'var(--color-bg)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>{animal.breed || '-'}</span>
+              </div>              <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>🎂 Birth Date:</strong> {displayBirthDate(animal.birthDate)}</div>
+              <div className="mb-2 small" style={{ color: 'var(--color-text)' }}>
+                <strong>🔸 Sterilized:</strong> 
+                <span className={`badge ms-1 px-2 py-1`} style={{ 
+                  fontSize: '0.7rem',
+                  background: animal.isSterilized ? '#10b981' : '#ef4444',
+                  color: 'white'
+                }}>
+                  {animal.isSterilized ? '✓ Yes' : '✗ No'}
+                </span>
               </div>
-              <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>🎂 Birth Date:</strong> {displayBirthDate(animal.birthDate)}</div>
               {animal.latitude && animal.longitude && (
                 <div className="mb-2 small" style={{ color: 'var(--color-text)' }}><strong>📍 Location:</strong> {animal.latitude.toFixed(4)}, {animal.longitude.toFixed(4)}</div>
               )}
