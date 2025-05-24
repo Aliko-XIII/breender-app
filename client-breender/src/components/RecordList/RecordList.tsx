@@ -146,14 +146,6 @@ export const RecordList = () => {
                         >
                             Export Filtered as JSON
                         </Button>
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => navigate(`/animals/${animalId}/create-record`)}
-                            disabled={!animalId}
-                        >
-                            Create Record
-                        </Button>
                     </div>
                 </Card.Header>
                 <div className="p-3" style={{ background: 'var(--color-bg-primary)', borderRadius: '0 0 0.5rem 0.5rem' }}>
