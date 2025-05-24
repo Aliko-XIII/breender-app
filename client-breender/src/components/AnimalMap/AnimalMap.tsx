@@ -667,7 +667,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                                 pixelOffset: new window.google.maps.Size(0, -30),
                             }}
                         >
-                            <div style={{ minWidth: 180, background: 'var(--color-bg-secondary)', color: 'var(--color-text)', borderRadius: 8, border: '1px solid var(--color-border)', boxShadow: '0 2px 8px rgba(0,0,0,0.4)', padding: 8 }}>
+                            <div style={{ minWidth: 180, background: 'var(--color-bg-secondary)', color: 'var(--color-text)', borderRadius: 8, padding: 8 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                                     <img
                                         src={resolveAnimalPictureUrl(selectedAnimal)}
