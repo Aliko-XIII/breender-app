@@ -379,12 +379,12 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                         <input type="date" className="form-control bg-dark text-light border-secondary" name="birthdateTo" placeholder="Birthdate to" value={filters.birthdateTo} onChange={handleFilterChange} max="9999-12-31" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
                     </div>
                 </div>
-                
-                {/* Second Row - Additional filters and actions */}
+                  {/* Second Row - Additional filters */}
                 <div className="row g-2 align-items-end mt-2">
                     <div className="col-md-2">
                         <input type="text" className="form-control bg-dark text-light border-secondary" name="bio" placeholder="Bio (contains)" value={filters.bio} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
-                    </div>                    <div className="col-md-2">
+                    </div>
+                    <div className="col-md-2">
                         <select className="form-select bg-dark text-light border-secondary" name="isSterilized" value={filters.isSterilized} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>
                             <option value="">Sterilized</option>
                             <option value="true">Yes</option>
@@ -393,7 +393,8 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     </div>
                     <div className="col-md-2">
                         <input type="number" className="form-control bg-dark text-light border-secondary" name="radius" placeholder="Radius (km)" value={filters.radius} onChange={handleFilterChange} min="0" step="any" style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
-                    </div>                    <div className="col-md-2">
+                    </div>
+                    <div className="col-md-3">
                         <button
                             type="button"
                             className="btn btn-outline-primary w-100"
@@ -410,7 +411,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             )}
                         </button>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-3">
                         <button
                             type="button"
                             className="btn btn-info w-100"
@@ -427,7 +428,12 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                             )}
                         </button>
                     </div>
-                    <div className="col-md-1">
+                </div>
+                
+                {/* Third Row - Action buttons */}
+                <div className="row g-2 align-items-end mt-2">
+                    <div className="col-md-8"></div>
+                    <div className="col-md-2">
                         <button type="submit" className="btn btn-primary w-100">Apply</button>
                     </div>
                     <div className="col-md-2">
