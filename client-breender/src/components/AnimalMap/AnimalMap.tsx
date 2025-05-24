@@ -499,7 +499,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     </div>
                 )}</form>            {/* Tag Selection Modal */}
             {showTagModal && (
-                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
+                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.95)' }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered">
                         <div className="modal-content" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '2px solid var(--color-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
@@ -577,7 +577,7 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
 
             {/* Owner Tag Selection Modal */}
             {showOwnerTagModal && (
-                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.8)' }}>
+                <div className="modal show d-block" tabIndex={-1} style={{ background: 'rgba(0, 0, 0, 0.95)' }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered">
                         <div className="modal-content" style={{ background: 'var(--color-bg-primary)', color: 'var(--color-text)', border: '2px solid var(--color-border)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
                             <div className="modal-header" style={{ borderBottom: '1px solid var(--color-border)' }}>
