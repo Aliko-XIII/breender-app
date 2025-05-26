@@ -271,7 +271,7 @@ function RequestsTabContent({
 }
 
 export const PartnershipsPage: React.FC = () => {
-  const [topTab, setTopTab] = useState<TopTabType>("PARTNERS");
+  const [topTab, setTopTab] = useState<TopTabType>("REQUESTS");
   const [activeTab, setActiveTab] = useState<TabType>("ACCEPTED");
   const [partnerships, setPartnerships] = useState<PartnershipWithDetails[]>([]);
   const [loading, setLoading] = useState(false);

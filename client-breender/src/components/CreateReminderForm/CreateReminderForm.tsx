@@ -87,7 +87,6 @@ export const CreateReminderForm: React.FC<CreateReminderFormProps> = ({ onSave }
 
         <Button
           onClick={handleSave}
-          disabled={!isFormValid || isSubmitting}
           className="mt-3 w-100 btn-light btn-outline-dark"
         >
           {isSubmitting ? "Saving..." : "Save Reminder"}
