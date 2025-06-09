@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Spinner, Alert, Button, Form } from "react-bootstrap";
-import { getRecordById, updateRecord } from "../../api/recordApi";
+import { getRecordById, updateRecord, deleteRecord } from "../../api/recordApi";
 import { AnimalRecord, AnimalRecordType, AnyAnimalRecordDetails } from "../../types";
 import { RecordDetailsForm } from "../CreateRecordForm/DetailsForms/RecordDetailsForm";
 import { useUser } from "../../context/UserContext";
@@ -16,6 +16,7 @@ export const RecordView: React.FC = () => {
   const [formDetails, setFormDetails] = useState<AnyAnimalRecordDetails | null>(null);
   const [isDetailsValid, setIsDetailsValid] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
   const { userId: currentUserId } = useUser();
 
@@ -94,6 +95,25 @@ export const RecordView: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!recordId) return;
+    if (!window.confirm("Are you sure you want to delete this record? This action cannot be undone.")) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const res = await deleteRecord(recordId);
+      if (res.status === 200) {
+        navigate(-1);
+      } else {
+        setError(res.data?.message || "Failed to delete record.");
+      }
+    } catch {
+      setError("Failed to delete record.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) return <Spinner animation="border" className="mt-5 d-block mx-auto" />;
   if (error) return <Alert variant="danger" className="mt-5">{error}</Alert>;
   if (!record) return <Alert variant="warning" className="mt-5">Record not found.</Alert>;
@@ -143,17 +163,22 @@ export const RecordView: React.FC = () => {
             )}
           </div>
           <div className="mt-3 d-flex gap-2">
-            <Button variant="secondary" onClick={() => navigate(-1)} disabled={isSaving}>Back</Button>
-            <Button variant="outline-primary" onClick={handleExportJson} disabled={!record}>Export as JSON</Button>
+            <Button variant="secondary" onClick={() => navigate(-1)} disabled={isSaving || isDeleting}>Back</Button>
+            <Button variant="outline-primary" onClick={handleExportJson} disabled={!record || isDeleting}>Export as JSON</Button>
             {isOwner && !isEditing && (
-              <Button variant="primary" onClick={() => setIsEditing(true)}>Edit</Button>
+              <>
+                <Button variant="primary" onClick={() => setIsEditing(true)} disabled={isDeleting}>Edit</Button>
+                <Button variant="danger" onClick={handleDelete} disabled={isDeleting}>
+                  {isDeleting ? "Deleting..." : "Delete"}
+                </Button>
+              </>
             )}
             {isOwner && isEditing && (
               <>
-                <Button variant="success" onClick={handleSave} disabled={isSaving || !isDetailsValid}>
+                <Button variant="success" onClick={handleSave} disabled={isSaving || !isDetailsValid || isDeleting}>
                   {isSaving ? "Saving..." : "Save"}
                 </Button>
-                <Button variant="secondary" onClick={() => { setIsEditing(false); setFormDescription(record.description || ""); setFormDetails(record.details || null); }}>Cancel</Button>
+                <Button variant="secondary" onClick={() => { setIsEditing(false); setFormDescription(record.description || ""); setFormDetails(record.details || null); }} disabled={isSaving || isDeleting}>Cancel</Button>
               </>
             )}
           </div>

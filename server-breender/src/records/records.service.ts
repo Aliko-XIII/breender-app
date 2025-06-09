@@ -24,18 +24,10 @@ export class RecordsService {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
 
-        // Check if the authenticated user is an owner of the animal
-        const ownerAssignment = await this.databaseService.owner.findUnique({
-            where: {
-                userId: authUserId,
-            },
-            include: {
-                animals: true,
-            },
-        });
-
-        if (!ownerAssignment) {
-            throw new ForbiddenException("You are not assigned to this animal.");
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(authUserId, animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this animal.');
         }
 
         await this.validateDetailsByType(details, recordType);
@@ -90,17 +82,10 @@ export class RecordsService {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
 
-        const ownerAssignment = await this.databaseService.owner.findUnique({
-            where: {
-                userId: authUserId,
-            },
-            include: {
-                animals: true,
-            },
-        });
-
-        if (!ownerAssignment) {
-            throw new ForbiddenException("You are not assigned to this animal.");
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(authUserId, animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this animal.');
         }
         const records = await this.databaseService.animalRecord.findMany({
             where: { animalId },
@@ -134,21 +119,16 @@ export class RecordsService {
     ) {
         const existingRecord = await this.databaseService.animalRecord.findUnique({
             where: { id: recordId },
-            include: {
-                animal: {
-                    include: {
-                        owners: { where: { owner: { userId: authUserId } } }
-                    }
-                }
-            },
         });
 
         if (!existingRecord) {
             throw new NotFoundException(`Record with ID ${recordId} not found.`);
         }
 
-        if (!existingRecord.animal?.owners || existingRecord.animal.owners.length === 0) {
-            throw new ForbiddenException(`You are not authorized to update this record.`);
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(authUserId, existingRecord.animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this record.');
         }
 
         const dataToUpdate: Prisma.AnimalRecordUpdateInput = {};
@@ -190,6 +170,11 @@ export class RecordsService {
     ) {
         const record = await this.databaseService.animalRecord.findUnique({ where: { id } });
         if (!record) throw new NotFoundException(`Record with ID ${id} not found`);
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(authUserId, record.animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this record.');
+        }
         await this.databaseService.animalRecord.delete({ where: { id } });
     }
 
@@ -298,6 +283,41 @@ export class RecordsService {
             console.error(`Validation failed for details of type ${recordType}:`, errors);
             throw new BadRequestException(errors); // Propagate validation errors
         }
+    }
+
+    /**
+     * Checks if the user is the owner of the animal or has access via partnership.
+     * @param userId - The user's id (not owner id)
+     * @param animalId - The animal's id
+     * @returns true if user is owner or has partnership access, false otherwise
+     */
+    async hasAnimalAccess(userId: string, animalId: string): Promise<boolean> {
+        // Find the owner record for the user
+        const owner = await this.databaseService.owner.findUnique({
+            where: { userId },
+            include: { animals: true },
+        });
+        if (!owner) return false;
+
+        // Check if user is direct owner of the animal
+        const isOwner = owner.animals.some((ao: any) => ao.animalId === animalId);
+        if (isOwner) return true;
+
+        // Get all animalIds owned by this owner
+        const userAnimalIds = owner.animals.map((ao: any) => ao.animalId);
+        if (userAnimalIds.length === 0) return false;
+
+        // Check for partnership where user's animal is requester or recipient with the target animal
+        const partnership = await this.databaseService.partnership.findFirst({
+            where: {
+                OR: [
+                    { requesterAnimalId: { in: userAnimalIds }, recipientAnimalId: animalId },
+                    { recipientAnimalId: { in: userAnimalIds }, requesterAnimalId: animalId },
+                ],
+                status: 'ACCEPTED',
+            },
+        });
+        return !!partnership;
     }
 
 }

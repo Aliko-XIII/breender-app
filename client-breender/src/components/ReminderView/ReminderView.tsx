@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, Spinner, Alert, Button } from "react-bootstrap";
-import { getReminderById, updateReminder } from "../../api/reminderApi";
+import { getReminderById, updateReminder, deleteReminder } from "../../api/reminderApi";
 import { AnimalReminder } from "../../types/reminder";
 import { ReminderType } from "../../types/reminder-type.enum";
 import { useUser } from "../../context/UserContext";
@@ -16,6 +16,7 @@ export const ReminderView: React.FC = () => {
   const [formMessage, setFormMessage] = useState<string>("");
   const [formRemindAt, setFormRemindAt] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { userId: currentUserId } = useUser();
   const navigate = useNavigate();
 
@@ -67,6 +68,25 @@ export const ReminderView: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!reminderId) return;
+    if (!window.confirm("Are you sure you want to delete this reminder? This action cannot be undone.")) return;
+    setIsDeleting(true);
+    setError(null);
+    try {
+      const res = await deleteReminder(reminderId);
+      if (res.status === 200) {
+        navigate(-1);
+      } else {
+        setError(res.data?.message || "Failed to delete reminder.");
+      }
+    } catch (err) {
+      setError("Failed to delete reminder.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) return <Spinner animation="border" className="mt-5 d-block mx-auto" />;
   if (error) return <Alert variant="danger" className="mt-5">{error}</Alert>;
   if (!reminder) return <Alert variant="warning" className="mt-5">Reminder not found.</Alert>;
@@ -107,17 +127,22 @@ export const ReminderView: React.FC = () => {
           )}</div>
           <div><b>Created:</b> {formatDate(reminder.createdAt)}</div>
           <div className="mt-3 d-flex gap-2">
-            <Button variant="secondary" onClick={() => navigate(-1)} disabled={isSaving}>Back</Button>
+            <Button variant="secondary" onClick={() => navigate(-1)} disabled={isSaving || isDeleting}>Back</Button>
             {!isEditing && (
-              <Button variant="primary" onClick={() => setIsEditing(true)}>Edit</Button>
+              <Button variant="primary" onClick={() => setIsEditing(true)} disabled={isDeleting}>Edit</Button>
             )}
             {isEditing && (
               <>
                 <Button variant="success" onClick={handleSave} disabled={isSaving || !formType || !formRemindAt}>
                   {isSaving ? "Saving..." : "Save"}
                 </Button>
-                <Button variant="secondary" onClick={() => { setIsEditing(false); setFormType(reminder.reminderType); setFormMessage(reminder.message || ""); setFormRemindAt(reminder.remindAt ? reminder.remindAt.slice(0, 16) : ""); }}>Cancel</Button>
+                <Button variant="secondary" onClick={() => { setIsEditing(false); setFormType(reminder.reminderType); setFormMessage(reminder.message || ""); setFormRemindAt(reminder.remindAt ? reminder.remindAt.slice(0, 16) : ""); }} disabled={isSaving || isDeleting}>Cancel</Button>
               </>
+            )}
+            {!isEditing && (
+              <Button variant="danger" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? "Deleting..." : "Delete"}
+              </Button>
             )}
           </div>
         </Card.Body>

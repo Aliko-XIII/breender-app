@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common'; // Added NotFoundException for potential use later
+import { ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common'; // Added NotFoundException for potential use later
 import { DatabaseService } from 'src/database/database.service'; // Assuming same path
 // Assuming DTOs exist in a ./dto subfolder relative to this service
 import { CreateReminderDto } from './dto/createReminder.dto';
@@ -21,22 +21,10 @@ export class RemindersService {
         if (!animal) {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
-
-        // Check if the authenticated user is an owner of the animal
-        const ownerAssignment = await this.databaseService.owner.findUnique({
-            where: {
-                userId: authUserId,
-            },
-            include: {
-                animals: true,
-            },
-        });
-
-        if (!ownerAssignment) {
-            throw new ForbiddenException("You are not assigned to this animal.");
+        const hasAccess = await this.hasAnimalAccess(authUserId, animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this animal.');
         }
-
-
         // Create and store the animal document
         return this.databaseService.reminder.create({
             data: {
@@ -53,7 +41,7 @@ export class RemindersService {
         if (userId !== authUserId) {
             throw new ForbiddenException("You can only access your own reminders.");
         }
-
+        // No animal access check needed here, as reminders are filtered by userId
         const reminders = await this.databaseService.reminder.findMany({
             where: { userId },
             orderBy: {
@@ -78,18 +66,9 @@ export class RemindersService {
         if (!animal) {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
-
-        const ownerAssignment = await this.databaseService.owner.findUnique({
-            where: {
-                userId: authUserId,
-            },
-            include: {
-                animals: true,
-            },
-        });
-
-        if (!ownerAssignment) {
-            throw new ForbiddenException("You are not assigned to this animal.");
+        const hasAccess = await this.hasAnimalAccess(authUserId, animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this animal.');
         }
         const reminders = await this.databaseService.reminder.findMany({
             where: { animalId },
@@ -106,7 +85,7 @@ export class RemindersService {
     }
 
     async findReminderById(id: string, authUserId: any) {
-        return await this.databaseService.reminder.findUnique({
+        const reminder = await this.databaseService.reminder.findUnique({
             where: { id },
             include: {
                 animal: {
@@ -114,6 +93,15 @@ export class RemindersService {
                 }
             }
         });
+        if (!reminder) {
+            throw new NotFoundException(`Reminder with ID ${id} not found.`);
+        }
+        const hasAccess = await this.hasAnimalAccess(authUserId, reminder?.animalId || '');
+        Logger.log(`User ${authUserId} access to reminder ${id}: ${hasAccess}`);
+        if (!hasAccess) {
+            throw new ForbiddenException(`You do not have access to this reminder.`);
+        }
+        return reminder;
     }
 
     async updateReminder(
@@ -123,42 +111,28 @@ export class RemindersService {
     ) {
         const existingReminder = await this.databaseService.reminder.findUnique({
             where: { id },
-            include: {
-                animal: {
-                    include: {
-                        owners: { where: { owner: { userId: authUserId } } }
-                    }
-                }
-            },
         });
-
         if (!existingReminder) {
             throw new NotFoundException(`Reminder with ID ${id} not found.`);
         }
-
-        if (!existingReminder.animal?.owners || existingReminder.animal.owners.length === 0) {
-            throw new ForbiddenException(`You are not authorized to update this reminder.`);
+        const hasAccess = await this.hasAnimalAccess(authUserId, existingReminder.animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this reminder.');
         }
-
         const dataToUpdate: Prisma.ReminderUpdateInput = {};
-
         if (updateReminderDto.reminderType !== undefined) {
             dataToUpdate.reminderType = updateReminderDto.reminderType;
         }
-
         if (updateReminderDto.message !== undefined) {
             dataToUpdate.message = updateReminderDto.message;
         }
-
         if (updateReminderDto.remindAt !== undefined) {
             dataToUpdate.remindAt = updateReminderDto.remindAt;
         }
-
         if (Object.keys(dataToUpdate).length === 0) {
-            console.log(`No fields to update for reminder ${id}.`);
+            Logger.log(`No fields to update for reminder ${id}.`);
             return existingReminder;
         }
-
         return this.databaseService.reminder.update({
             where: { id: id },
             data: dataToUpdate,
@@ -176,6 +150,10 @@ export class RemindersService {
     ) {
         const reminder = await this.databaseService.reminder.findUnique({ where: { id } });
         if (!reminder) throw new NotFoundException(`Reminder with ID ${id} not found`);
+        const hasAccess = await this.hasAnimalAccess(authUserId, reminder.animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this reminder.');
+        }
         await this.databaseService.reminder.delete({ where: { id } });
     }
 
@@ -192,13 +170,9 @@ export class RemindersService {
         authUserId: string;
     }) {
         const { userId, animalId, reminderType, message, remindAtFrom, remindAtTo, authUserId } = filters;
-
-        // Only allow user to see their own reminders
         if (userId && userId !== authUserId) {
             throw new ForbiddenException('You can only access your own reminders.');
         }
-
-        // Build Prisma where clause
         const where: any = {};
         if (userId) where.userId = userId;
         if (animalId) where.animalId = animalId;
@@ -209,19 +183,12 @@ export class RemindersService {
             if (remindAtFrom) where.remindAt.gte = new Date(remindAtFrom);
             if (remindAtTo) where.remindAt.lte = new Date(remindAtTo);
         }
-
-        // Only allow reminders for animals the user owns
-        // (If animalId is provided, check ownership; otherwise, filter by userId)
         if (animalId) {
             const animal = await this.databaseService.animal.findUnique({ where: { id: animalId } });
             if (!animal) throw new NotFoundException(`Animal with ID ${animalId} not found.`);
-            const ownerAssignment = await this.databaseService.owner.findUnique({
-                where: { userId: authUserId },
-                include: { animals: true },
-            });
-            if (!ownerAssignment) throw new ForbiddenException('You are not assigned to this animal.');
+            const hasAccess = await this.hasAnimalAccess(authUserId, animalId);
+            if (!hasAccess) throw new ForbiddenException('You do not have access to this animal.');
         }
-
         return this.databaseService.reminder.findMany({
             where,
             orderBy: { createdAt: 'desc' },
@@ -229,5 +196,40 @@ export class RemindersService {
                 animal: { select: { id: true, name: true, breed: true, species: true } }
             }
         });
+    }
+
+    /**
+     * Checks if the user is the owner of the animal or has access via partnership.
+     * @param userId - The user's id (not owner id)
+     * @param animalId - The animal's id
+     * @returns true if user is owner or has partnership access, false otherwise
+     */
+    async hasAnimalAccess(userId: string, animalId: string): Promise<boolean> {
+        // Find the owner record for the user
+        const owner = await this.databaseService.owner.findUnique({
+            where: { userId },
+            include: { animals: true },
+        });
+        if (!owner) return false;
+
+        // Check if user is direct owner of the animal
+        const isOwner = owner.animals.some((ao: any) => ao.animalId === animalId);
+        if (isOwner) return true;
+
+        // Get all animalIds owned by this owner
+        const userAnimalIds = owner.animals.map((ao: any) => ao.animalId);
+        if (userAnimalIds.length === 0) return false;
+
+        // Check for partnership where user's animal is requester or recipient with the target animal
+        const partnership = await this.databaseService.partnership.findFirst({
+            where: {
+                OR: [
+                    { requesterAnimalId: { in: userAnimalIds }, recipientAnimalId: animalId },
+                    { recipientAnimalId: { in: userAnimalIds }, requesterAnimalId: animalId },
+                ],
+                status: 'ACCEPTED',
+            },
+        });
+        return !!partnership;
     }
 }
