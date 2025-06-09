@@ -113,14 +113,14 @@ export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
     if (!recordType) {
          // No type selected - Render placeholder. Validity is handled by parent's initial state
          // or the useEffect above if the initial state was empty recordType.
-        return <div className="text-muted border p-3 rounded bg-light">Please select a record type.</div>;
+        return <div className="text-muted border p-3 rounded bg-dark">Please select a record type.</div>;
     }
 
     // Check if a component is configured *before* the switch
     if (!hasDetailsComponent(recordType)) {
          // No component implemented/configured for this type - Render info message.
          // Validity is already set to true by the useEffect above.
-         return <div className="text-muted border p-3 rounded bg-light">No specific details required or configured for this record type.</div>;
+         return <div className="text-muted border p-3 rounded bg-dark">No specific details required or configured for this record type.</div>;
     }
 
     // --- Component is configured, render the specific form ---
@@ -195,6 +195,6 @@ export const RecordDetailsForm: React.FC<RecordDetailsFormProps> = ({
              // Set validity to false because an expected component is missing
              onValidityChange(false);
              onChange(null);
-            return <div className="text-danger border p-3 rounded bg-light">Error: Details form component is missing or not configured correctly.</div>;
+            return <div className="text-danger border p-3 rounded bg-dark">Error: Details form component is missing or not configured correctly.</div>;
     }
 };
