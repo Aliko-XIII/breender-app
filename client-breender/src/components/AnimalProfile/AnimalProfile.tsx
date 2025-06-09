@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApiResponse } from '../../types';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { UserMention } from '../UserMention/UserMention';
 import { useUser } from '../../context/UserContext';
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
@@ -9,6 +9,7 @@ import { uploadAnimalProfilePic } from '../../api/animalApi';
 interface AnimalProfileProps {
   getAnimal: (animalId: string) => Promise<ApiResponse>;
   updateAnimal: (animalId: string, data: Partial<AnimalProfileData>) => Promise<ApiResponse>;
+  deleteAnimal: (animalId: string) => Promise<ApiResponse>; // Added deleteAnimal prop
 }
 
 interface OwnerInfo {
@@ -48,7 +49,7 @@ interface CustomField {
   value: string;
 }
 
-export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateAnimal }) => {
+export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateAnimal, deleteAnimal }) => {
   const { id: animalId } = useParams<{ id: string }>();
   const [animalData, setAnimalData] = useState<AnimalProfileData | null>(null);
   const [formData, setFormData] = useState<Partial<AnimalProfileData>>({});
@@ -61,6 +62,7 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
+  const navigate = useNavigate(); // For redirecting after delete
 
   const darkMapStyle = [
     { elementType: 'geometry', stylers: [{ color: '#212121' }] },
@@ -310,11 +312,31 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
     }
   };
 
+  const handleDelete = async () => {
+    if (!animalId || !isOwner) return;
+    if (!window.confirm('Are you sure you want to delete this animal? This action cannot be undone.')) return;
+    setIsLoading(true);
+    try {
+      const response = await deleteAnimal(animalId);
+      if (response.status === 200 || response.status === 204) {
+        alert('Animal deleted successfully.');
+        navigate('/animals');
+      } else {
+        alert(response.message || 'Failed to delete animal.');
+      }
+    } catch (err) {
+      alert('Error deleting animal.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) return <div className="container mt-5 text-center">Loading animal data...</div>;
   if (error) return <div className="container mt-5 alert alert-danger">{error}</div>;
   if (!animalData) return <div className="container mt-5">Could not load animal profile.</div>;
 
-  return (    <div className="container mt-5">
+  return (
+    <div className="container mt-5">
       <div className="card shadow-lg p-3 mb-4 mx-auto" style={{ maxWidth: "800px", width: "100%" }}>
         <div className="row g-3">
           {/* Navigation Section */}
@@ -944,6 +966,14 @@ export const AnimalProfile: React.FC<AnimalProfileProps> = ({ getAnimal, updateA
               disabled={isLoading}
             >
               Cancel
+            </button>
+          </div>
+        )}
+        {/* Delete Button: Only show if owner and not editing */}
+        {isOwner && !isEditing && (
+          <div className="d-flex justify-content-center pt-3">
+            <button className="btn btn-danger px-4" onClick={handleDelete} disabled={isLoading}>
+              🗑️ Delete Animal
             </button>
           </div>
         )}

@@ -88,7 +88,7 @@ function App({ api }: { api: Api }) {
           <Route path='/animals/new' element={
             <RegisterAnimal createAnimal={animalData => api.createAnimal({ ...animalData, bio: animalData.bio ?? "" })} />
           } />
-          <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} updateAnimal={api.updateAnimal} />} />
+          <Route path='/animals/:id' element={<AnimalProfile getAnimal={api.getAnimal} updateAnimal={api.updateAnimal} deleteAnimal={api.deleteAnimal} />} />
           <Route path='/animals/:id/upload-photo' element={<PhotoUploadForm />} />
           <Route path='/animals/:id/upload-document' element={<DocumentUploadForm />} />
           <Route path='/users/:userId/records' element={<RecordList />} />

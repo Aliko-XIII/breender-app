@@ -161,3 +161,18 @@ export const getAnimalOwners = async (animalId: string) => {
         return { status: error.response?.status || 500, data: error.response?.data || [] };
     }
 };
+
+export const deleteAnimal = async (
+    animalId: string
+) => {
+    try {
+        const response = await axiosInstance.delete(
+            `/animals/${animalId}`
+        );
+        return { status: response.status, data: response.data };
+    } catch (error) {
+        console.error(error);
+        // @ts-expect-error: error may not have response property
+        return { status: error.response?.status || 500, data: error.response?.data || {} };
+    }
+};

@@ -1,7 +1,7 @@
 // src/components/AnimalMap/AnimalMap.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { GoogleMap, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { AnimalMapInfo } from '../../types'; // Adjust path
+import { AnimalMapInfo, SPECIES_OPTIONS, BREED_OPTIONS } from '../../types'; // Adjust path
 import { getAnimals, getAnimalsForMap } from '../../api/animalApi';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
@@ -204,6 +204,11 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         ownerTags: [] as string[]
     });
 
+    const [speciesSuggestions, setSpeciesSuggestions] = useState<string[]>([]);
+    const [breedSuggestions, setBreedSuggestions] = useState<string[]>([]);
+    const speciesInputRef = useRef<HTMLInputElement>(null);
+    const breedInputRef = useRef<HTMLInputElement>(null);
+
     const navigate = useNavigate();    const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFilters((prev) => ({ ...prev, [name]: value }));
@@ -368,6 +373,31 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
         }
     }, []);
 
+    // Suggestion logic for species
+    const handleSpeciesInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFilters((prev) => ({ ...prev, species: value }));
+        if (value.length > 0) {
+            setSpeciesSuggestions(
+                SPECIES_OPTIONS.filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            );
+        } else {
+            setSpeciesSuggestions([]);
+        }
+    };
+    // Suggestion logic for breed
+    const handleBreedInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFilters((prev) => ({ ...prev, breed: value }));
+        if (filters.species && BREED_OPTIONS[filters.species]) {
+            setBreedSuggestions(
+                BREED_OPTIONS[filters.species].filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            );
+        } else {
+            setBreedSuggestions([]);
+        }
+    };
+
     if (!googleMapsApiKey) {
         return (
             <div className="alert alert-danger" role="alert">
@@ -400,46 +430,73 @@ export const AnimalMap: React.FC<AnimalMapProps> = () => {
                     Please select your animal before proceeding.
                 </div>
             )}            <form className="mb-4" style={{ width: '100%', maxWidth: 800, background: 'var(--color-bg-secondary)', borderRadius: 12, padding: 16, border: '1px solid var(--color-border)' }} onSubmit={e => { e.preventDefault(); loadAnimals(); }}>
-                {/* First Row - Basic filters */}
                 <div className="row g-2 align-items-end">
                     <div className="col-md-2">
-                        <input type="text" className="form-control bg-dark text-light border-secondary" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
+                        <input type="text" className="form-control animal-filter-input" name="name" placeholder="Name" value={filters.name} onChange={handleFilterChange}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
                     </div>
-                    <div className="col-md-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <input type="text" className="form-control bg-dark text-light border-secondary" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
-                        <button
-                            type="button"
-                            className="btn btn-outline-secondary btn-sm"
-                            title="Set species from my animal"
-                            style={{ minWidth: 32, padding: '0 8px' }}
-                            disabled={!selectedMyAnimalId || !myAnimals.find(a => a.id === selectedMyAnimalId)?.species}
-                            onClick={() => {
-                                const selected = myAnimals.find(a => a.id === selectedMyAnimalId);
-                                if (selected && selected.species) {
-                                    setFilters(prev => ({ ...prev, species: selected.species! }));
-                                }
-                            }}
-                        >
-                            ⬇️
-                        </button>
+                    <div className="col-md-2 position-relative">
+                        <input
+                            type="text"
+                            className="form-control animal-filter-input"
+                            name="species"
+                            placeholder="Species"
+                            value={filters.species}
+                            onChange={handleSpeciesInput}
+                            autoComplete="off"
+                            ref={speciesInputRef}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
+                        {speciesSuggestions.length > 0 && (
+                            <ul className="list-group position-absolute w-100" style={{ zIndex: 10, top: '100%' }}>
+                                {speciesSuggestions.map(s => (
+                                    <li
+                                        key={s}
+                                        className="list-group-item list-group-item-action"
+                                        style={{ cursor: 'pointer', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                        onClick={() => {
+                                            setFilters((prev) => ({ ...prev, species: s }));
+                                            setSpeciesSuggestions([]);
+                                            speciesInputRef.current?.blur();
+                                        }}
+                                    >
+                                        {s}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
-                    <div className="col-md-2" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <input type="text" className="form-control bg-dark text-light border-secondary" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }} />
-                        <button
-                            type="button"
-                            className="btn btn-outline-secondary btn-sm"
-                            title="Set breed from my animal"
-                            style={{ minWidth: 32, padding: '0 8px' }}
-                            disabled={!selectedMyAnimalId || !myAnimals.find(a => a.id === selectedMyAnimalId)?.breed}
-                            onClick={() => {
-                                const selected = myAnimals.find(a => a.id === selectedMyAnimalId);
-                                if (selected && selected.breed) {
-                                    setFilters(prev => ({ ...prev, breed: selected.breed! }));
-                                }
-                            }}
-                        >
-                            ⬇️
-                        </button>
+                    <div className="col-md-2 position-relative">
+                        <input
+                            type="text"
+                            className="form-control animal-filter-input"
+                            name="breed"
+                            placeholder="Breed"
+                            value={filters.breed}
+                            onChange={handleBreedInput}
+                            autoComplete="off"
+                            ref={breedInputRef}
+                            style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
+                        />
+                        {breedSuggestions.length > 0 && (
+                            <ul className="list-group position-absolute w-100" style={{ zIndex: 10, top: '100%' }}>
+                                {breedSuggestions.map(b => (
+                                    <li
+                                        key={b}
+                                        className="list-group-item list-group-item-action"
+                                        style={{ cursor: 'pointer', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                        onClick={() => {
+                                            setFilters((prev) => ({ ...prev, breed: b }));
+                                            setBreedSuggestions([]);
+                                            breedInputRef.current?.blur();
+                                        }}
+                                    >
+                                        {b}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                     <div className="col-md-2">
                         <select className="form-select bg-dark text-light border-secondary" name="sex" value={filters.sex} onChange={handleFilterChange} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}>

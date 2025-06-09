@@ -457,10 +457,6 @@ export class AnimalsService {
     }
     const ownerIds = animal.owners.map((owner) => owner.id);
 
-    if (!ownerIds.includes(authUserId) && !(await this.isAdmin(authUserId))) {
-      throw new ForbiddenException("You do not have permission to update this animal.");
-    }
-
     return await this.databaseService.animal.delete({ where: { id } });
   }
 

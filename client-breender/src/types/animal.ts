@@ -27,3 +27,36 @@ export interface AnimalMapInfo {
   longitude: number;
   canPartner?: boolean; // Indicates if the animal is partnerable
 }
+
+// Animal species and breed options for use in forms
+export const SPECIES_OPTIONS = [
+  "Dog",
+  "Cat",
+  "Rabbit",
+  "Bird",
+  "Hamster",
+  "Guinea Pig",
+  "Ferret",
+  "Horse",
+  "Other"
+] as const;
+
+export const BREED_OPTIONS: Record<string, string[]> = {
+  Dog: [
+    "Labrador Retriever", "German Shepherd", "Golden Retriever", "Bulldog", "Poodle", "Beagle", "Jack Russell Terrier", "Other"
+  ],
+  Cat: [
+    "Persian", "Maine Coon", "Siamese", "Bengal", "Sphynx", "Ragdoll", "Other"
+  ],
+  Rabbit: [
+    "Holland Lop", "Netherland Dwarf", "Mini Rex", "Lionhead", "Flemish Giant", "Other"
+  ],
+  Bird: [
+    "Parakeet", "Canary", "Cockatiel", "Finch", "Lovebird", "Other"
+  ],
+  "Hamster": ["Syrian", "Dwarf", "Roborovski", "Chinese", "Other"],
+  "Guinea Pig": ["American", "Abyssinian", "Peruvian", "Silkie", "Other"],
+  "Ferret": ["Standard", "Angora", "Other"],
+  "Horse": ["Arabian", "Thoroughbred", "Quarter Horse", "Appaloosa", "Other"],
+  "Other": ["Other"]
+};

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getAnimals } from "../../api/animalApi";
 import { useUser } from "../../context/UserContext";
+import { SPECIES_OPTIONS, BREED_OPTIONS } from '../../types/animal';
 import './AnimalList.css';
 
 // Available tags constant (same as in AnimalProfile)
@@ -40,11 +41,41 @@ export const AnimalList: React.FC = () => {
         tags: [] as string[], // Changed to array
         ownerTags: [] as string[] // Added owner tags
     });
+    const [speciesSuggestions, setSpeciesSuggestions] = useState<string[]>([]);
+    const [breedSuggestions, setBreedSuggestions] = useState<string[]>([]);
+    const speciesInputRef = useRef<HTMLInputElement>(null);
+    const breedInputRef = useRef<HTMLInputElement>(null);
 
     // Handle filter input changes
     const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFilters((prev) => ({ ...prev, [name]: value }));
+    };
+
+    // Suggestion logic for species
+    const handleSpeciesInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFilters((prev) => ({ ...prev, species: value }));
+        if (value.length > 0) {
+            setSpeciesSuggestions(
+                SPECIES_OPTIONS.filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            );
+        } else {
+            setSpeciesSuggestions([]);
+        }
+    };
+
+    // Suggestion logic for breed
+    const handleBreedInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setFilters((prev) => ({ ...prev, breed: value }));
+        if (filters.species && BREED_OPTIONS[filters.species]) {
+            setBreedSuggestions(
+                BREED_OPTIONS[filters.species].filter(opt => opt.toLowerCase().includes(value.toLowerCase()))
+            );
+        } else {
+            setBreedSuggestions([]);
+        }
     };
 
     const getProfilePicUrl = (url?: string | null) => {
@@ -166,15 +197,67 @@ export const AnimalList: React.FC = () => {
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         />
                     </div>
-                    <div className="col-md-2">
-                        <input type="text" className="form-control animal-filter-input" name="species" placeholder="Species" value={filters.species} onChange={handleFilterChange}
+                    <div className="col-md-2 position-relative">
+                        <input
+                            type="text"
+                            className="form-control animal-filter-input"
+                            name="species"
+                            placeholder="Species"
+                            value={filters.species}
+                            onChange={handleSpeciesInput}
+                            autoComplete="off"
+                            ref={speciesInputRef}
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         />
+                        {speciesSuggestions.length > 0 && (
+                            <ul className="list-group position-absolute w-100" style={{ zIndex: 10, top: '100%' }}>
+                                {speciesSuggestions.map(s => (
+                                    <li
+                                        key={s}
+                                        className="list-group-item list-group-item-action"
+                                        style={{ cursor: 'pointer', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                        onClick={() => {
+                                            setFilters((prev) => ({ ...prev, species: s }));
+                                            setSpeciesSuggestions([]);
+                                            speciesInputRef.current?.blur();
+                                        }}
+                                    >
+                                        {s}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
-                    <div className="col-md-2">
-                        <input type="text" className="form-control animal-filter-input" name="breed" placeholder="Breed" value={filters.breed} onChange={handleFilterChange}
+                    <div className="col-md-2 position-relative">
+                        <input
+                            type="text"
+                            className="form-control animal-filter-input"
+                            name="breed"
+                            placeholder="Breed"
+                            value={filters.breed}
+                            onChange={handleBreedInput}
+                            autoComplete="off"
+                            ref={breedInputRef}
                             style={{ background: 'var(--color-bg-secondary)', color: 'var(--color-text)', border: '1px solid var(--color-border)' }}
                         />
+                        {breedSuggestions.length > 0 && (
+                            <ul className="list-group position-absolute w-100" style={{ zIndex: 10, top: '100%' }}>
+                                {breedSuggestions.map(b => (
+                                    <li
+                                        key={b}
+                                        className="list-group-item list-group-item-action"
+                                        style={{ cursor: 'pointer', background: 'var(--color-bg-secondary)', color: 'var(--color-text)' }}
+                                        onClick={() => {
+                                            setFilters((prev) => ({ ...prev, breed: b }));
+                                            setBreedSuggestions([]);
+                                            breedInputRef.current?.blur();
+                                        }}
+                                    >
+                                        {b}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
                     </div>
                     <div className="col-md-2">
                         <select className="form-select animal-filter-input" name="sex" value={filters.sex} onChange={handleFilterChange}
