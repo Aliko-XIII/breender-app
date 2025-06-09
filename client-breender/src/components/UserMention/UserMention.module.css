@@ -1,0 +1,69 @@
+/* src/components/UserMention/UserMention.module.css */
+
+.userMentionContainer {
+    display: flex; /* Use Flexbox for horizontal layout */
+    align-items: center; /* Align items vertically in the center */
+    gap: 10px; /* Space between avatar and text info */
+    margin-bottom: 8px; /* Space below each mention item */
+    padding: 5px 0; /* Add some vertical padding */
+    min-width: 0; /* Prevent flex item from overflowing container */
+}
+
+.avatar {
+    width: 40px; /* Fixed width for avatar */
+    height: 40px; /* Fixed height for avatar */
+    border-radius: 50%; /* Make it circular */
+    object-fit: cover; /* Ensure image covers the area without distortion */
+    border: 1px solid #e0e0e0; /* Subtle border */
+    background-color: #f8f9fa; /* Light background for placeholder */
+    flex-shrink: 0; /* Prevent avatar from shrinking if container is narrow */
+}
+
+.userInfo {
+    display: flex;
+    flex-direction: column; /* Stack name and email vertically */
+    justify-content: center; /* Center text vertically if container has extra space */
+    line-height: 1.3; /* Adjust line spacing */
+    overflow: hidden; /* Hide overflow */
+    flex-grow: 1; /* Allow text info to take remaining space */
+    min-width: 0; /* Important for text-overflow to work in flex items */
+}
+
+/* Base style for name */
+.userName {
+    font-weight: 600; /* Slightly bolder */
+    font-size: 0.95rem;
+    color: #212529; /* Dark text color */
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add '...' if text is too long */
+    display: block; /* Ensure it takes full width for ellipsis */
+}
+
+/* Style for the name when it's a link */
+.userNameLink {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #007bff; /* Standard link blue */
+    text-decoration: none; /* Remove underline by default */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.userNameLink:hover {
+    text-decoration: underline; /* Underline on hover */
+    color: #0056b3; /* Darker blue on hover */
+}
+
+/* Style for the email */
+.userEmail {
+    font-size: 0.8rem; /* Smaller font size */
+    color: #6c757d; /* Grey color for secondary info */
+    white-space: nowrap; /* Prevent wrapping */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Add '...' if text is too long */
+    display: block; /* Ensure it takes full width for ellipsis */
+}
+

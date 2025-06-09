@@ -1,5 +1,5 @@
-import { IsStrongPassword, IsEmail, MaxLength } from 'class-validator';
-
+import { IsStrongPassword, IsEmail, MaxLength, IsEnum, IsOptional } from 'class-validator';
+import { Role } from '@prisma/client';
 export class CreateUserDto {
   @IsEmail({}, { message: 'Invalid email format' })
   @MaxLength(255, { message: 'Email must not exceed 255 characters' })
@@ -17,4 +17,8 @@ export class CreateUserDto {
   )
   @MaxLength(30, { message: 'Password must not exceed 30 characters' })
   pass: string;
+
+  @IsEnum(Role)
+  @IsOptional()
+  role?: Role
 }

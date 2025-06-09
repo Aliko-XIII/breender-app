@@ -8,6 +8,15 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { LogsDatabaseModule } from './logs-database/logs-database.module';
+import { OwnerModule } from './owner/owner.module';
+import { SqlInjectionMiddleware } from './sql-injection-check/sql-injection.middleware';
+import { DocumentsModule } from './documents/documents.module';
+import { PhotosModule } from './photos/photos.module';
+import { RecordsModule } from './records/records.module';
+import { RemindersModule } from './reminders/reminders.module';
+import { PartnershipsModule } from './partnerships/partnerships.module';
+import { MessagesModule } from './messages/messages.module';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
@@ -20,6 +29,14 @@ import { LogsDatabaseModule } from './logs-database/logs-database.module';
       envFilePath: '../.env',
     }),
     LogsDatabaseModule,
+    OwnerModule,
+    DocumentsModule,
+    PhotosModule,
+    RecordsModule,
+    RemindersModule,
+    PartnershipsModule,
+    MessagesModule,
+    ChatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -27,5 +44,6 @@ import { LogsDatabaseModule } from './logs-database/logs-database.module';
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
+    consumer.apply(SqlInjectionMiddleware).forRoutes('*');
   }
 }

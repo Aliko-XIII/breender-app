@@ -1,0 +1,22 @@
+/* Dark mode and UI consistency for PhotoUploadForm */
+.photo-upload-form input[type="file"]::file-selector-button {
+  background: var(--color-bg-input);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.photo-upload-form label,
+.photo-upload-form .form-label {
+  color: var(--color-text);
+}
+
+.photo-upload-form input::placeholder,
+.photo-upload-form textarea::placeholder {
+  color: var(--color-text-secondary, #b0b0b0);
+  opacity: 1;
+}
+
+.photo-upload-alert {
+  border-radius: 6px;
+  font-size: 1em;
+}

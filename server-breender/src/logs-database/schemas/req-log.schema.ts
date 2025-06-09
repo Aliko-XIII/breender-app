@@ -16,6 +16,12 @@ export class ReqLog {
 
   @Prop({ type: Date, default: Date.now })
   timestamp: Date;
+
+  @Prop({ type: Object, default: {} })
+  requestBody: Record<string, any>;
+
+  @Prop({ type: Object, default: {} })
+  responseBody: Record<string, any>;
 }
 
 export const ReqLogSchema = SchemaFactory.createForClass(ReqLog);

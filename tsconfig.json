@@ -6,6 +6,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["node", "Multer"],
     "outDir": "./dist",  // Compiled files will be output here
     "rootDir": "oldUserCode"   // Source TypeScript files are expected here
   },

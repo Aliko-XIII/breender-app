@@ -8,24 +8,182 @@ datasource db {
 }
 
 enum Role {
-  USER
   OWNER
-  VET
   ADMIN
 
   @@map("role")
+}
+
+enum Sex {
+  MALE
+  FEMALE
+
+  @@map("sex")
+}
+
+enum AnimalTag {
+  FRIENDLY
+  AGGRESSIVE
+  PLAYFUL
+  SHY
+  ENERGETIC
+  CALM
+  INTELLIGENT
+  TRAINED
+  VOCAL
+  QUIET
+  CURIOUS
+  INDEPENDENT
+  SOCIAL
+  PROTECTIVE
+  AFFECTIONATE
+  HUNTER
+  LAZY
+
+  @@map("animal_tag")
+}
+
+enum OwnerTag {
+  RESPONSIBLE
+  EXPERIENCED
+  FRIENDLY
+  COMMUNICATIVE
+  CARING
+  ORGANIZED
+  TRUSTWORTHY
+  PATIENT
+  KNOWLEDGEABLE
+  ACTIVE
+  SUPPORTIVE
+  FLEXIBLE
+  DEDICATED
+  PUNCTUAL
+  EDUCATED
+  SOCIAL
+  CALM
+  ENTHUSIASTIC
+  ADAPTIVE
+  HELPFUL
+
+  @@map("owner_tag")
 }
 
 model User {
   id           String        @id @default(uuid()) @map("user_id")
   email        String        @unique
   hashedPass   String        @map("hashed_pass")
-  role         Role          @default(USER)
+  role         Role          @default(OWNER)
   userProfile  UserProfile?
   refreshToken RefreshToken?
-  animals      Animal[]
+
+  owner             Owner?
+  reminders         Reminder[]
+  animalPermissions AnimalPermission[]
+  chatParticipants  ChatParticipant[]
+  messages          Message[]
 
   @@map("users")
+}
+
+model Owner {
+  id           String        @id @default(uuid()) @map("owner_id")
+  userId       String        @unique @map("user_id")
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animals      AnimalOwner[]
+  is_available Boolean       @default(true) // Позначає чи доступний власник для партнерства
+  tags         OwnerTag[]    @default([]) @map("tags")
+  customData   Json?         @map("custom_data")
+
+  @@map("owners")
+}
+
+enum PartnershipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELED
+}
+
+model Partnership {
+  id                String            @id @default(uuid())
+  requesterAnimalId String            @map("requester_animal_id")
+  recipientAnimalId String            @map("recipient_animal_id")
+  status            PartnershipStatus @default(PENDING)
+  requestedAt       DateTime          @default(now()) @map("requested_at")
+  respondedAt       DateTime?         @map("responded_at")
+
+  requesterAnimal Animal @relation("RequesterAnimal", fields: [requesterAnimalId], references: [id], onDelete: Cascade)
+  recipientAnimal Animal @relation("RecipientAnimal", fields: [recipientAnimalId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterAnimalId, recipientAnimalId])
+  @@map("partnerships")
+}
+
+model Animal {
+  id            String   @id @default(uuid()) @map("animal_id")
+  name          String   @map("animal_name")
+  sex           Sex      @map("animal_sex")
+  breed         String   @map("animal_breed")
+  species       String   @map("animal_species")
+  bio           String?  @map("animal_bio")
+  birthDate     DateTime @map("date_of_birth")
+  latitude      Float?   @map("latitude")
+  longitude     Float?   @map("longitude")
+  profilePicUrl String?  @map("profile_pic_url")
+  isSterilized  Boolean  @default(false) @map("is_sterilized")
+  isAvailable   Boolean  @default(true) @map("is_available")
+  customData    Json?    @map("custom_data")
+  tags          AnimalTag[] @default([]) @map("tags")
+
+  owners            AnimalOwner[]
+  animalDocuments   AnimalDocument[]
+  animalPhotos      AnimalPhoto[]
+  animalRecords     AnimalRecord[]
+  reminders         Reminder[]
+  animalPermissions AnimalPermission[]
+
+  requesterPartnerships Partnership[] @relation("RequesterAnimal")
+  recipientPartnerships Partnership[] @relation("RecipientAnimal")
+
+  @@map("animals")
+}
+
+model AnimalOwner {
+  id       String @id @default(uuid())
+  animalId String
+  ownerId  String
+
+  animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  owner  Owner  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@map("animal_owners")
+}
+
+enum AssignmentStatus {
+  ACTIVE
+  PENDING
+  REVOKED
+
+  @@map("status")
+}
+
+enum PermissionType {
+  VIEW
+  EDIT
+  MANAGE
+}
+
+model AnimalPermission {
+  id         String         @id @default(uuid())
+  animalId   String         @map("animal_id")
+  userId     String         @map("user_id")
+  permission PermissionType @map("permission_type")
+  grantedAt  DateTime       @default(now()) @map("granted_at")
+
+  animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("animal_permissions")
 }
 
 model UserProfile {
@@ -33,7 +191,8 @@ model UserProfile {
   name       String  @map("user_name")
   bio        String  @default("") @map("user_bio")
   pictureUrl String? @map("picture_url")
-  user       User    @relation(fields: [userId], references: [id])
+  phone      String? @map("phone_number")
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_profiles")
 }
@@ -48,46 +207,190 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-enum Sex {
-  MALE
-  FEMALE
-
-  @@map("sex")
-}
-
-model Animal {
-  id              String           @id @default(uuid()) @map("animal_id")
-  name            String           @map("animal_name")
-  sex             Sex              @map("animal_sex")
-  breed           String           @map("animal_breed")
-  species         String           @map("animal_species")
-  bio             String?          @map("animal_bio")
-  birthDate       DateTime         @map("date_of_birth")
-  ownerId         String           @unique @map("owner_id")
-  user            User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  animalDocuments AnimalDocument[]
-  animalPhoto     AnimalPhoto[]
-
-  @@map("animals")
-}
-
 model AnimalPhoto {
   id         String   @id @default(uuid()) @map("photo_id")
-  animalId   String   @map("animal_id")
   photoUrl   String   @map("photo_url")
+  animalId   String   @map("animal_id")
   uploadedAt DateTime @default(now()) @map("uploaded_at")
-  animal     Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  animal             Animal              @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  animalRecordPhotos AnimalRecordPhoto[]
 
   @@map("animal_photos")
 }
 
 model AnimalDocument {
-  id           String   @id @default(uuid()) @map("document_id")
-  animalId     String   @map("animal_id")
-  documentName String?  @map("document_name")
-  documentUrl  String   @map("document_url")
-  uploadedAt   DateTime @default(now()) @map("uploaded_at")
-  animal       Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  id                    String                 @id @default(uuid()) @map("document_id")
+  animalId              String                 @map("animal_id")
+  documentName          String?                @map("document_name")
+  documentUrl           String                 @map("document_url")
+  uploadedAt            DateTime               @default(now()) @map("uploaded_at")
+  animal                Animal                 @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  animalRecordDocuments AnimalRecordDocument[]
 
   @@map("animal_documents")
+}
+
+enum AnimalRecordType {
+  // Vet records
+  CHECKUP
+  SURGERY
+  DIAGNOSIS
+  PRESCRIPTION
+
+  // Procedures
+  MEDICATION
+  VACCINATION
+  DEWORMING
+  DEFLEAING
+  BATHING
+  GROOMING
+  NAILS
+
+  // Health
+  INJURY
+  TEMPERATURE
+  ILLNESS
+  BEHAVIOR
+  SLEEPING
+  FECES
+  URINE
+  VOMIT
+  WEIGHT
+
+  // Nutrition
+  FOOD
+  WATER
+
+  // Breeding
+  HEAT
+  MATING
+  PREGNANCY
+  BIRTH
+  ESTROUS
+  SELLING
+  BUYING
+
+  // Additional
+  NOTES
+  OTHER
+
+  @@map("record_type")
+}
+
+model AnimalRecord {
+  id          String           @id @default(uuid()) @map("record_id")
+  animalId    String           @map("animal_id")
+  recordType  AnimalRecordType @map("record_type")
+  description String?          @map("description")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  details     Json?            @map("details")
+
+  animal                Animal                 @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  animalRecordPhotos    AnimalRecordPhoto[]
+  animalRecordDocuments AnimalRecordDocument[]
+
+  @@map("animal_records")
+}
+
+model AnimalRecordPhoto {
+  id             String   @id @default(uuid())
+  animalRecordId String   @map("record_id")
+  animalPhotoId  String   @map("photo_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  animalRecord AnimalRecord @relation(fields: [animalRecordId], references: [id], onDelete: Cascade)
+  animalPhoto  AnimalPhoto  @relation(fields: [animalPhotoId], references: [id], onDelete: Cascade)
+
+  @@unique([animalRecordId, animalPhotoId])
+  @@map("animal_record_photos")
+}
+
+model AnimalRecordDocument {
+  id               String   @id @default(uuid())
+  animalRecordId   String   @map("record_id")
+  animalDocumentId String   @map("document_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  animalRecord   AnimalRecord   @relation(fields: [animalRecordId], references: [id], onDelete: Cascade)
+  animalDocument AnimalDocument @relation(fields: [animalDocumentId], references: [id], onDelete: Cascade)
+
+  @@unique([animalRecordId, animalDocumentId])
+  @@map("animal_record_documents")
+}
+
+enum ReminderType {
+  CHECKUP
+  SURGERY
+  MEDICATION
+  VACCINATION
+  DEWORMING
+  DEFLEAING
+  BATHING
+  GROOMING
+  NAILS
+  TEMPERATURE
+  WEIGHT
+  FOOD
+  WATER
+  MATING
+  PREGNANCY
+  BIRTH
+  SELLING
+  BUYING
+  OTHER
+
+  @@map("reminder_type")
+}
+
+model Reminder {
+  id           String       @id @default(uuid()) @map("reminder_id")
+  userId       String       @map("user_id")
+  animalId     String       @map("animal_id")
+  reminderType ReminderType @map("reminder_type")
+  message      String       @map("message")
+  remindAt     DateTime     @map("remind_at")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  animal Animal @relation(fields: [animalId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+model Chat {
+  id           String            @id @default(uuid()) @map("chat_id")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  participants ChatParticipant[]
+  messages     Message[]
+
+  @@map("chats")
+}
+
+model ChatParticipant {
+  id       String   @id @default(uuid()) @map("participant_id")
+  chatId   String   @map("chat_id")
+  userId   String   @map("user_id")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([chatId, userId])
+  @@map("chat_participants")
+}
+
+model Message {
+  id       String    @id @default(uuid()) @map("message_id")
+  chatId   String    @map("chat_id")
+  senderId String    @map("sender_id")
+  content  String    @map("content")
+  sentAt   DateTime  @default(now()) @map("sent_at")
+  editedAt DateTime? @map("edited_at")
+
+  chat   Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }

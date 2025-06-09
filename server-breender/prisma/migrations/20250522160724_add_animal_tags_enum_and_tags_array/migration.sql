@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "animal_tag" AS ENUM ('FRIENDLY', 'AGGRESSIVE', 'PLAYFUL', 'SHY', 'ENERGETIC', 'CALM', 'INTELLIGENT', 'TRAINED', 'VOCAL', 'QUIET', 'CURIOUS', 'INDEPENDENT', 'SOCIAL', 'PROTECTIVE', 'AFFECTIONATE', 'HUNTER', 'LAZY', 'OTHER');
+
+-- AlterTable
+ALTER TABLE "animals" ADD COLUMN     "tags" "animal_tag"[] DEFAULT ARRAY[]::"animal_tag"[];

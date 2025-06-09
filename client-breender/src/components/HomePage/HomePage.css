@@ -1,0 +1,104 @@
+.home-page .profile-summary-card .card-body {
+    gap: 15px; /* Adds space between avatar and text */
+}
+
+.home-page .placeholder-card {
+    border: 2px dashed #ccc; /* Highlights placeholders */
+    background-color: #f8f9fa; /* Light background for placeholders */
+    display: flex; /* Allows content to fill height */
+    flex-direction: column; /* Stacks elements vertically inside */
+}
+
+.home-page .placeholder-card .card-body {
+    flex-grow: 1; /* Allows card body to stretch */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Centers content vertically */
+    align-items: center; /* Centers content horizontally */
+    text-align: center;
+}
+
+.home-page .placeholder-card i {
+    color: #6c757d; /* Grey color for placeholder text */
+}
+
+/* Style for the default avatar placeholder */
+img[src$='/avatar-placeholder.png'] {
+    border: 1px solid #dee2e6; /* Thin border for avatar placeholder */
+    background-color: #e9ecef; /* Light grey background */
+}
+
+/* Dark theme overrides for HomePage */
+.home-page {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.profile-summary-card,
+.card {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.card-header {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.card-title,
+.card-text,
+.card-body {
+  color: var(--color-text);
+}
+
+.list-group-item {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn,
+.btn-outline-primary {
+  background: var(--color-bg-secondary);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.btn-link {
+  color: var(--color-primary);
+}
+
+.alert {
+  background: #2c2f34;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.spinner-border {
+  border-color: var(--color-border) var(--color-border) var(--color-bg-secondary) var(--color-bg-secondary);
+}
+
+.reminder-mini-card {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+  border: 1px solid var(--color-primary);
+}
+
+.reminder-mini-card:hover, .reminder-mini-card:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 0.15rem rgba(58,134,255,.25);
+  background: #23272b;
+}
+
+.text-muted {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Ensure filter/search input placeholders are visible in dark mode */
+.home-page input::placeholder,
+.home-page textarea::placeholder {
+  color: var(--color-text-secondary, #b0b0b0);
+  opacity: 1;
+}

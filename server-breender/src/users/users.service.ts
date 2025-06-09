@@ -1,35 +1,29 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { DatabaseService } from 'src/database/database.service';
-import { Prisma } from '@prisma/client';
+import { Animal, Prisma, User, UserProfile } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { ResponseUserDto } from './dto/response-user.dto';
+import { TokenPayloadDto } from 'src/auth/dto/token-payload.dto';
+import * as fs from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class UsersService {
-  constructor(private databaseService: DatabaseService) {}
+  constructor(private databaseService: DatabaseService) { }
 
-  /**
-   * Generates a bcrypt hash of the provided password.
-   * @param {string} password - The plain text password to hash.
-   * @returns {Promise<string>} - A promise that resolves to the hashed password using bcrypt.
-   */
   private async hashPassword(password: string): Promise<string> {
     const saltRounds = 10;
     const salt = await bcrypt.genSalt(saltRounds);
     return bcrypt.hash(password, salt);
   }
 
-  /**
-   * Compares a plain text password with a bcrypt-hashed password.
-   * @param {string} password - The plain text password to compare.
-   * @param {string} hashedPassword - The previously hashed password for comparison.
-   * @returns {Promise<boolean>} - A promise that resolves to true if passwords match, otherwise false.
-   */
   private async comparePasswords(
     password: string,
     hashedPassword: string,
@@ -37,15 +31,7 @@ export class UsersService {
     return bcrypt.compare(password, hashedPassword);
   }
 
-  /**
-   * Validates user credentials.
-   * @param {string} email - The email of the user attempting to authenticate.
-   * @param {string} password - The plain text password to validate against the stored hash.
-   * @returns {Promise<UserSafeDto>} - A promise that resolves to the updated user's safe DTO.
-   * @throws {NotFoundException} - If no user is found with the given username.
-   * @throws {BadRequestException} - If the provided password is invalid.
-   */
-  public async checkAuth(email: string, password: string): Promise<boolean> {
+  public async checkAuth(email: string, password: string): Promise<TokenPayloadDto> {
     const user = await this.databaseService.user.findUnique({
       where: { email: email },
     });
@@ -62,16 +48,16 @@ export class UsersService {
       throw new BadRequestException('Invalid password.');
     }
 
-    return true;
+    return { id: user.id, email: user.email };
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async createUser(createUserDto: CreateUserDto) {
     const existingUser = await this.databaseService.user.findUnique({
       where: { email: createUserDto.email },
     });
 
     if (existingUser) {
-      throw new Error('Email is already in use');
+      throw new BadRequestException('Email is already in use');
     }
 
     const hashedPass = await this.hashPassword(createUserDto.pass);
@@ -79,20 +65,97 @@ export class UsersService {
     const registeredUser: Prisma.UserCreateInput = {
       email: createUserDto.email,
       hashedPass: hashedPass,
+      role: createUserDto.role ? createUserDto.role : 'OWNER',
     };
 
-    return await this.databaseService.user.create({ data: registeredUser });
+    const user = await this.databaseService.user.create({ data: registeredUser });
+
+    if (createUserDto.role === 'OWNER') {
+      await this.databaseService.owner.create({
+        data: {
+          userId: user.id,
+        },
+      });
+    }
+
+    return user;
   }
 
-  async findAll() {
+  async getAllUsers(authUserId: string) {
+    // You can add logic to filter or log actions based on authUserId
     return await this.databaseService.user.findMany({});
   }
 
-  async findOne(id: string) {
-    return await this.databaseService.user.findUnique({ where: { id } });
+  private toResponseUserDto(user: User & { userProfile?: UserProfile }): ResponseUserDto {
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      profile: user.userProfile
+        ? {
+          name: user.userProfile.name,
+          bio: user.userProfile.bio,
+          pictureUrl: user.userProfile.pictureUrl,
+          phone: user.userProfile.phone
+        }
+        : undefined
+    };
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto) {
+  async getUserById(
+    id: string,
+    authUserId: string,
+    includeProfile: boolean = false) {
+    const user = await this.databaseService.user.findUnique(
+      {
+        where: { id },
+        include: includeProfile ? { userProfile: true } : undefined
+      },);
+    console.log(user);
+    return this.toResponseUserDto(user);
+  }
+
+  async getAnimalsByUserId(userId: string): Promise<Animal[]> {
+    const user = await this.databaseService.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role === 'OWNER') {
+      const owner = await this.databaseService.owner.findUnique({ where: { userId } });
+      console.log(owner);
+      if (!owner) { return []; }
+      return await this.databaseService.animal.findMany({
+        where: { owners: { some: { ownerId: owner.id } } },
+      });
+    }
+    return [];
+  }
+
+  async updateUser(id: string, authUserId: string, updateUserDto: UpdateUserDto) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+      include: { userProfile: true }, // Include profile to get old pictureUrl
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if the authorized user is the one being updated, or if the user is an admin
+    if (user.id !== authUserId && !(await this.isAdmin(authUserId))) {
+      throw new ForbiddenException('You are not authorized to update this user');
+    }
+
+    // Remove old profile picture if a new one is being set and it's different
+    if (updateUserDto.pictureUrl && user.userProfile?.pictureUrl && updateUserDto.pictureUrl !== user.userProfile.pictureUrl) {
+      if (user.userProfile.pictureUrl.startsWith('/uploads/profile-pics/')) {
+        const oldPicPath = join(process.cwd(), user.userProfile.pictureUrl);
+        fs.unlink(oldPicPath, (err) => {
+          // Ignore error if file doesn't exist
+        });
+      }
+    }
+
     const updatedUser: Prisma.UserUpdateInput = {};
     if (updateUserDto.email) {
       updatedUser.email = updateUserDto.email;
@@ -122,19 +185,49 @@ export class UsersService {
     if (updateUserDto.pictureUrl) {
       updatedProfile.pictureUrl = updateUserDto.pictureUrl;
     }
+    if (updateUserDto.phone) {
+      updatedProfile.phone = updateUserDto.phone;
+    }
 
     try {
-      await this.databaseService.userProfile.update({
-        data: updatedProfile,
+      await this.databaseService.userProfile.upsert({
+        create: {
+          user: { connect: { id } },
+          name: updateUserDto.name || '',
+          bio: updateUserDto.bio || '',
+          pictureUrl: updateUserDto.pictureUrl || null,
+          phone: updateUserDto.phone || null,
+        },
+        update: updatedProfile,
         where: { userId: id },
       });
     } catch (error) {
-      console.error(`Failed to update profile for user with ID ${id}:`, error);
-      throw new Error(`Could not update profile for user.`);
+      console.error(`Failed to upsert profile for user with ID ${id}:`, error);
+      throw new Error(`Could not upsert profile for user.`);
     }
   }
 
-  async remove(id: string) {
+  async removeUserById(id: string, authUserId: string) {
+    const user = await this.databaseService.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    // Check if the authorized user is the one being updated, or if the user is an admin
+    if (user.id !== authUserId && !(await this.isAdmin(authUserId))) {
+      throw new ForbiddenException('You are not authorized to update this user');
+    }
     return await this.databaseService.user.delete({ where: { id } });
+  }
+
+  private async isAdmin(userId: string): Promise<boolean> {
+    const user = await this.databaseService.user.findUnique({
+      where: { id: userId },
+    });
+
+    return user?.role === 'ADMIN';
   }
 }

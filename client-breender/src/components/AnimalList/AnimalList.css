@@ -1,0 +1,19 @@
+/* Dark theme for AnimalList filter inputs and placeholder text */
+.animal-filter-input {
+  background: var(--color-bg-secondary) !important;
+  color: var(--color-text) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.animal-filter-input::placeholder {
+  color: #b0b3b8 !important;
+  opacity: 1 !important;
+}
+
+input.animal-filter-input:-ms-input-placeholder { /* IE 10+ */
+  color: #b0b3b8 !important;
+}
+input.animal-filter-input::-ms-input-placeholder { /* Edge */
+  color: #b0b3b8 !important;
+}
