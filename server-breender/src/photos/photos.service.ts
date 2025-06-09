@@ -28,6 +28,11 @@ export class PhotosService {
             this.logger.error('photo url is missing in createPhotoDto');
             throw new BadRequestException('Photo URL is required.');
         }
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(userId, createPhotoDto.animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this animal.');
+        }
         return this.databaseService.animalPhoto.create({
             data: {
                 photoUrl: createPhotoDto.url,
@@ -65,17 +70,10 @@ export class PhotosService {
             throw new NotFoundException(`Animal with ID ${animalId} not found.`);
         }
 
-        const ownerAssignment = await this.databaseService.owner.findUnique({
-            where: {
-                userId: authUserId,
-            },
-            include: {
-                animals: true,
-            },
-        });
-
-        if (!ownerAssignment) {
-            throw new ForbiddenException("You are not assigned to this animal.");
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(authUserId, animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this animal.');
         }
         const photos = await this.databaseService.animalPhoto.findMany({
             where: { animalId },
@@ -98,6 +96,11 @@ export class PhotosService {
         authUserId: string) {
         const photo = await this.databaseService.animalPhoto.findUnique({ where: { id } });
         if (!photo) throw new NotFoundException(`Record with ID ${id} not found`);
+        // Check if the authenticated user has access to the animal (owner or partnership)
+        const hasAccess = await this.hasAnimalAccess(authUserId, photo.animalId);
+        if (!hasAccess) {
+            throw new ForbiddenException('You do not have access to this photo.');
+        }
         // Remove file from filesystem
         if (photo.photoUrl) {
             const filePath = join(process.cwd(), photo.photoUrl);
@@ -110,5 +113,40 @@ export class PhotosService {
             });
         }
         await this.databaseService.animalPhoto.delete({ where: { id } });
+    }
+
+    /**
+     * Checks if the user is the owner of the animal or has access via partnership.
+     * @param userId - The user's id (not owner id)
+     * @param animalId - The animal's id
+     * @returns true if user is owner or has partnership access, false otherwise
+     */
+    async hasAnimalAccess(userId: string, animalId: string): Promise<boolean> {
+        // Find the owner record for the user
+        const owner = await this.databaseService.owner.findUnique({
+            where: { userId },
+            include: { animals: true },
+        });
+        if (!owner) return false;
+
+        // Check if user is direct owner of the animal
+        const isOwner = owner.animals.some((ao: any) => ao.animalId === animalId);
+        if (isOwner) return true;
+
+        // Get all animalIds owned by this owner
+        const userAnimalIds = owner.animals.map((ao: any) => ao.animalId);
+        if (userAnimalIds.length === 0) return false;
+
+        // Check for partnership where user's animal is requester or recipient with the target animal
+        const partnership = await this.databaseService.partnership.findFirst({
+            where: {
+                OR: [
+                    { requesterAnimalId: { in: userAnimalIds }, recipientAnimalId: animalId },
+                    { recipientAnimalId: { in: userAnimalIds }, requesterAnimalId: animalId },
+                ],
+                status: 'ACCEPTED',
+            },
+        });
+        return !!partnership;
     }
 }

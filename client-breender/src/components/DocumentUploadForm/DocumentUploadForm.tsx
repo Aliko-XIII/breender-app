@@ -24,7 +24,7 @@ const DocumentUploadForm = () => {
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('title', title);
+        formData.append('documentName', title);
         formData.append('animalId', animalId);
 
         try {

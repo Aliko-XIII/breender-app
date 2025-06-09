@@ -113,7 +113,11 @@ const DocumentList: React.FC<DocumentListProps> = ({ animalId, userId }) => {
               </button>
               <div className="card-body p-3" style={{ cursor: 'pointer' }} onClick={() => handleDocumentClick(document)}>
                 <div className="card-title fw-bold text-center mb-2">
-                  {document.documentName ? document.documentName : 'Document'}
+                  {document.documentName
+                    ? document.documentName
+                    : (document.documentUrl
+                        ? (document.documentUrl.split("/").pop() || '').replace(/\.[^/.]+$/, '')
+                        : 'Document')}
                 </div>
                 {document.uploadedAt && <div className="text-muted small text-center">Uploaded: {new Date(document.uploadedAt).toLocaleString()}</div>}
                 {document.animalId && animalInfos[document.animalId] && (
@@ -154,7 +158,13 @@ const DocumentList: React.FC<DocumentListProps> = ({ animalId, userId }) => {
           <div className="modal-dialog modal-lg modal-dialog-centered" role="document" onClick={e => e.stopPropagation()}>
             <div className="modal-content bg-dark text-light border-0" style={{ boxShadow: '0 0 24px 4px #000' }}>
               <div className="modal-header border-0" style={{ background: '#222' }}>
-                <h5 className="modal-title text-light">{selectedDocument.documentName || 'Document'}</h5>
+                <h5 className="modal-title text-light">
+                  {selectedDocument.documentName
+                    ? selectedDocument.documentName
+                    : (selectedDocument.documentUrl
+                        ? (selectedDocument.documentUrl.split("/").pop() || '').replace(/\.[^/.]+$/, '')
+                        : 'Document')}
+                </h5>
                 <button type="button" className="btn-close btn-close-white" aria-label="Close" onClick={handleCloseModal}></button>
               </div>
               <div className="modal-body text-center" style={{ background: '#181818' }}>
